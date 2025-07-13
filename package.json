@@ -1,0 +1,39 @@
+{
+  "name": "zhangshang-shuati",
+  "version": "1.0.0",
+  "description": "掌上刷题系统 - 一个完整的在线刷题平台",
+  "main": "index.js",
+  "scripts": {
+    "test": "node run-all-tests.js",
+    "test:unit": "node run-all-tests.js --unit",
+    "test:integration": "node run-all-tests.js --integration",
+    "test:e2e": "node run-all-tests.js --e2e",
+    "test:coverage": "node run-all-tests.js --coverage",
+    "test:backend": "cd backend && npm test",
+    "test:admin": "cd admin-panel && npm run test:unit",
+    "test:mobile": "cd zhangshang-shuati-app && npm run test:unit",
+    "install:all": "npm install && cd backend && npm install && cd ../admin-panel && npm install && cd ../zhangshang-shuati-app && npm install",
+    "start:backend": "cd backend && npm start",
+    "start:admin": "cd admin-panel && npm run serve",
+    "start:mobile": "cd zhangshang-shuati-app && npm run dev",
+    "dev": "concurrently \"npm run start:backend\" \"npm run start:admin\" \"npm run start:mobile\""
+  },
+  "keywords": [
+    "education",
+    "quiz",
+    "learning",
+    "mobile",
+    "web"
+  ],
+  "author": "开发团队",
+  "license": "MIT",
+  "devDependencies": {
+    "sass": "^1.89.2",
+    "concurrently": "^7.6.0",
+    "cross-env": "^7.0.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "mysql2": "^3.6.0"
+  }
+}
