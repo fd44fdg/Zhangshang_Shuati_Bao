@@ -21,7 +21,7 @@ service.interceptors.request.use(
   },
   error => {
     // 对请求错误做些什么
-    // 请求错误处理
+    console.log(error) // for debug
     return Promise.reject(error)
   }
 )
@@ -68,7 +68,7 @@ service.interceptors.response.use(
     }
   },
   error => {
-    // 响应错误处理
+    console.log('err' + error) // for debug
     ElMessage({
       message: error.message,
       type: 'error',

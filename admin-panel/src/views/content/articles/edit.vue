@@ -694,18 +694,7 @@ export default {
     }
     
     const viewVersion = (version) => {
-      ElMessageBox.alert(
-        `版本：${version.version}\n` +
-        `创建时间：${version.created_at}\n` +
-        `创建者：${version.created_by}\n` +
-        `变更说明：${version.change_log || '无'}\n\n` +
-        `内容预览：\n${version.content.substring(0, 200)}${version.content.length > 200 ? '...' : ''}`,
-        `版本详情 - ${version.version}`,
-        {
-          confirmButtonText: '关闭',
-          customClass: 'version-detail-dialog'
-        }
-      )
+      ElMessage.info(`查看版本 ${version.version} 功能开发中...`)
     }
     
     const restoreVersion = (version) => {

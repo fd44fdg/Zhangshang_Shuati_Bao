@@ -590,7 +590,7 @@ export default {
           duration: 2000
         })
       } catch (error) {
-        // 导出失败
+        console.error('导出失败:', error)
         ElMessage({
           type: 'error',
           message: '导出失败，请重试',

@@ -18,7 +18,7 @@ module.exports = {
   devServer: {
     port: 8081,
     host: '0.0.0.0',
-    https: true, // 启用HTTPS以支持ngrok HTTPS隧道
+    https: false,
     hot: true,
     allowedHosts: 'all', // 允许所有主机访问
     proxy: {

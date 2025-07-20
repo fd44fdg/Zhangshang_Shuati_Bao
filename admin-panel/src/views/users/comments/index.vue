@@ -528,63 +528,14 @@ export default {
     }
     
     const handleDownload = () => {
-      ElMessageBox.confirm(
-        '确定要导出评论数据吗？',
-        '导出确认',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
+      downloadLoading.value = true
+      setTimeout(() => {
+        downloadLoading.value = false
+        ElMessage({
+          message: '导出功能开发中...',
           type: 'info'
-        }
-      ).then(() => {
-        downloadLoading.value = true
-        
-        setTimeout(() => {
-          downloadLoading.value = false
-          
-          // 生成CSV内容
-          const csvContent = generateCommentsCSV()
-          
-          // 创建下载链接
-          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-          const link = document.createElement('a')
-          const url = URL.createObjectURL(blob)
-          link.setAttribute('href', url)
-          link.setAttribute('download', `评论数据_${new Date().toISOString().split('T')[0]}.csv`)
-          link.style.visibility = 'hidden'
-          document.body.appendChild(link)
-          link.click()
-          document.body.removeChild(link)
-          
-          ElMessage.success('导出成功！')
-        }, 2000)
-      }).catch(() => {
-        ElMessage.info('已取消导出')
-      })
-    }
-    
-    // 生成评论CSV数据
-    const generateCommentsCSV = () => {
-      const headers = ['ID', '用户名', '评论内容', '评论类型', '目标对象', '状态', '点赞数', '回复数', 'IP地址', '创建时间']
-      const csvRows = [headers.join(',')]
-      
-      list.value.forEach(comment => {
-        const row = [
-          comment.id,
-          `"${comment.user.username}"`,
-          `"${comment.content.replace(/"/g, '""')}"`, // 转义双引号
-          `"${getTypeText(comment.type)}"`,
-          `"${comment.target_title}"`,
-          `"${getStatusText(comment.status)}"`,
-          comment.likes_count,
-          comment.replies_count,
-          `"${comment.ip_address}"`,
-          `"${comment.created_at}"`
-        ]
-        csvRows.push(row.join(','))
-      })
-      
-      return '\uFEFF' + csvRows.join('\n') // 添加BOM以支持中文
+        })
+      }, 1000)
     }
     
     const getStatusText = (status) => {

@@ -223,7 +223,7 @@ export default {
     
     const updatePassword = async () => {
       try {
-        await passwordFormRef.value.validate()
+        await passwordForm.value.validate()
         // 这里应该调用API更新密码
         ElMessage.success('密码修改成功')
         showPasswordDialog.value = false
@@ -239,7 +239,7 @@ export default {
     }
     
     const handleClosePasswordDialog = () => {
-      passwordFormRef.value?.resetFields()
+      passwordForm.value?.resetFields()
       showPasswordDialog.value = false
     }
     

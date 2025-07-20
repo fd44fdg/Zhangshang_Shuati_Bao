@@ -150,7 +150,7 @@ export default {
               loading.value = false
             })
         } else {
-          // 表单验证失败
+          console.log('error submit!!')
           return false
         }
       })

@@ -1,9 +1,8 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { pool } = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
-const { db, helpers } = require('../database/mock-db'); // 引入统一数据库
 const authMiddleware = require('../middleware/auth');
+const { db, helpers } = require('../database/mock-db'); // 引入统一数据库
 const { sendSuccess } = require('../utils/responseHandler');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
@@ -25,7 +24,7 @@ const getUserProfile = async (userId) => {
 };
 
 // 获取用户信息
-router.get('/profile', authenticateToken, catchAsync(async (req, res) => {
+router.get('/profile', authMiddleware, catchAsync(async (req, res) => {
   const userProfile = await getUserProfile(req.user.userId);
   
   if (!userProfile) {
@@ -36,7 +35,7 @@ router.get('/profile', authenticateToken, catchAsync(async (req, res) => {
 }));
 
 // 更新用户信息
-router.put('/profile', authenticateToken, catchAsync(async (req, res) => {
+router.put('/profile', authMiddleware, catchAsync(async (req, res) => {
   const { nickname, avatar, gender, birthday, bio, learning_goal } = req.body;
   
   // 构建更新字段
@@ -92,7 +91,7 @@ router.put('/profile', authenticateToken, catchAsync(async (req, res) => {
 }));
 
 // 修改密码
-router.put('/password', authenticateToken, catchAsync(async (req, res) => {
+router.put('/password', authMiddleware, catchAsync(async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   
   if (!currentPassword || !newPassword) {
@@ -133,7 +132,7 @@ router.put('/password', authenticateToken, catchAsync(async (req, res) => {
 }));
 
 // 获取用户统计数据
-router.get('/stats', authenticateToken, catchAsync(async (req, res) => {
+router.get('/stats', authMiddleware, catchAsync(async (req, res) => {
   const userId = req.user.userId;
   
   const [stats] = await pool.execute(
@@ -169,8 +168,122 @@ router.get('/stats', authenticateToken, catchAsync(async (req, res) => {
   sendSuccess(res, userStats);
 }));
 
+// 获取用户签到状态
+router.get('/checkin/status', authMiddleware, catchAsync(async (req, res) => {
+  const userId = req.user.userId;
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD格式
+  
+  // 检查今天是否已签到
+  const [todayCheckin] = await pool.execute(
+    'SELECT id FROM user_checkins WHERE user_id = ? AND checkin_date = ?',
+    [userId, today]
+  );
+  
+  // 获取累计签到天数
+  const [totalDays] = await pool.execute(
+    'SELECT COUNT(*) as total_days FROM user_checkins WHERE user_id = ?',
+    [userId]
+  );
+  
+  // 获取连续签到天数
+  const [continuousDays] = await pool.execute(
+    `SELECT COUNT(*) as continuous_days 
+     FROM (
+       SELECT checkin_date,
+              ROW_NUMBER() OVER (ORDER BY checkin_date DESC) as rn,
+              DATE_SUB(checkin_date, INTERVAL ROW_NUMBER() OVER (ORDER BY checkin_date DESC) DAY) as grp
+       FROM user_checkins 
+       WHERE user_id = ? 
+       ORDER BY checkin_date DESC
+     ) t 
+     WHERE grp = (SELECT DATE_SUB(MAX(checkin_date), INTERVAL ROW_NUMBER() OVER (ORDER BY MAX(checkin_date) DESC) DAY) 
+                  FROM user_checkins WHERE user_id = ? LIMIT 1)`,
+    [userId, userId]
+  );
+  
+  const checkInStatus = {
+    isCheckedIn: todayCheckin.length > 0,
+    checkInDays: totalDays[0].total_days || 0,
+    continuousCheckInDays: continuousDays[0].continuous_days || 0
+  };
+  
+  sendSuccess(res, checkInStatus);
+}));
+
+// 执行签到操作
+router.post('/checkin', authMiddleware, catchAsync(async (req, res) => {
+  const connection = await pool.getConnection();
+  try {
+    const userId = req.user.userId;
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD格式
+    
+    await connection.beginTransaction();
+    
+    // 检查今天是否已签到
+    const [existingCheckin] = await connection.execute(
+      'SELECT id FROM user_checkins WHERE user_id = ? AND checkin_date = ?',
+      [userId, today]
+    );
+    
+    if (existingCheckin.length > 0) {
+      throw new ApiError(400, '今天已经签到过了');
+    }
+    
+    // 记录签到
+    await connection.execute(
+      'INSERT INTO user_checkins (user_id, checkin_date) VALUES (?, ?)',
+      [userId, today]
+    );
+    
+    // 增加积分奖励
+    const pointsReward = 5; // 签到奖励5分
+    await connection.execute(
+      'UPDATE users SET points = points + ? WHERE id = ?',
+      [pointsReward, userId]
+    );
+    
+    // 获取更新后的签到状态
+    const [totalDays] = await connection.execute(
+      'SELECT COUNT(*) as total_days FROM user_checkins WHERE user_id = ?',
+      [userId]
+    );
+    
+    const [continuousDays] = await connection.execute(
+      `SELECT COUNT(*) as continuous_days 
+       FROM (
+         SELECT checkin_date,
+                ROW_NUMBER() OVER (ORDER BY checkin_date DESC) as rn,
+                DATE_SUB(checkin_date, INTERVAL ROW_NUMBER() OVER (ORDER BY checkin_date DESC) DAY) as grp
+         FROM user_checkins 
+         WHERE user_id = ? 
+         ORDER BY checkin_date DESC
+       ) t 
+       WHERE grp = (SELECT DATE_SUB(MAX(checkin_date), INTERVAL ROW_NUMBER() OVER (ORDER BY MAX(checkin_date) DESC) DAY) 
+                    FROM user_checkins WHERE user_id = ? LIMIT 1)`,
+      [userId, userId]
+    );
+    
+    await connection.commit();
+    
+    const result = {
+      isCheckedIn: true,
+      checkInDays: totalDays[0].total_days,
+      continuousCheckInDays: continuousDays[0].continuous_days,
+      pointsEarned: pointsReward
+    };
+    
+    sendSuccess(res, result, '签到成功！');
+    
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}));
+
 // 更新用户统计数据（答题后调用）
-router.post('/stats/update', authenticateToken, catchAsync(async (req, res) => {
+router.post('/stats/update', authMiddleware, catchAsync(async (req, res) => {
   const connection = await pool.getConnection();
   try {
     const { isCorrect, questionId } = req.body;
@@ -356,7 +469,7 @@ const isAdmin = (req, res, next) => {
 };
 
 // GET /api/users/list - Get user list for admin panel
-router.get('/list', authMiddleware.authenticateToken, isAdmin, (req, res) => {
+router.get('/list', authMiddleware, isAdmin, (req, res) => {
     const { keyword, status, role, page = 1, limit = 10 } = req.query;
 
     let filteredUsers = db.users;
@@ -397,7 +510,7 @@ router.get('/list', authMiddleware.authenticateToken, isAdmin, (req, res) => {
 });
 
 // POST /api/users - Create a new user from admin panel
-router.post('/', authMiddleware.authenticateToken, isAdmin, (req, res) => {
+router.post('/', authMiddleware, isAdmin, (req, res) => {
     const { username, nickname, email, password, role, status } = req.body;
     
     if (!username || !email || !password || !role) {
@@ -428,7 +541,7 @@ router.post('/', authMiddleware.authenticateToken, isAdmin, (req, res) => {
 });
 
 // PUT /api/users/:id - Update a user from admin panel
-router.put('/:id', authMiddleware.authenticateToken, isAdmin, (req, res) => {
+router.put('/:id', authMiddleware, isAdmin, (req, res) => {
     const userId = parseInt(req.params.id, 10);
     const { nickname, email, role, status } = req.body;
 
@@ -458,7 +571,7 @@ router.put('/:id', authMiddleware.authenticateToken, isAdmin, (req, res) => {
 });
 
 // DELETE /api/users/:id - Delete a user from admin panel
-router.delete('/:id', authMiddleware.authenticateToken, isAdmin, (req, res) => {
+router.delete('/:id', authMiddleware, isAdmin, (req, res) => {
     const userId = parseInt(req.params.id, 10);
 
     const success = helpers.deleteUser(userId);

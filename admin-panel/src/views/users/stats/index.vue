@@ -335,7 +335,7 @@ export default {
     }
     
     const handleDateChange = (dates) => {
-      // 日期范围变更
+      console.log('日期范围变更:', dates)
       refreshData()
     }
     

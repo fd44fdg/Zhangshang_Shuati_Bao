@@ -412,7 +412,7 @@ export default {
           ElMessage.error(response.message || '获取用户列表失败')
         }
       } catch (error) {
-        // 获取用户列表错误
+        console.error('获取用户列表错误:', error)
         ElMessage.error('获取用户列表失败')
       } finally {
         listLoading.value = false
@@ -471,7 +471,7 @@ export default {
               ElMessage.error(response.message || '创建用户失败')
             }
           } catch (error) {
-            // 创建用户错误
+            console.error('创建用户错误:', error)
             ElMessage.error('创建用户失败')
           }
         }
@@ -517,7 +517,7 @@ export default {
               ElMessage.error(response.message || '更新用户失败')
             }
           } catch (error) {
-            // 更新用户错误
+            console.error('更新用户错误:', error)
             ElMessage.error('更新用户失败')
           }
         }
@@ -547,7 +547,7 @@ export default {
             ElMessage.error(response.message || '删除用户失败')
           }
         } catch (error) {
-          // 删除用户错误
+          console.error('删除用户错误:', error)
           ElMessage.error('删除用户失败')
         }
       })
@@ -583,7 +583,7 @@ export default {
           ElMessage.error(response.message || '获取用户统计失败')
         }
       } catch (error) {
-        // 获取用户统计错误
+        console.error('获取用户统计错误:', error)
         ElMessage.error('获取用户统计失败')
       } finally {
         statsLoading.value = false

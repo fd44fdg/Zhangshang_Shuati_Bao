@@ -314,10 +314,6 @@ describe('管理员工作流程测试', () => {
       cy.waitForLoading();
       cy.endPerformanceMeasure('questions-load', 2000);
     });
-
-    afterEach(() => {
-      // 性能测试不需要清理数据库
-    });
   });
 
   afterEach(() => {

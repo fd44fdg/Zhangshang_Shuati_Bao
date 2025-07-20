@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { pool } = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
+const authMiddleware = require('../middleware/auth');
 const { sendSuccess } = require('../utils/responseHandler');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
@@ -34,7 +34,7 @@ const requireAdmin = async (req, res, next) => {
 };
 
 // 获取用户列表（管理员）
-router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/users', authMiddleware, requireAdmin, async (req, res) => {
   try {
     const {
       page = 1,
@@ -115,7 +115,7 @@ router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // 创建用户（管理员）
-router.post('/users', authenticateToken, requireAdmin, async (req, res) => {
+router.post('/users', authMiddleware, requireAdmin, async (req, res) => {
   try {
     const { username, email, password, phone, nickname, role = 'user', avatar, bio, status = 1 } = req.body;
     
@@ -188,7 +188,7 @@ router.post('/users', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // 更新用户（管理员）
-router.put('/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.put('/users/:id', authMiddleware, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { username, email, phone, nickname, role, avatar, bio, status } = req.body;
@@ -306,7 +306,7 @@ router.put('/users/:id', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // 删除用户（管理员）
-router.delete('/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.delete('/users/:id', authMiddleware, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -344,7 +344,7 @@ router.delete('/users/:id', authenticateToken, requireAdmin, async (req, res) =>
 });
 
 // 获取用户统计信息（管理员）
-router.get('/users/:id/stats', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/users/:id/stats', authMiddleware, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -405,7 +405,7 @@ router.get('/users/:id/stats', authenticateToken, requireAdmin, async (req, res)
 });
 
 // 获取单个用户信息（管理员）
-router.get('/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/users/:id', authMiddleware, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -453,7 +453,7 @@ const adminOnly = (req, res, next) => {
 };
 
 // All routes in this file are protected by auth and admin middleware
-router.use(authenticateToken, adminOnly);
+router.use(authMiddleware, adminOnly);
 
 // --- Dashboard Stats ---
 router.get('/dashboard/stats', catchAsync(async (req, res) => {

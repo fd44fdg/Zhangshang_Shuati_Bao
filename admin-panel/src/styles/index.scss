@@ -174,17 +174,190 @@ body {
   }
 }
 
-// 响应式
+// 响应式设计
 @media (max-width: 768px) {
   .container {
     padding: 0 10px;
+  }
+  
+  .app-container {
+    padding: 10px !important;
   }
   
   .filter-container {
     .filter-item {
       width: 100%;
       margin-right: 0;
+      margin-bottom: 10px;
     }
+    
+    .el-input {
+      width: 100% !important;
+    }
+    
+    .el-select {
+      width: 100% !important;
+    }
+    
+    .el-button {
+      width: 100%;
+      margin-left: 0 !important;
+    }
+  }
+  
+  // 表格移动端优化
+  .el-table {
+    font-size: 12px;
+    
+    .el-table__header {
+      th {
+        padding: 8px 4px;
+        font-size: 12px;
+      }
+    }
+    
+    .el-table__body {
+      td {
+        padding: 8px 4px;
+        font-size: 12px;
+      }
+    }
+    
+    .el-button {
+      padding: 4px 8px;
+      font-size: 12px;
+      margin: 2px;
+    }
+  }
+  
+  // 对话框移动端优化
+  .el-dialog {
+    width: 95% !important;
+    margin: 0 auto;
+    
+    .el-dialog__body {
+      padding: 15px;
+    }
+    
+    .el-form {
+      width: 100% !important;
+      margin-left: 0 !important;
+      
+      .el-form-item {
+        margin-bottom: 15px;
+        
+        .el-form-item__label {
+          width: 100% !important;
+          text-align: left !important;
+          margin-bottom: 5px;
+        }
+        
+        .el-form-item__content {
+          margin-left: 0 !important;
+        }
+      }
+    }
+  }
+  
+  // 分页移动端优化
+  .pagination-container {
+    text-align: center;
+    padding: 20px 10px;
+    
+    .el-pagination {
+      .el-pagination__sizes {
+        display: none;
+      }
+      
+      .el-pagination__jump {
+        display: none;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .app-container {
+    padding: 5px !important;
+  }
+  
+  .el-table {
+    .el-table__header {
+      th {
+        padding: 6px 2px;
+        font-size: 11px;
+      }
+    }
+    
+    .el-table__body {
+      td {
+        padding: 6px 2px;
+        font-size: 11px;
+      }
+    }
+    
+    .el-button {
+      padding: 3px 6px;
+      font-size: 11px;
+      margin: 1px;
+    }
+  }
+  
+  .el-dialog {
+    width: 98% !important;
+    
+    .el-dialog__header {
+      padding: 15px 15px 10px;
+      
+      .el-dialog__title {
+        font-size: 16px;
+      }
+    }
+  }
+}
+
+// 自定义滚动条样式
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+  
+  &:hover {
+    background: #a8a8a8;
+  }
+}
+
+// 滚动容器通用类
+.scroll-container {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.scroll-container-x {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.scroll-container-both {
+  overflow: auto;
+}
+
+// 移动端滚动优化
+@media (max-width: 768px) {
+  .scroll-container,
+  .scroll-container-x,
+  .scroll-container-both {
+    -webkit-overflow-scrolling: touch; // iOS 平滑滚动
+    scroll-behavior: smooth; // 平滑滚动
   }
 }
 

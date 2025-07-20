@@ -1,4 +1,5 @@
 import { config } from '@vue/test-utils';
+import { config } from '@vue/test-utils';
 import ElementPlus from 'element-plus';
 import { createStore } from 'vuex';
 import { createRouter, createWebHistory } from 'vue-router';

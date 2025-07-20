@@ -90,6 +90,12 @@ const routes = [
         meta: { title: '创建题目', icon: 'Plus' }
       },
       {
+        path: 'create-enhanced',
+        name: 'QuestionsCreateEnhanced',
+        component: () => import('@/views/questions/create/enhanced.vue'),
+        meta: { title: '增强创建', icon: 'MagicStick' }
+      },
+      {
         path: 'edit/:id',
         name: 'QuestionsEdit',
         component: () => import('@/views/questions/edit/index.vue'),
@@ -126,19 +132,6 @@ const routes = [
         name: 'UsersComments',
         component: () => import('@/views/users/comments/index.vue'),
         meta: { title: '用户评论', icon: 'ChatDotRound' }
-      }
-    ]
-  },
-  {
-    path: '/profile',
-    component: Layout,
-    hidden: true,
-    children: [
-      {
-        path: 'index',
-        name: 'Profile',
-        component: () => import('@/views/profile/index.vue'),
-        meta: { title: '个人中心', icon: 'User' }
       }
     ]
   },

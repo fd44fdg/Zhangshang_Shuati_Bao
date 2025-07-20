@@ -71,92 +71,69 @@
       </el-button>
     </div>
 
-    <el-table
+    <MobileTable
       :key="tableKey"
       v-loading="listLoading"
       :data="list"
+      :columns="tableColumns"
+      title-field="content"
       border
       fit
       highlight-current-row
       style="width: 100%;"
+      :max-height="'60vh'"
     >
-      <el-table-column label="ID" prop="id" sortable="custom" align="center" width="80">
-        <template #default="{row}">
-          <span>{{ row.id }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="题目内容" min-width="300px">
-        <template #default="{row}">
-          <div class="question-content">
-            <p>{{ row.content }}</p>
-            <div v-if="row.type !== 'fill'" class="options">
-              <div v-for="(option, index) in row.options" :key="index" class="option-item">
-                <span class="option-label">{{ String.fromCharCode(65 + index) }}.</span>
-                <span>{{ option }}</span>
-                <el-tag v-if="isCorrectAnswer(row, index)" type="success" size="small">正确答案</el-tag>
-              </div>
-            </div>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column label="类型" width="100px" align="center">
-        <template #default="{row}">
-          <el-tag :type="getTypeColor(row.type)">{{ getTypeLabel(row.type) }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="难度" width="100px" align="center">
-        <template #default="{row}">
-          <el-tag :type="getDifficultyType(row.difficulty)">{{ getDifficultyLabel(row.difficulty) }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="分类" width="120px" align="center">
-        <template #default="{row}">
-          <el-tag :type="getCategoryType(row.category)">{{ getCategoryLabel(row.category) }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="状态" class-name="status-col" width="100">
-        <template #default="{row}">
-          <el-tag :type="row.status === 1 ? 'success' : 'danger'">
-            {{ row.status === 1 ? '启用' : '禁用' }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="创建时间" width="150px" align="center">
-        <template #default="{row}">
-          <span>{{ formatDate(row.created_at) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" align="center" width="230" class-name="small-padding fixed-width">
-        <template #default="{row, $index}">
-          <el-button type="primary" size="small" @click="handleUpdate(row)">
-            编辑
-          </el-button>
-          <el-button
-            v-if="row.status === 1"
-            size="small"
-            type="warning"
-            @click="handleModifyStatus(row, 0)"
-          >
-            禁用
-          </el-button>
-          <el-button
-            v-else
-            size="small"
-            type="success"
-            @click="handleModifyStatus(row, 1)"
-          >
-            启用
-          </el-button>
-          <el-button
-            size="small"
-            type="danger"
-            @click="handleDelete(row, $index)"
-          >
-            删除
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+      <template #actions="{ row, index }">
+        <el-button type="primary" size="small" @click="handleUpdate(row)">
+          编辑
+        </el-button>
+        <el-button
+          v-if="row.status === 1"
+          size="small"
+          type="warning"
+          @click="handleModifyStatus(row, 0)"
+        >
+          禁用
+        </el-button>
+        <el-button
+          v-else
+          size="small"
+          type="success"
+          @click="handleModifyStatus(row, 1)"
+        >
+          启用
+        </el-button>
+        <el-button
+          size="small"
+          type="danger"
+          @click="handleDelete(row, index)"
+        >
+          删除
+        </el-button>
+      </template>
+      
+      <template #type="{ row }">
+        <el-tag :type="getTypeColor(row.type)">{{ getTypeLabel(row.type) }}</el-tag>
+      </template>
+      
+      <template #difficulty="{ row }">
+        <el-tag :type="getDifficultyType(row.difficulty)">{{ getDifficultyLabel(row.difficulty) }}</el-tag>
+      </template>
+      
+      <template #category="{ row }">
+        <el-tag :type="getCategoryType(row.category)">{{ getCategoryLabel(row.category) }}</el-tag>
+      </template>
+      
+      <template #status="{ row }">
+        <el-tag :type="row.status === 1 ? 'success' : 'danger'">
+          {{ row.status === 1 ? '启用' : '禁用' }}
+        </el-tag>
+      </template>
+      
+      <template #created_at="{ row }">
+        <span>{{ formatDate(row.created_at) }}</span>
+      </template>
+    </MobileTable>
 
     <pagination
       v-show="total > 0"
@@ -306,11 +283,13 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import Pagination from '@/components/Pagination/index.vue'
+import ScrollableTable from '@/components/ScrollableTable/index.vue'
+import MobileTable from '@/components/MobileTable/index.vue'
 import waves from '@/directive/waves'
 
 export default {
   name: 'QuestionList',
-  components: { Pagination },
+  components: { Pagination, ScrollableTable, MobileTable },
   directives: { waves },
   setup() {
     const tableKey = ref(0)
@@ -342,6 +321,16 @@ export default {
       tags: '',
       status: 1
     })
+    
+    const tableColumns = [
+      { prop: 'id', label: 'ID', width: 80, align: 'center' },
+      { prop: 'content', label: '题目内容', minWidth: 300 },
+      { prop: 'type', label: '类型', width: 100, align: 'center', slot: true },
+      { prop: 'difficulty', label: '难度', width: 100, align: 'center', slot: true },
+      { prop: 'category', label: '分类', width: 120, align: 'center', slot: true },
+      { prop: 'status', label: '状态', width: 100, align: 'center', slot: true },
+      { prop: 'created_at', label: '创建时间', width: 150, align: 'center', slot: true }
+    ]
     
     const textMap = {
       update: '编辑题目',
@@ -593,85 +582,10 @@ export default {
     }
     
     const handleImport = () => {
-      ElMessageBox.confirm(
-        '批量导入将会上传CSV格式的题目文件，确定继续吗？',
-        '批量导入确认',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'info'
-        }
-      ).then(() => {
-        // 创建文件输入元素
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.csv';
-        input.style.display = 'none';
-        
-        input.onchange = (event) => {
-          const file = event.target.files[0];
-          if (file) {
-            handleFileImport(file);
-          }
-        };
-        
-        document.body.appendChild(input);
-        input.click();
-        document.body.removeChild(input);
-      }).catch(() => {
-        ElMessage.info('已取消导入');
-      });
-    }
-    
-    // 处理文件导入
-    const handleFileImport = (file) => {
-      const loading = ElLoading.service({
-        lock: true,
-        text: '正在导入数据...',
-        background: 'rgba(0, 0, 0, 0.7)'
-      });
-      
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const csv = e.target.result;
-          const lines = csv.split('\n');
-          const headers = lines[0].split(',');
-          
-          // 验证CSV格式
-          const requiredHeaders = ['标题', '内容', '类型', '选项', '正确答案', '解释', '难度', '分类'];
-          const hasValidHeaders = requiredHeaders.every(header => 
-            headers.some(h => h.trim().includes(header))
-          );
-          
-          if (!hasValidHeaders) {
-            loading.close();
-            ElMessage.error('CSV文件格式不正确，请检查表头是否包含必要字段');
-            return;
-          }
-          
-          // 模拟导入过程
-          setTimeout(() => {
-            loading.close();
-            const importCount = Math.max(1, lines.length - 1); // 减去表头行
-            ElMessage.success(`成功导入 ${importCount} 道题目！`);
-            
-            // 刷新列表
-            getList();
-          }, 3000);
-          
-        } catch (error) {
-          loading.close();
-          ElMessage.error('文件解析失败，请检查文件格式');
-        }
-      };
-      
-      reader.onerror = () => {
-        loading.close();
-        ElMessage.error('文件读取失败');
-      };
-      
-      reader.readAsText(file, 'UTF-8');
+      ElMessage({
+        message: '批量导入功能开发中...',
+        type: 'info'
+      })
     }
     
     const formatDate = (dateString) => {
@@ -692,6 +606,7 @@ export default {
       dialogStatus,
       dataFormRef,
       temp,
+      tableColumns,
       textMap,
       rules,
       getTypeColor,

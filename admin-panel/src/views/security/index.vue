@@ -512,7 +512,7 @@ export default {
           Object.assign(userInfo.value, response.data)
         }
       }).catch(error => {
-        // 获取用户安全信息失败
+        console.error('获取用户安全信息失败:', error)
       })
     })
     

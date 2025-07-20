@@ -186,7 +186,6 @@ Cypress.Commands.add('measurePerformance', (name) => {
   cy.window().then((win) => {
     const startTime = win.performance.now();
     cy.wrap(startTime).as(`${name}_startTime`);
-    cy.log(`Performance measurement started for: ${name}`);
   });
 });
 

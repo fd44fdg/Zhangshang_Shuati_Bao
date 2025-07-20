@@ -15,7 +15,7 @@
     "install:all": "npm install && cd backend && npm install && cd ../admin-panel && npm install && cd ../zhangshang-shuati-app && npm install",
     "start:backend": "cd backend && npm start",
     "start:admin": "cd admin-panel && npm run serve",
-    "start:mobile": "cd zhangshang-shuati-app && npm run dev",
+    "start:mobile": "cd zhangshang-shuati-app && npm run dev:h5",
     "dev": "concurrently \"npm run start:backend\" \"npm run start:admin\" \"npm run start:mobile\""
   },
   "keywords": [
@@ -28,11 +28,12 @@
   "author": "开发团队",
   "license": "MIT",
   "devDependencies": {
-    "sass": "^1.89.2",
     "concurrently": "^7.6.0",
-    "cross-env": "^7.0.3"
+    "cross-env": "^7.0.3",
+    "sass": "^1.89.2"
   },
   "dependencies": {
+    "@dcloudio/uni-ui": "^1.5.10",
     "axios": "^1.6.0",
     "mysql2": "^3.6.0"
   }

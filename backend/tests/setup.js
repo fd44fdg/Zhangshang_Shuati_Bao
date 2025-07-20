@@ -23,17 +23,42 @@ global.mockDb = mockDb;
 
 // 全局测试设置
 beforeAll(async () => {
-  console.log('🔄 初始化测试环境...');
-  // 使用内存数据库，无需实际数据库连接
-  console.log('✅ 测试环境初始化完成');
+  // 创建测试数据库连接
+  const connection = await mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD
+  });
+
+  // 创建测试数据库
+  await connection.execute(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME}`);
+  await connection.end();
+
+  // 初始化数据库表结构
+  await initDatabase();
 });
 
 // 每个测试后清理数据
 afterEach(async () => {
-  // 清理内存数据库
-  Object.keys(global.mockDb).forEach(key => {
-    global.mockDb[key].clear();
+  const connection = await mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
   });
+
+  // 清理测试数据（保留表结构）
+  await connection.execute('SET FOREIGN_KEY_CHECKS = 0');
+  await connection.execute('TRUNCATE TABLE user_study_records');
+  await connection.execute('TRUNCATE TABLE user_wrong_questions');
+  await connection.execute('TRUNCATE TABLE user_answers');
+  await connection.execute('TRUNCATE TABLE user_favorites');
+  await connection.execute('TRUNCATE TABLE user_stats');
+  await connection.execute('TRUNCATE TABLE questions');
+  await connection.execute('TRUNCATE TABLE users');
+  await connection.execute('SET FOREIGN_KEY_CHECKS = 1');
+
+  await connection.end();
 });
 
 // 所有测试完成后清理

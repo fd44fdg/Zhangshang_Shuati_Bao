@@ -72,6 +72,7 @@ export default {
     padding: 20px;
     text-align: center;
     border-bottom: 1px solid #434a50;
+    flex-shrink: 0;
     
     h2 {
       color: #fff;
@@ -97,7 +98,7 @@ export default {
 
   :deep(.el-menu) {
     border: none;
-    height: auto;
+    height: 100%;
     width: 100% !important;
   }
 
