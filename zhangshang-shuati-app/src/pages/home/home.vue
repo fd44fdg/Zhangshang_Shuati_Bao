@@ -4,7 +4,7 @@
 		<view class="welcome-section">
 			<view class="welcome-card">
 				<view class="user-info">
-					<image class="avatar" :src="userInfo.avatar || '/static/images/avatar-placeholder.png'" mode="aspectFill"></image>
+					<image class="avatar" :src="userInfo.avatar || '/static/images/avatar-placeholder.svg'" mode="aspectFill"></image>
 					<view class="user-text">
 						<text class="greeting">{{ greeting }}</text>
 						<text class="username">{{ userInfo.nickname || '未登录用户' }}</text>
@@ -46,14 +46,14 @@
 		<view class="quick-start">
 			<text class="section-title">快速开始</text>
 			<view class="action-buttons">
-				<view class="action-btn primary" @click="startPractice">
+				<view class="action-btn" :class="{ primary: activeButton === 'practice' }" @click="startPractice">
 					<view class="btn-icon">📚</view>
 					<view class="btn-text">
 						<text class="btn-title">刷题练习</text>
 						<text class="btn-desc">巩固知识点</text>
 					</view>
 				</view>
-				<view class="action-btn secondary" @click="startExam">
+				<view class="action-btn" :class="{ primary: activeButton === 'exam' }" @click="startExam">
 					<view class="btn-icon">🎯</view>
 					<view class="btn-text">
 						<text class="btn-title">模拟考试</text>
@@ -132,6 +132,25 @@
 				</view>
 			</view>
 		</view>
+		
+		<!-- 隐藏的调试按钮，双击10次显示 -->
+		<view v-if="showDebugPanel" class="debug-panel">
+			<text class="debug-title">前后端连接测试</text>
+			<view class="debug-buttons">
+				<button class="debug-btn" @click="testBackendConnection">测试后端连接</button>
+				<button class="debug-btn" @click="testApiEndpoints">测试API接口</button>
+				<button class="debug-btn" @click="testAuthSystem">测试认证系统</button>
+				<button class="debug-btn" @click="clearDebugLogs">清除日志</button>
+			</view>
+			<view class="debug-logs">
+				<text v-for="(log, index) in debugLogs" :key="index" class="debug-log">
+					{{ log }}
+				</text>
+			</view>
+		</view>
+		
+		<!-- 隐藏的调试触发器 -->
+		<view class="debug-trigger" @click="handleDebugTrigger"></view>
 	</view>
 </template>
 
@@ -156,6 +175,7 @@
 					correctRate: 85,
 					studyTime: 45
 				},
+				activeButton: null, // 添加跟踪当前活跃按钮的状态
 				knowledgeProgress: [
 					{
 						id: 1,
@@ -210,7 +230,11 @@
 						title: "知识点复习",
 						description: "系统化复习重点知识"
 					}
-				]
+				],
+				// 调试功能相关
+				showDebugPanel: false,
+				debugClickCount: 0,
+				debugLogs: []
 			}
 		},
 		computed: {
@@ -239,6 +263,9 @@
 		onShow() {
 			// 页面显示时刷新数据
 			this.refreshData()
+			// 页面显示时重置活跃按钮状态
+			this.activeButton = null
+			console.log('页面显示，重置按钮状态')
 		},
 		onPullDownRefresh() {
 			// 下拉刷新
@@ -271,16 +298,53 @@
 			
 			// 开始练习
 			startPractice() {
+				// 设置活跃按钮
+				this.activeButton = 'practice';
+				
+				// 添加调试日志
+				console.log('跳转到刷题练习页面');
+				
+				// 跳转到练习页面
 				uni.switchTab({
-					url: '/pages/practice/practice'
-				})
+					url: '/pages/practice/practice',
+					success: () => {
+						console.log('跳转成功');
+					},
+					fail: (err) => {
+						console.error('跳转失败:', err);
+						uni.showToast({
+							title: '跳转失败，请重试',
+							icon: 'none'
+						});
+						// 重置活跃按钮
+						this.activeButton = null;
+					}
+				});
 			},
 			
 			// 开始考试
 			startExam() {
+				// 设置活跃按钮
+				this.activeButton = 'exam';
+				
+				// 添加调试日志
+				console.log('跳转到模拟考试页面');
+				
 				uni.switchTab({
-					url: '/pages/exam/exam'
-				})
+					url: '/pages/exam/exam',
+					success: () => {
+						console.log('跳转成功');
+					},
+					fail: (err) => {
+						console.error('跳转失败:', err);
+						uni.showToast({
+							title: '跳转失败，请重试',
+							icon: 'none'
+						});
+						// 重置活跃按钮
+						this.activeButton = null;
+					}
+				});
 			},
 			
 			// 查看全部进度
@@ -320,13 +384,9 @@
 				
 				switch(item.id) {
 					case 1:
-						// 热门题目 - 存储模式参数后使用switchTab跳转
-						uni.setStorageSync('practiceMode', {
-							mode: 'popular',
-							autoStart: true
-						})
-						uni.switchTab({
-							url: '/pages/practice/practice',
+						// 热门题目 - 跳转到独立页面
+						uni.navigateTo({
+							url: '/pages/question/standalone?mode=popular',
 							success: () => {
 								uni.hideLoading()
 							},
@@ -341,13 +401,9 @@
 						})
 						break
 					case 2:
-						// 每日一题 - 存储模式参数后使用switchTab跳转
-						uni.setStorageSync('practiceMode', {
-							mode: 'daily',
-							autoStart: true
-						})
-						uni.switchTab({
-							url: '/pages/practice/practice',
+						// 每日一题 - 跳转到独立页面
+						uni.navigateTo({
+							url: '/pages/question/standalone?mode=daily',
 							success: () => {
 								uni.hideLoading()
 							},
@@ -384,6 +440,139 @@
 							title: '功能暂未开放',
 							icon: 'none'
 						})
+				}
+			},
+					
+			// 调试功能方法
+			handleDebugTrigger() {
+				this.debugClickCount++
+				if (this.debugClickCount >= 10) {
+					this.showDebugPanel = !this.showDebugPanel
+					this.debugClickCount = 0
+					this.addDebugLog('调试面板' + (this.showDebugPanel ? '开启' : '关闭'))
+				}
+				// 3秒后重置计数
+				setTimeout(() => {
+					this.debugClickCount = 0
+				}, 3000)
+			},
+					
+			addDebugLog(message) {
+				const timestamp = new Date().toLocaleTimeString()
+				this.debugLogs.unshift(`[${timestamp}] ${message}`)
+				// 保持最多20条日志
+				if (this.debugLogs.length > 20) {
+					this.debugLogs.pop()
+				}
+			},
+					
+			clearDebugLogs() {
+				this.debugLogs = []
+				this.addDebugLog('日志已清除')
+			},
+					
+			async testBackendConnection() {
+				this.addDebugLog('开始测试后端连接...')
+				try {
+					// 先测试健康检查接口
+					const healthUrl = 'http://localhost:3002/health'
+					this.addDebugLog(`测试地址: ${healthUrl}`)
+							
+					const response = await uni.request({
+						url: healthUrl,
+						method: 'GET',
+						timeout: 5000
+					})
+							
+					if (response[1].statusCode === 200) {
+						this.addDebugLog('✅ 后端连接成功')
+						this.addDebugLog(`后端响应: ${JSON.stringify(response[1].data)}`)
+					} else {
+						this.addDebugLog(`❌ 后端连接失败: HTTP ${response[1].statusCode}`)
+					}
+				} catch (error) {
+					this.addDebugLog(`❌ 后端连接错误: ${error.message || error}`)
+				}
+			},
+					
+			async testApiEndpoints() {
+				this.addDebugLog('开始测试API接口...')
+						
+				try {
+					// 导入request工具
+					const request = require('@/utils/request.js').default
+					this.addDebugLog(`API基础地址: ${request.baseUrl}`)
+							
+					// 测试根路径
+					const rootResponse = await request.get('/')
+					this.addDebugLog('✅ API根路径访问成功')
+					this.addDebugLog(`根路径响应: ${JSON.stringify(rootResponse.data)}`)
+							
+				} catch (error) {
+					this.addDebugLog(`❌ API测试失败: ${error.message || error}`)
+					console.error('API测试错误:', error)
+				}
+			},
+					
+			async testAuthSystem() {
+				this.addDebugLog('开始测试认证系统...')
+						
+				try {
+					// 导入request工具
+					const request = require('@/utils/request.js').default
+							
+					// 测试数据
+					const testUser = {
+						username: 'test_' + Date.now(),
+						email: `test_${Date.now()}@example.com`,
+						password: 'test123456',
+						nickname: '测试用户'
+					}
+							
+					// 1. 测试用户注册
+					this.addDebugLog('步骤1: 测试用户注册...')
+					try {
+						const registerResponse = await request.post('/auth/register', testUser)
+						this.addDebugLog('✅ 用户注册成功')
+						this.addDebugLog(`注册响应: ${JSON.stringify(registerResponse.data || registerResponse)}`)
+								
+						// 2. 测试用户登录
+						this.addDebugLog('步骤2: 测试用户登录...')
+						const loginResponse = await request.post('/auth/login', {
+							username: testUser.username,
+							password: testUser.password
+						})
+						this.addDebugLog('✅ 用户登录成功')
+						this.addDebugLog(`登录响应: ${JSON.stringify(loginResponse.data || loginResponse)}`)
+								
+						// 3. 保存token并测试获取用户信息
+						if (loginResponse.data && loginResponse.data.token) {
+							uni.setStorageSync('zs_token', loginResponse.data.token)
+							this.addDebugLog('步骤3: 测试获取用户信息...')
+									
+							const userInfoResponse = await request.get('/users/profile')
+							this.addDebugLog('✅ 获取用户信息成功')
+							this.addDebugLog(`用户信息: ${JSON.stringify(userInfoResponse.data || userInfoResponse)}`)
+						}
+								
+						this.addDebugLog('✅ 认证系统测试完成！')
+								
+					} catch (registerError) {
+						this.addDebugLog(`❌ 注册失败: ${registerError.message || registerError}`)
+								
+						// 如果注册失败，尝试直接登录（可能用户已存在）
+						this.addDebugLog('尝试使用默认测试账号登录...')
+						const defaultLoginResponse = await request.post('/auth/login', {
+							username: 'admin',
+							password: 'admin123'
+						})
+						this.addDebugLog('✅ 默认账号登录成功')
+						this.addDebugLog(`登录响应: ${JSON.stringify(defaultLoginResponse.data || defaultLoginResponse)}`)
+					}
+							
+				} catch (error) {
+					this.addDebugLog(`❌ 认证系统测试失败: ${error.message || error}`)
+					console.error('认证系统测试错误:', error)
 				}
 			}
 		}
@@ -423,6 +612,17 @@
 		border-radius: 40rpx;
 		margin-right: 20rpx;
 		border: 3rpx solid rgba(255, 255, 255, 0.3);
+		background-color: #ffffff;
+	}
+
+	/* 确保uni-app的image组件在H5平台上正确显示图片 */
+	.avatar img, .avatar uni-image, .avatar div {
+		width: 100% !important;
+		height: 100% !important;
+		border-radius: 40rpx !important;
+		object-fit: cover !important;
+		background-size: cover !important;
+		background-position: center center !important;
 	}
 
 	.user-text {
@@ -724,5 +924,71 @@
 	.recommendation-desc {
 		font-size: 22rpx;
 		color: #666;
+	}
+	
+	/* 调试面板样式 */
+	.debug-trigger {
+		position: fixed;
+		bottom: 200rpx;
+		right: 40rpx;
+		width: 80rpx;
+		height: 80rpx;
+		opacity: 0;
+		z-index: 999;
+	}
+	
+	.debug-panel {
+		position: fixed;
+		bottom: 300rpx;
+		left: 20rpx;
+		right: 20rpx;
+		background-color: rgba(0, 0, 0, 0.9);
+		border-radius: 16rpx;
+		padding: 20rpx;
+		z-index: 1000;
+		max-height: 60vh;
+		overflow-y: auto;
+	}
+	
+	.debug-title {
+		color: #fff;
+		font-size: 28rpx;
+		font-weight: bold;
+		margin-bottom: 16rpx;
+		display: block;
+	}
+	
+	.debug-buttons {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12rpx;
+		margin-bottom: 16rpx;
+	}
+	
+	.debug-btn {
+		background-color: #007AFF;
+		color: #fff;
+		border: none;
+		border-radius: 8rpx;
+		padding: 12rpx 16rpx;
+		font-size: 24rpx;
+		flex: 1;
+		min-width: 120rpx;
+	}
+	
+	.debug-logs {
+		max-height: 300rpx;
+		overflow-y: auto;
+		border-top: 1rpx solid #333;
+		padding-top: 12rpx;
+	}
+	
+	.debug-log {
+		color: #ccc;
+		font-size: 20rpx;
+		line-height: 1.4;
+		margin-bottom: 8rpx;
+		display: block;
+		word-break: break-all;
 	}
 </style>

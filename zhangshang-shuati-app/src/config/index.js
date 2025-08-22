@@ -54,7 +54,7 @@ const commonConfig = {
   // 默认设置
   defaults: {
     pageSize: 10,
-    avatar: '/static/images/default-avatar.png',
+    avatar: '/static/images/avatar-placeholder.svg',
     theme: 'light'
   }
 };

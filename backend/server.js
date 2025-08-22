@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const bodyParser = require('body-parser');
+const path = require('path');
 require('dotenv').config();
 
 // 引入统一配置
@@ -56,6 +57,7 @@ app.use(bodyParser.urlencoded({ extended: true, limit: config.upload.maxSize }))
 
 // 静态文件服务
 app.use('/static', express.static('public'));
+app.use('/static/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // API路由
 const apiPrefix = `${config.api.prefix}/${config.api.version}`;

@@ -1,5 +1,5 @@
 const express = require('express');
-const { pool } = require('../config/database');
+const db = require('../config/db');
 const { sendSuccess } = require('../utils/responseHandler');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
@@ -14,7 +14,7 @@ const router = express.Router();
 router.get('/settings', catchAsync(async (req, res) => {
     try {
         // 尝试从数据库获取系统设置
-        const [settings] = await pool.execute('SELECT * FROM system_settings ORDER BY id DESC LIMIT 1');
+        const settings = await db.query('SELECT * FROM system_settings ORDER BY id DESC LIMIT 1');
         
         if (settings.length > 0) {
             // 解析JSON配置
@@ -86,7 +86,7 @@ router.get('/health-check', catchAsync(async (req, res) => {
     
     try {
         // 测试数据库连接
-        await pool.execute('SELECT 1');
+        await db.query('SELECT 1');
         databaseStatus = 'connected';
     } catch (error) {
         databaseStatus = 'error';

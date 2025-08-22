@@ -1,5 +1,5 @@
 const express = require('express');
-const { pool } = require('../config/database');
+const db = require('../config/db');
 const { verifyToken: authMiddleware } = require('../middleware/auth');
 const { sendSuccess } = require('../utils/responseHandler');
 const ApiError = require('../utils/ApiError');
@@ -23,7 +23,7 @@ router.get('/favorites', authMiddleware, catchAsync(async (req, res) => {
     const userId = req.user.id;
     const { page = 1, limit = 10, category, difficulty } = req.query;
     // Note: Filtering logic would be more complex in a real app
-    const [questions] = await pool.execute(`
+    const questions = await db.query(`
         SELECT q.* FROM questions q
         JOIN user_favorites uf ON q.id = uf.question_id
         WHERE uf.user_id = ?
@@ -31,7 +31,7 @@ router.get('/favorites', authMiddleware, catchAsync(async (req, res) => {
         LIMIT ? OFFSET ?
     `, [userId, parseInt(limit), (page - 1) * limit]);
 
-    const [[{ total }]] = await pool.execute('SELECT COUNT(*) as total FROM user_favorites WHERE user_id = ?', [userId]);
+    const totalResult = await db.query('SELECT COUNT(*) as total FROM user_favorites WHERE user_id = ?', [userId]);
     sendSuccess(res, { items: questions, total });
 }));
 
@@ -46,14 +46,14 @@ router.post('/favorites/:questionId', authMiddleware, catchAsync(async (req, res
     const userId = req.user.id;
     const { questionId } = req.params;
 
-    const [[question]] = await pool.execute('SELECT id FROM questions WHERE id = ?', [questionId]);
-    if (!question) throw new ApiError(404, '题目不存在');
+    const questionResult = await db.query('SELECT id FROM questions WHERE id = ?', [questionId]);
+    if (!questionResult || questionResult.length === 0) throw new ApiError(404, '题目不存在');
 
-    const [[favorite]] = await pool.execute('SELECT * FROM user_favorites WHERE user_id = ? AND question_id = ?', [userId, questionId]);
-    if (favorite) {
+    const favoriteResult = await db.query('SELECT * FROM user_favorites WHERE user_id = ? AND question_id = ?', [userId, questionId]);
+    if (favoriteResult && favoriteResult.length > 0) {
         return sendSuccess(res, { favorited: true }, '题目已在收藏夹中');
     }
-    await pool.execute('INSERT INTO user_favorites (user_id, question_id) VALUES (?, ?)', [userId, questionId]);
+    await db.query('INSERT INTO user_favorites (user_id, question_id) VALUES (?, ?)', [userId, questionId]);
     sendSuccess(res, { favorited: true }, '收藏成功', 201);
 }));
 
@@ -67,8 +67,8 @@ router.post('/favorites/:questionId', authMiddleware, catchAsync(async (req, res
 router.delete('/favorites/:questionId', authMiddleware, catchAsync(async (req, res) => {
     const userId = req.user.id;
     const { questionId } = req.params;
-    const [result] = await pool.execute('DELETE FROM user_favorites WHERE user_id = ? AND question_id = ?', [userId, questionId]);
-    if (result.affectedRows === 0) throw new ApiError(404, '未找到该收藏记录');
+    const result = await db.query('DELETE FROM user_favorites WHERE user_id = ? AND question_id = ?', [userId, questionId]);
+    if (!result || result.affectedRows === 0) throw new ApiError(404, '未找到该收藏记录');
     sendSuccess(res, { favorited: false }, '取消收藏成功');
 }));
 
@@ -83,9 +83,9 @@ router.get('/favorites/check/:questionId', authMiddleware, catchAsync(async (req
     const userId = req.user.id;
     const questionId = parseInt(req.params.questionId, 10);
 
-    const [[isFavorite]] = await pool.execute('SELECT * FROM user_favorites WHERE user_id = ? AND question_id = ?', [userId, questionId]);
+    const isFavoriteResult = await db.query('SELECT * FROM user_favorites WHERE user_id = ? AND question_id = ?', [userId, questionId]);
 
-    sendSuccess(res, { isFavorite: !!isFavorite });
+    sendSuccess(res, { isFavorite: !!(isFavoriteResult && isFavoriteResult.length > 0) });
 }));
 
 // ===== Wrong Questions =====
@@ -105,7 +105,7 @@ router.get('/wrong-questions', authMiddleware, catchAsync(async (req, res) => {
     const userId = req.user.id;
     const { page = 1, limit = 10, mastered } = req.query;
     // Simplified query
-    const [questions] = await pool.execute(`
+    const questions = await db.query(`
         SELECT q.*, wq.wrong_count, wq.last_wrong_time, wq.is_mastered 
         FROM questions q
         JOIN user_wrong_questions wq ON q.id = wq.question_id
@@ -113,7 +113,7 @@ router.get('/wrong-questions', authMiddleware, catchAsync(async (req, res) => {
         ORDER BY wq.last_wrong_time DESC
         LIMIT ? OFFSET ?
     `, [userId, parseInt(limit), (page - 1) * limit]);
-    const [[{ total }]] = await pool.execute('SELECT COUNT(*) as total FROM user_wrong_questions WHERE user_id = ?', [userId]);
+    const totalResult = await db.query('SELECT COUNT(*) as total FROM user_wrong_questions WHERE user_id = ?', [userId]);
     sendSuccess(res, { items: questions, total });
 }));
 
@@ -132,12 +132,12 @@ router.put('/wrong-questions/:questionId/status', authMiddleware, catchAsync(asy
 
     if (isMastered === undefined) throw new ApiError(400, '缺少 isMastered 状态');
 
-    const [result] = await pool.execute(
+    const result = await db.query(
         'UPDATE user_wrong_questions SET is_mastered = ? WHERE user_id = ? AND question_id = ?',
         [isMastered, userId, questionId]
     );
 
-    if (result.affectedRows === 0) throw new ApiError(404, '未找到该错题记录');
+    if (!result || result.affectedRows === 0) throw new ApiError(404, '未找到该错题记录');
     sendSuccess(res, { isMastered }, '状态更新成功');
 }));
 
@@ -150,37 +150,84 @@ router.post('/submit', authMiddleware, catchAsync(async (req, res) => {
     // In a real app, you would validate the answer server-side, not trust the client.
     // For now, we trust the `isCorrect` flag from the client.
 
-    const connection = await pool.getConnection();
-    await connection.beginTransaction();
-    try {
-        // 1. Record the study attempt
-        await connection.execute('INSERT INTO user_study_records (user_id, question_id, is_correct) VALUES (?, ?, ?)', [userId, questionId, isCorrect]);
+    if (db.isUsingSqlite) {
+        // SQLite简化版本（无事务）
+        try {
+            // 1. Record the study attempt
+            await db.query('INSERT INTO user_study_records (user_id, question_id, is_correct) VALUES (?, ?, ?)', [userId, questionId, isCorrect]);
 
-        // 2. If incorrect, add to or update wrong questions
-        if (!isCorrect) {
-            await connection.execute(`
-                INSERT INTO user_wrong_questions (user_id, question_id, wrong_count, last_wrong_time, is_mastered)
-                VALUES (?, ?, 1, NOW(), false)
-                ON DUPLICATE KEY UPDATE
-                wrong_count = wrong_count + 1,
-                last_wrong_time = NOW(),
-                is_mastered = false;
-            `, [userId, questionId]);
+            // 2. If incorrect, add to or update wrong questions
+            if (!isCorrect) {
+                // 检查是否已存在错题记录
+                const existingWrong = await db.query('SELECT * FROM user_wrong_questions WHERE user_id = ? AND question_id = ?', [userId, questionId]);
+                
+                if (existingWrong && existingWrong.length > 0) {
+                    // 更新错题记录
+                    await db.query(
+                        'UPDATE user_wrong_questions SET wrong_count = wrong_count + 1, last_wrong_time = datetime("now"), is_mastered = 0 WHERE user_id = ? AND question_id = ?',
+                        [userId, questionId]
+                    );
+                } else {
+                    // 创建新的错题记录
+                    await db.query(
+                        'INSERT INTO user_wrong_questions (user_id, question_id, wrong_count, last_wrong_time, is_mastered) VALUES (?, ?, 1, datetime("now"), 0)',
+                        [userId, questionId]
+                    );
+                }
+            }
+
+            // 3. Update user stats (simplified) 
+            const existingStats = await db.query('SELECT * FROM user_stats WHERE user_id = ?', [userId]);
+            
+            if (existingStats && existingStats.length > 0) {
+                const statsUpdateQuery = isCorrect 
+                    ? 'UPDATE user_stats SET total_questions = total_questions + 1, correct_questions = correct_questions + 1 WHERE user_id = ?'
+                    : 'UPDATE user_stats SET total_questions = total_questions + 1 WHERE user_id = ?';
+                await db.query(statsUpdateQuery, [userId]);
+            } else {
+                // 创建用户统计记录
+                const correctQuestions = isCorrect ? 1 : 0;
+                await db.query(
+                    'INSERT INTO user_stats (user_id, total_questions, correct_questions, correct_rate, continuous_days, rank_position) VALUES (?, 1, ?, ?, 0, 0)',
+                    [userId, correctQuestions, isCorrect ? 1.0 : 0.0]
+                );
+            }
+
+            sendSuccess(res, { wasCorrect: isCorrect }, '答案提交成功');
+        } catch (error) {
+            throw new ApiError(500, '处理提交失败');
         }
+    } else {
+        // MySQL事务版本
+        const connection = await db.beginTransaction();
+        try {
+            // 1. Record the study attempt
+            await connection.execute('INSERT INTO user_study_records (user_id, question_id, is_correct) VALUES (?, ?, ?)', [userId, questionId, isCorrect]);
 
-        // 3. Update user stats (simplified)
-        const statsUpdateQuery = isCorrect 
-            ? 'UPDATE user_stats SET total_questions = total_questions + 1, correct_questions = correct_questions + 1 WHERE user_id = ?'
-            : 'UPDATE user_stats SET total_questions = total_questions + 1 WHERE user_id = ?';
-        await connection.execute(statsUpdateQuery, [userId]);
+            // 2. If incorrect, add to or update wrong questions
+            if (!isCorrect) {
+                await connection.execute(`
+                    INSERT INTO user_wrong_questions (user_id, question_id, wrong_count, last_wrong_time, is_mastered)
+                    VALUES (?, ?, 1, NOW(), false)
+                    ON DUPLICATE KEY UPDATE
+                    wrong_count = wrong_count + 1,
+                    last_wrong_time = NOW(),
+                    is_mastered = false;
+                `, [userId, questionId]);
+            }
 
-        await connection.commit();
-        sendSuccess(res, { wasCorrect: isCorrect }, '答案提交成功');
-    } catch (error) {
-        await connection.rollback();
-        throw new ApiError(500, '处理提交失败');
-    } finally {
-        connection.release();
+            // 3. Update user stats (simplified)
+            const statsUpdateQuery = isCorrect 
+                ? 'UPDATE user_stats SET total_questions = total_questions + 1, correct_questions = correct_questions + 1 WHERE user_id = ?'
+                : 'UPDATE user_stats SET total_questions = total_questions + 1 WHERE user_id = ?';
+            await connection.execute(statsUpdateQuery, [userId]);
+
+            await db.commitTransaction(connection);
+            sendSuccess(res, { wasCorrect: isCorrect }, '答案提交成功');
+        } catch (error) {
+            await db.rollbackTransaction(connection);
+            throw new ApiError(500, '处理提交失败');
+        }
     }
 }));
 

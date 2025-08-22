@@ -4,7 +4,7 @@
 		<view class="user-card">
 			<!-- 未登录状态 -->
 			<view v-if="!isLoggedIn" class="login-prompt">
-				<image class="avatar-placeholder" src="/static/images/avatar-placeholder.png" mode="aspectFill"></image>
+				<image class="avatar-placeholder" src="/static/images/avatar-placeholder.svg" mode="aspectFill"></image>
 				<text class="login-text">点击登录</text>
 				<button class="login-btn" @click="goToLogin">立即登录</button>
 			</view>
@@ -12,7 +12,7 @@
 			<!-- 已登录状态 -->
 			<view v-else class="user-info">
 				<view class="user-header">
-					<image class="avatar" :src="userInfo.avatar || '/static/images/avatar-placeholder.png'" mode="aspectFill"></image>
+					<image class="avatar" :src="userInfo.avatar || '/static/images/avatar-placeholder.svg'" mode="aspectFill"></image>
 					<view class="user-details">
 						<view class="nickname">{{ userInfo.nickname || '未设置昵称' }}</view>
 						<view class="level">{{ userStats.level || 'LV.1 新手' }}</view>
@@ -478,6 +478,17 @@ export default {
 		height: 120rpx;
 		border-radius: 50%;
 		margin-bottom: 20rpx;
+		background-color: #ffffff;
+	}
+	
+	/* 确保uni-app的image组件在H5平台上正确显示图片 */
+	.avatar-placeholder img, .avatar-placeholder uni-image, .avatar-placeholder div {
+		width: 100% !important;
+		height: 100% !important;
+		border-radius: 50% !important;
+		object-fit: cover !important;
+		background-size: cover !important;
+		background-position: center center !important;
 	}
 	
 	.login-text {
@@ -510,6 +521,17 @@ export default {
 		height: 120rpx;
 		border-radius: 50%;
 		margin-right: 30rpx;
+		background-color: #ffffff;
+	}
+	
+	/* 确保uni-app的image组件在H5平台上正确显示图片 */
+	.avatar img, .avatar uni-image, .avatar div {
+		width: 100% !important;
+		height: 100% !important;
+		border-radius: 50% !important;
+		object-fit: cover !important;
+		background-size: cover !important;
+		background-position: center center !important;
 	}
 	
 	.user-details {

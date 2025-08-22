@@ -1,5 +1,5 @@
 const express = require('express');
-const { pool } = require('../config/database');
+const db = require('../config/db');
 const { verifyToken: authMiddleware } = require('../middleware/auth');
 const { sendSuccess } = require('../utils/responseHandler');
 const ApiError = require('../utils/ApiError');
@@ -13,7 +13,7 @@ const router = express.Router();
 // ===================================
 
 router.get('/articles/categories', catchAsync(async (req, res) => {
-    const [categories] = await pool.execute(`
+    const categories = await db.query(`
         SELECT c.*, COUNT(a.id) as articleCount 
         FROM article_categories c 
         LEFT JOIN articles a ON c.id = a.category_id 
@@ -26,8 +26,8 @@ router.post('/articles/categories', authMiddleware, catchAsync(async (req, res) 
     const { name, description, slug } = req.body;
     if (!name || !slug) throw new ApiError(400, '分类名称和slug不能为空');
 
-    const [result] = await pool.execute('INSERT INTO article_categories (name, description, slug) VALUES (?, ?, ?)', [name, description || '', slug]);
-    const [newCategory] = await pool.execute('SELECT * FROM article_categories WHERE id = ?', [result.insertId]);
+    const [result] = await db.execute('INSERT INTO article_categories (name, description, slug) VALUES (?, ?, ?)', [name, description || '', slug]);
+    const newCategory = await db.getOne('SELECT * FROM article_categories WHERE id = ?', [result.insertId || result.id]);
     sendSuccess(res, newCategory[0], '分类创建成功', 201);
 }));
 

@@ -46,6 +46,7 @@
     "express-rate-limit": "^7.1.5",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
     "mysql2": "^3.6.5",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"

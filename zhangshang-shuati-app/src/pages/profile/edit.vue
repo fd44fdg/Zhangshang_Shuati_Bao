@@ -171,6 +171,7 @@
 
 <script>
 	import { getCurrentUser, updateUserInfo } from '@/api/auth.js'
+	import request from '@/utils/request'
 
 	export default {
 		data() {
@@ -253,14 +254,50 @@
 					sourceType: ['album', 'camera'],
 					success: (res) => {
 						const tempFilePath = res.tempFilePaths[0]
-						// 这里应该上传到服务器，现在先直接使用本地路径
-						this.formData.avatar = tempFilePath
-						this.userInfo.avatar = tempFilePath
 						
-						uni.showToast({
-							title: '头像已更新',
-							icon: 'success'
+						// 显示上传中提示
+						uni.showLoading({
+							title: '上传头像中...'
 						})
+						
+						// 使用request中的uploadFile方法上传头像
+						request.uploadFile('/users/avatar', tempFilePath, 'avatar')
+							.then(res => {
+								if (res.success && res.data && res.data.url) {
+									// 上传成功，使用返回的URL更新头像
+									const avatarUrl = res.data.url
+									this.formData.avatar = avatarUrl
+									this.userInfo.avatar = avatarUrl
+									
+									uni.hideLoading()
+									uni.showToast({
+										title: '头像已上传',
+										icon: 'success'
+									})
+								} else {
+									// 上传失败，但可以临时使用本地路径
+									this.formData.avatar = tempFilePath
+									this.userInfo.avatar = tempFilePath
+									
+									uni.hideLoading()
+									uni.showToast({
+										title: '头像将在下次登录时失效',
+										icon: 'none'
+									})
+								}
+							})
+							.catch(error => {
+								console.error('上传头像失败:', error)
+								// 上传失败，临时使用本地路径
+								this.formData.avatar = tempFilePath
+								this.userInfo.avatar = tempFilePath
+								
+								uni.hideLoading()
+								uni.showToast({
+									title: '头像上传失败，将在下次登录时失效',
+									icon: 'none'
+								})
+							})
 					},
 					fail: (error) => {
 						console.error('选择头像失败:', error)

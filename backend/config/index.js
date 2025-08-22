@@ -26,7 +26,7 @@ const dbConfig = {
 module.exports = {
   // 端口配置
   ports: {
-    backend: process.env.PORT || 3000,
+    backend: process.env.PORT || 3002,
     admin: process.env.ADMIN_PORT || 8080
   },
 
@@ -37,7 +37,7 @@ module.exports = {
   cors: {
     origins: process.env.CORS_ORIGINS ?
       process.env.CORS_ORIGINS.split(',') :
-      ['http://localhost:8080', 'http://localhost:3000', 'http://localhost:8081']
+      ['http://localhost:8080', 'http://localhost:3000', 'http://localhost:8081', 'http://localhost:8083']
   },
 
   // API配置

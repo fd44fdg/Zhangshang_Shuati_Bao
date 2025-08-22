@@ -1,5 +1,5 @@
 const express = require('express');
-const { pool } = require('../config/database');
+const db = require('../config/db');
 const { verifyToken: authMiddleware } = require('../middleware/auth');
 const { sendSuccess } = require('../utils/responseHandler');
 const ApiError = require('../utils/ApiError');
@@ -10,7 +10,7 @@ const router = express.Router();
 // --- Question Categories ---
 
 router.get('/categories', catchAsync(async (req, res) => {
-    const [categories] = await pool.execute(`
+    const categories = await db.query(`
         SELECT c.*, COUNT(q.id) as questionCount
         FROM question_categories c
         LEFT JOIN questions q ON c.id = q.category_id
@@ -23,8 +23,8 @@ router.post('/categories', authMiddleware, catchAsync(async (req, res) => {
     const { name, description } = req.body;
     if (!name) throw new ApiError(400, '分类名称不能为空');
 
-    const [result] = await pool.execute('INSERT INTO question_categories (name, description) VALUES (?, ?)', [name, description || '']);
-    const [[newCategory]] = await pool.execute('SELECT * FROM question_categories WHERE id = ?', [result.insertId]);
+    const [result] = await db.execute('INSERT INTO question_categories (name, description) VALUES (?, ?)', [name, description || '']);
+    const newCategory = await db.getOne('SELECT * FROM question_categories WHERE id = ?', [result.insertId || result.id]);
     sendSuccess(res, newCategory, '分类创建成功', 201);
 }));
 
@@ -33,20 +33,20 @@ router.put('/categories/:id', authMiddleware, catchAsync(async (req, res) => {
     const { name, description } = req.body;
     if (!name && !description) throw new ApiError(400, '没有提供要更新的字段');
 
-    const [result] = await pool.execute('UPDATE question_categories SET name = ?, description = ? WHERE id = ?', [name, description, id]);
-    if (result.affectedRows === 0) throw new ApiError(404, '分类不存在');
+    const [result] = await db.execute('UPDATE question_categories SET name = ?, description = ? WHERE id = ?', [name, description, id]);
+    if (!result || result.affectedRows === 0) throw new ApiError(404, '分类不存在');
     
-    const [[updatedCategory]] = await pool.execute('SELECT * FROM question_categories WHERE id = ?', [id]);
+    const updatedCategory = await db.getOne('SELECT * FROM question_categories WHERE id = ?', [id]);
     sendSuccess(res, updatedCategory, '分类更新成功');
 }));
 
 router.delete('/categories/:id', authMiddleware, catchAsync(async (req, res) => {
     const { id } = req.params;
-    const [[{ count }]] = await pool.execute('SELECT COUNT(*) as count FROM questions WHERE category_id = ?', [id]);
-    if (count > 0) throw new ApiError(400, '该分类下仍有题目，无法删除');
+    const countResult = await db.query('SELECT COUNT(*) as count FROM questions WHERE category_id = ?', [id]);
+    if (countResult[0].count > 0) throw new ApiError(400, '该分类下仍有题目，无法删除');
 
-    const [result] = await pool.execute('DELETE FROM question_categories WHERE id = ?', [id]);
-    if (result.affectedRows === 0) throw new ApiError(404, '分类不存在');
+    const [result] = await db.execute('DELETE FROM question_categories WHERE id = ?', [id]);
+    if (!result || result.affectedRows === 0) throw new ApiError(404, '分类不存在');
 
     sendSuccess(res, null, '分类删除成功');
 }));

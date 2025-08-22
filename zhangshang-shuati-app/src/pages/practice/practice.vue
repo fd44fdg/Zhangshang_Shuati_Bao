@@ -3,9 +3,6 @@
 		<!-- 配置模式 -->
 		<view v-if="!practiceStarted" class="setup-mode">
 			<view class="header">
-				<view class="back-button" @click="goBack">
-					<text class="back-icon">←</text>
-				</view>
 				<text class="header-title">{{ pageTitle || '刷题练习' }}</text>
 			</view>
 			
@@ -74,11 +71,8 @@
 		
 		<!-- 答题模式 -->
 		<view v-else class="practice-mode">
-			<!-- 顶部返回按钮 -->
+			<!-- 顶部标题 -->
 			<view class="practice-header">
-				<view class="back-button" @click="goBack">
-					<text class="back-icon">←</text>
-				</view>
 				<text class="practice-title">{{ pageTitle || '练习中' }}</text>
 			</view>
 			
@@ -600,25 +594,6 @@ export default {
 		restartPractice() {
 			this.practiceStarted = false
 			this.practiceCompleted = false
-		},
-		goBack() {
-			// 如果是从推荐学习进入的特殊模式，返回首页
-			if (this.currentMode && (this.currentMode === 'popular' || this.currentMode === 'daily' || this.currentMode === 'review')) {
-				console.log('从特殊模式返回首页')
-				uni.switchTab({
-					url: '/pages/home/home'
-				})
-			} else {
-				// 正常返回操作
-				uni.navigateBack({
-					fail: () => {
-						// 如果返回失败，则跳转到首页
-						uni.switchTab({
-							url: '/pages/home/home'
-						})
-					}
-				})
-			}
 		}
 	}
 }
@@ -640,23 +615,7 @@ export default {
 	border-radius: 16rpx;
 	margin-bottom: 20rpx;
 	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
-}
-
-.back-button {
-	margin-right: 20rpx;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 60rpx;
-	height: 60rpx;
-	border-radius: 50%;
-	background-color: #f5f5f5;
-}
-
-.back-icon {
-	font-size: 32rpx;
-	color: #333;
-	font-weight: bold;
+	justify-content: center; /* 居中显示标题 */
 }
 
 .header-title {
@@ -823,13 +782,13 @@ export default {
 	position: sticky;
 	top: 0;
 	z-index: 100;
+	justify-content: center; /* 居中显示标题 */
 }
 
 .practice-title {
 	font-size: 32rpx;
 	font-weight: bold;
 	color: #333;
-	margin-left: 20rpx;
 }
 
 .progress-bar-container {
