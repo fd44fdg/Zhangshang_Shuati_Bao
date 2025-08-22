@@ -2,6 +2,9 @@
 	<view class="settings-container">
 		<!-- 页面标题 -->
 		<view class="header">
+			<view class="back-button" @click="goBack">
+				<text class="back-icon">‹</text>
+			</view>
 			<text class="header-title">设置</text>
 		</view>
 		
@@ -12,7 +15,7 @@
 				<view class="section-title">通用设置</view>
 				<view class="setting-item" @click="toggleNotification">
 					<view class="item-left">
-						<text class="item-icon">🔔</text>
+						<view class="item-icon notification-icon"></view>
 						<text class="item-text">消息通知</text>
 					</view>
 					<switch :checked="settings.notification" @change="onNotificationChange" color="#4A90E2" />
@@ -20,7 +23,7 @@
 				
 				<view class="setting-item" @click="toggleSound">
 					<view class="item-left">
-						<text class="item-icon">🔊</text>
+						<view class="item-icon sound-icon"></view>
 						<text class="item-text">音效提示</text>
 					</view>
 					<switch :checked="settings.sound" @change="onSoundChange" color="#4A90E2" />
@@ -28,7 +31,7 @@
 				
 				<view class="setting-item" @click="toggleVibration">
 					<view class="item-left">
-						<text class="item-icon">📳</text>
+						<view class="item-icon vibration-icon"></view>
 						<text class="item-text">震动反馈</text>
 					</view>
 					<switch :checked="settings.vibration" @change="onVibrationChange" color="#4A90E2" />
@@ -40,7 +43,7 @@
 				<view class="section-title">学习设置</view>
 				<view class="setting-item" @click="showDifficultyPicker">
 					<view class="item-left">
-						<text class="item-icon">⭐</text>
+						<view class="item-icon difficulty-icon"></view>
 						<text class="item-text">默认难度</text>
 					</view>
 					<view class="item-right">
@@ -51,7 +54,7 @@
 				
 				<view class="setting-item" @click="showQuestionCountPicker">
 					<view class="item-left">
-						<text class="item-icon">📋</text>
+						<view class="item-icon question-count-icon"></view>
 						<text class="item-text">每次练习题数</text>
 					</view>
 					<view class="item-right">
@@ -62,7 +65,7 @@
 				
 				<view class="setting-item" @click="toggleAutoNext">
 					<view class="item-left">
-						<text class="item-icon">▶️</text>
+						<view class="item-icon auto-next-icon"></view>
 						<text class="item-text">自动下一题</text>
 					</view>
 					<switch :checked="settings.autoNext" @change="onAutoNextChange" color="#4A90E2" />
@@ -74,7 +77,7 @@
 				<view class="section-title">数据管理</view>
 				<view class="setting-item" @click="clearCache">
 					<view class="item-left">
-						<text class="item-icon">🗑️</text>
+						<view class="item-icon cache-icon"></view>
 						<text class="item-text">清除缓存</text>
 					</view>
 					<view class="item-right">
@@ -85,7 +88,7 @@
 				
 				<view class="setting-item" @click="exportData">
 					<view class="item-left">
-						<text class="item-icon">📤</text>
+						<view class="item-icon export-icon"></view>
 						<text class="item-text">导出学习数据</text>
 					</view>
 					<text class="item-arrow">></text>
@@ -176,6 +179,13 @@ export default {
 		this.calculateCacheSize()
 	},
 	methods: {
+		// 返回上一页
+		goBack() {
+			uni.navigateBack({
+				delta: 1
+			})
+		},
+		
 		// 加载设置
 		loadSettings() {
 			try {
@@ -286,15 +296,42 @@ export default {
 							title: '清理中...'
 						})
 						
-						setTimeout(() => {
-							// 模拟清理缓存
-							this.cacheSize = '0KB'
+						// 实际清理缓存数据
+						try {
+							// 清理图片缓存
+							// #ifdef APP-PLUS
+							if (plus && plus.cache) {
+								plus.cache.clear()
+							}
+							// #endif
+							
+							// 清理临时数据（保留用户设置和登录信息）
+							const preserveKeys = ['app_settings', 'user_token', 'user_info']
+							const storage = uni.getStorageInfoSync()
+							
+							storage.keys.forEach(key => {
+								if (!preserveKeys.includes(key)) {
+									uni.removeStorageSync(key)
+								}
+							})
+							
+							setTimeout(() => {
+								this.cacheSize = '0KB'
+								uni.hideLoading()
+								uni.showToast({
+									title: '缓存已清除',
+									icon: 'success'
+								})
+							}, 1000)
+							
+						} catch (error) {
+							console.error('清理缓存失败:', error)
 							uni.hideLoading()
 							uni.showToast({
-								title: '缓存已清除',
-								icon: 'success'
+								title: '清理失败',
+								icon: 'error'
 							})
-						}, 1500)
+						}
 					}
 				}
 			})
@@ -306,22 +343,117 @@ export default {
 				title: '准备导出...'
 			})
 			
-			setTimeout(() => {
+			try {
+				// 收集用户数据
+				const userData = {
+					userInfo: uni.getStorageSync('user_info') || {},
+					studyRecords: uni.getStorageSync('study_records') || [],
+					wrongQuestions: uni.getStorageSync('wrong_questions') || [],
+					favorites: uni.getStorageSync('favorites') || [],
+					achievements: uni.getStorageSync('achievements') || [],
+					settings: uni.getStorageSync('app_settings') || {},
+					exportTime: new Date().toISOString(),
+					version: '1.0.0'
+				}
+				
+				const dataString = JSON.stringify(userData, null, 2)
+				
+				setTimeout(() => {
+					uni.hideLoading()
+					
+					// #ifdef H5
+					// H5环境下使用下载
+					const blob = new Blob([dataString], { type: 'application/json' })
+					const url = URL.createObjectURL(blob)
+					const a = document.createElement('a')
+					a.href = url
+					a.download = `学习数据_${new Date().getTime()}.json`
+					a.click()
+					URL.revokeObjectURL(url)
+					
+					uni.showToast({
+						title: '导出成功',
+						icon: 'success'
+					})
+					// #endif
+					
+					// #ifdef APP-PLUS
+					// App环境下保存到文件
+					const fileName = `学习数据_${new Date().getTime()}.json`
+					const filePath = '_downloads/' + fileName
+					
+					plus.io.requestFileSystem(plus.io.PUBLIC_DOWNLOADS, fs => {
+						fs.root.getFile(fileName, { create: true }, fileEntry => {
+							fileEntry.createWriter(writer => {
+								writer.write(dataString)
+								uni.showModal({
+									title: '导出成功',
+									content: `数据已保存到 Downloads/${fileName}`,
+									showCancel: false
+								})
+							})
+						})
+					})
+					// #endif
+					
+					// #ifdef MP
+					// 小程序环境下复制到剪贴板
+					uni.setClipboardData({
+						data: dataString,
+						success: () => {
+							uni.showModal({
+								title: '导出成功',
+								content: '数据已复制到剪贴板，可粘贴到记事本保存',
+								showCancel: false
+							})
+						}
+					})
+					// #endif
+					
+				}, 1000)
+				
+			} catch (error) {
+				console.error('导出数据失败:', error)
 				uni.hideLoading()
-				uni.showModal({
-					title: '导出成功',
-					content: '学习数据已成功导出到设备。',
-					showCancel: false
+				uni.showToast({
+					title: '导出失败',
+					icon: 'error'
 				})
-			}, 1500)
+			}
 		},
 		
 		// 计算缓存大小
 		calculateCacheSize() {
-			// 模拟计算缓存大小
-			setTimeout(() => {
-				this.cacheSize = '2.5MB'
-			}, 500)
+			try {
+				const storageInfo = uni.getStorageInfoSync()
+				let totalSize = 0
+				
+				// 计算所有存储数据的大小
+				storageInfo.keys.forEach(key => {
+					try {
+						const data = uni.getStorageSync(key)
+						if (data) {
+							const dataString = typeof data === 'string' ? data : JSON.stringify(data)
+							totalSize += new Blob([dataString]).size
+						}
+					} catch (e) {
+						// 忽略无法读取的数据
+					}
+				})
+				
+				// 格式化大小
+				if (totalSize < 1024) {
+					this.cacheSize = totalSize + 'B'
+				} else if (totalSize < 1024 * 1024) {
+					this.cacheSize = (totalSize / 1024).toFixed(1) + 'KB'
+				} else {
+					this.cacheSize = (totalSize / (1024 * 1024)).toFixed(1) + 'MB'
+				}
+				
+			} catch (error) {
+				console.error('计算缓存大小失败:', error)
+				this.cacheSize = '未知'
+			}
 		}
 	}
 }
@@ -335,17 +467,40 @@ export default {
 }
 
 .header {
+	display: flex;
+	align-items: center;
 	padding: 30rpx;
 	background-color: #fff;
 	border-radius: 16rpx;
 	margin-bottom: 20rpx;
 	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+	position: relative;
+}
+
+.back-button {
+	position: absolute;
+	left: 30rpx;
+	width: 60rpx;
+	height: 60rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	background-color: #f5f5f5;
+}
+
+.back-icon {
+	font-size: 40rpx;
+	color: #333;
+	font-weight: bold;
 }
 
 .header-title {
 	font-size: 36rpx;
 	font-weight: bold;
 	color: #333;
+	flex: 1;
+	text-align: center;
 }
 
 .settings-list {
@@ -385,8 +540,197 @@ export default {
 }
 
 .item-icon {
-	font-size: 36rpx;
+	width: 36rpx;
+	height: 36rpx;
 	margin-right: 20rpx;
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* SVG 图标样式 */
+.notification-icon::before {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 12px;
+	height: 14px;
+	border: 2px solid #4A90E2;
+	border-radius: 3px 3px 0 0;
+	background: transparent;
+}
+
+.notification-icon::after {
+	content: '';
+	position: absolute;
+	top: 70%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 4px;
+	height: 3px;
+	background: #4A90E2;
+	border-radius: 50%;
+}
+
+.sound-icon::before {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 25%;
+	transform: translate(-50%, -50%) skew(-10deg);
+	width: 6px;
+	height: 6px;
+	background: #4A90E2;
+}
+
+.sound-icon::after {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 60%;
+	transform: translate(-50%, -50%);
+	width: 10px;
+	height: 10px;
+	border: 2px solid #4A90E2;
+	border-left: none;
+	border-radius: 0 10px 10px 0;
+	background: transparent;
+}
+
+.vibration-icon::before {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 8px;
+	height: 14px;
+	border: 2px solid #4A90E2;
+	border-radius: 3px;
+	background: transparent;
+}
+
+.vibration-icon::after {
+	content: '';
+	position: absolute;
+	top: 25%;
+	left: 35%;
+	width: 2px;
+	height: 2px;
+	background: #4A90E2;
+	box-shadow: 4px 0 0 #4A90E2, 8px 0 0 #4A90E2, 4px 16px 0 #4A90E2, 8px 16px 0 #4A90E2;
+}
+
+.difficulty-icon::before {
+	content: '';
+	position: absolute;
+	top: 30%;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 0;
+	height: 0;
+	border-left: 6px solid transparent;
+	border-right: 6px solid transparent;
+	border-bottom: 10px solid #FFD700;
+}
+
+.difficulty-icon::after {
+	content: '';
+	position: absolute;
+	top: 65%;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 16px;
+	height: 6px;
+	background: #FFD700;
+	border-radius: 3px;
+}
+
+.question-count-icon::before {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 14px;
+	height: 16px;
+	border: 2px solid #4A90E2;
+	background: transparent;
+}
+
+.question-count-icon::after {
+	content: '';
+	position: absolute;
+	top: 40%;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 8px;
+	height: 1px;
+	background: #4A90E2;
+	box-shadow: 0 3px 0 #4A90E2, 0 6px 0 #4A90E2;
+}
+
+.auto-next-icon::before {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 0;
+	height: 0;
+	border-left: 8px solid #4A90E2;
+	border-top: 6px solid transparent;
+	border-bottom: 6px solid transparent;
+}
+
+.cache-icon::before {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 12px;
+	height: 16px;
+	border: 2px solid #FF6B6B;
+	background: transparent;
+}
+
+.cache-icon::after {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 4px;
+	height: 4px;
+	background: #FF6B6B;
+}
+
+.export-icon::before {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 16px;
+	height: 2px;
+	background: #34C759;
+}
+
+.export-icon::after {
+	content: '';
+	position: absolute;
+	top: 30%;
+	left: 70%;
+	transform: translate(-50%, -50%);
+	width: 0;
+	height: 0;
+	border-left: 4px solid transparent;
+	border-right: 4px solid transparent;
+	border-bottom: 6px solid #34C759;
 }
 
 .item-text {

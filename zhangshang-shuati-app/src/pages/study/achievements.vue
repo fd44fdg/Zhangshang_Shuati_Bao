@@ -1,6 +1,13 @@
 <template>
 	<view class="achievements-container">
 		<!-- 页面标题 -->
+		<view class="page-header">
+			<view class="back-button" @click="goBack">
+				<text class="back-icon">‹</text>
+			</view>
+			<text class="page-title">我的成就</text>
+		</view>
+		
 		<view class="header">
 			<uni-icons type="medal" size="40" color="#FFD700"></uni-icons>
 			<text class="header-title">我的成就</text>
@@ -250,6 +257,13 @@ export default {
 		this.loadAchievements()
 	},
 	methods: {
+		// 返回上一页
+		goBack() {
+			uni.navigateBack({
+				delta: 1
+			})
+		},
+		
 		// 切换分类
 		switchCategory(category) {
 			this.activeCategory = category
@@ -307,6 +321,44 @@ export default {
 	padding: 20rpx;
 	background-color: #f5f5f5;
 	min-height: 100vh;
+}
+
+/* 页面头部样式 */
+.page-header {
+	display: flex;
+	align-items: center;
+	padding: 20rpx 30rpx;
+	background-color: #fff;
+	border-radius: 16rpx;
+	margin-bottom: 20rpx;
+	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+	position: relative;
+}
+
+.back-button {
+	position: absolute;
+	left: 30rpx;
+	width: 60rpx;
+	height: 60rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	background-color: #f5f5f5;
+}
+
+.back-icon {
+	font-size: 40rpx;
+	color: #333;
+	font-weight: bold;
+}
+
+.page-title {
+	font-size: 36rpx;
+	font-weight: bold;
+	color: #333;
+	flex: 1;
+	text-align: center;
 }
 
 .header {

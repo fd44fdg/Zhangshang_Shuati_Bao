@@ -3,9 +3,6 @@
 		<!-- 配置模式 -->
 		<view v-if="!examStarted" class="setup-mode">
 			<view class="header">
-				<view class="back-button" @click="goBack">
-					<uni-icons type="back" size="24"></uni-icons>
-				</view>
 				<text class="header-title">模拟考试</text>
 			</view>
 			
@@ -565,9 +562,6 @@ export default {
 		restartExam() {
 			this.examStarted = false
 			this.examCompleted = false
-		},
-		goBack() {
-			uni.navigateBack()
 		}
 	},
 	// 组件销毁时清除计时器
@@ -588,6 +582,7 @@ export default {
 
 .header {
 	display: flex;
+	justify-content: center;
 	align-items: center;
 	padding: 30rpx;
 	background-color: #fff;
@@ -596,19 +591,12 @@ export default {
 	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
 }
 
-.back-button {
-	margin-right: 20rpx;
-}
-
-.back-button {
-	margin-right: 20rpx;
-}
-
-
 .header-title {
 	font-size: 36rpx;
 	font-weight: bold;
 	color: #333;
+	text-align: center;
+	width: 100%;
 }
 
 .content-section {

@@ -1,5 +1,13 @@
 <template>
 	<view class="about-container">
+		<!-- 页面标题 -->
+		<view class="page-header">
+			<view class="back-button" @click="goBack">
+				<text class="back-icon">‹</text>
+			</view>
+			<text class="page-title">关于我们</text>
+		</view>
+		
 		<!-- 应用信息卡片 -->
 		<view class="app-info-card">
 			<view class="app-logo">
@@ -105,6 +113,13 @@
 			this.getAppVersion();
 		},
 		methods: {
+			// 返回上一页
+			goBack() {
+				uni.navigateBack({
+					delta: 1
+				})
+			},
+			
 			// 获取应用版本
 			getAppVersion() {
 				// 在实际项目中，可以从配置文件或API获取版本信息
@@ -230,6 +245,44 @@
 		padding: 20px;
 		background-color: #f8f9fa;
 		min-height: 100vh;
+	}
+	
+	/* 页面头部样式 */
+	.page-header {
+		display: flex;
+		align-items: center;
+		padding: 20rpx 30rpx;
+		background-color: #fff;
+		border-radius: 16rpx;
+		margin-bottom: 20rpx;
+		box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+		position: relative;
+	}
+	
+	.back-button {
+		position: absolute;
+		left: 30rpx;
+		width: 60rpx;
+		height: 60rpx;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		background-color: #f5f5f5;
+	}
+	
+	.back-icon {
+		font-size: 40rpx;
+		color: #333;
+		font-weight: bold;
+	}
+	
+	.page-title {
+		font-size: 36rpx;
+		font-weight: bold;
+		color: #333;
+		flex: 1;
+		text-align: center;
 	}
 	
 	/* 应用信息卡片 */

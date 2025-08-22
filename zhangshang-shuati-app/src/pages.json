@@ -111,43 +111,50 @@
 		{
 			"path": "pages/favorites/index",
 			"style": {
-				"navigationBarTitleText": "收藏夹"
+				"navigationBarTitleText": "收藏夹",
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/wrong-questions/index",
 			"style": {
-				"navigationBarTitleText": "错题本"
+				"navigationBarTitleText": "错题本",
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/study-records/index",
 			"style": {
-				"navigationBarTitleText": "学习记录"
+				"navigationBarTitleText": "学习记录",
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/settings/index",
 			"style": {
-				"navigationBarTitleText": "设置"
+				"navigationBarTitleText": "设置",
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/settings/about",
 			"style": {
-				"navigationBarTitleText": "关于我们"
+				"navigationBarTitleText": "关于我们",
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/settings/feedback",
 			"style": {
-				"navigationBarTitleText": "意见反馈"
+				"navigationBarTitleText": "意见反馈",
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/study/achievements",
 			"style": {
-				"navigationBarTitleText": "我的成就"
+				"navigationBarTitleText": "我的成就",
+				"navigationStyle": "custom"
 			}
 		}
 	],

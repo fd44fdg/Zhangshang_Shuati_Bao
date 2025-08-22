@@ -1,0 +1,84 @@
+/* TabBar 自定义样式 */
+
+/* H5端tabBar样式优化 */
+/* #ifdef H5 */
+.uni-tabbar {
+  height: 100px !important;
+}
+
+.uni-tabbar-item {
+  height: 100px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 12px 8px 16px 8px !important;
+}
+
+.uni-tabbar-item-text {
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  white-space: pre-line !important;
+  text-align: center !important;
+  margin-top: 6px !important;
+}
+
+/* 增大Unicode字符图标 */
+.uni-tabbar-item-text::first-line {
+  font-size: 28px !important;
+  font-weight: bold !important;
+  line-height: 1 !important;
+}
+
+/* 选中状态样式 */
+.uni-tabbar-item.uni-tabbar-item-active .uni-tabbar-item-text {
+  color: #007AFF !important;
+}
+
+.uni-tabbar-item.uni-tabbar-item-active .uni-tabbar-item-text::first-line {
+  color: #007AFF !important;
+  text-shadow: 0 1px 3px rgba(0, 122, 255, 0.3) !important;
+}
+
+/* 未选中状态样式 */
+.uni-tabbar-item:not(.uni-tabbar-item-active) .uni-tabbar-item-text {
+  color: #8E8E93 !important;
+}
+
+.uni-tabbar-item:not(.uni-tabbar-item-active) .uni-tabbar-item-text::first-line {
+  color: #8E8E93 !important;
+}
+
+/* 点击动效 */
+.uni-tabbar-item {
+  transition: all 0.2s ease !important;
+}
+
+.uni-tabbar-item:active {
+  transform: scale(0.95) !important;
+}
+
+.uni-tabbar-item-active {
+  transform: translateY(-2px) !important;
+}
+
+/* 背景样式 */
+.uni-tabbar {
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%) !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08) !important;
+}
+/* #endif */
+
+/* 通用样式（多端兼容） */
+.tabbar-icon {
+  font-size: 28px;
+  font-weight: bold;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.tabbar-text {
+  font-size: 11px;
+  line-height: 1.2;
+}
