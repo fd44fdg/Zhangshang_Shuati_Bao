@@ -149,18 +149,6 @@
 			"style": {
 				"navigationBarTitleText": "我的成就"
 			}
-		},
-		{
-			"path": "pages/demo/tabbar-demo",
-			"style": {
-				"navigationBarTitleText": "增强版导航栏演示"
-			}
-		},
-		{
-			"path": "pages/demo/icon-demo",
-			"style": {
-				"navigationBarTitleText": "现代化图标展示"
-			}
 		}
 	],
 	"globalStyle": {

@@ -160,8 +160,19 @@ async function beginTransaction() {
   if (useSqlite) {
     throw new Error('SQLite暂不支持事务操作');
   } else {
-    const { pool } = require('./database');
-    const connection = await pool.getConnection();
+    // 避免直接导入database.js避免警告
+    const mysql = require('mysql2/promise');
+    const config = require('./index');
+    
+    // 使用简化的连接配置，避免无效选项
+    const connection = await mysql.createConnection({
+      host: config.database.host,
+      user: config.database.user,
+      password: config.database.password,
+      database: config.database.name,
+      port: config.database.port
+    });
+    
     await connection.beginTransaction();
     return connection;
   }
@@ -205,9 +216,21 @@ async function execute(sql, params = []) {
       // SQLite：直接返回查询结果
       return await dbAdapter.query(sql, params);
     } else {
-      // MySQL：返回[rows, fields]格式
-      const { pool } = require('./database');
-      return await pool.execute(sql, params);
+      // MySQL：使用简化连接避免警告
+      const mysql = require('mysql2/promise');
+      const config = require('./index');
+      
+      const connection = await mysql.createConnection({
+        host: config.database.host,
+        user: config.database.user,
+        password: config.database.password,
+        database: config.database.name,
+        port: config.database.port
+      });
+      
+      const result = await connection.execute(sql, params);
+      await connection.end();
+      return result;
     }
   } catch (error) {
     console.error('SQL执行错误:', error.message);
