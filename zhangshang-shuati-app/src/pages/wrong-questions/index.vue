@@ -194,13 +194,6 @@ export default {
   },
   
   methods: {
-	// 返回上一页
-	goBack() {
-		uni.navigateBack({
-			delta: 1
-		})
-	},
-	
     async loadWrongQuestions(isRefresh = false) {
       if (isRefresh) {
         this.page = 1;
@@ -475,44 +468,6 @@ export default {
 .wrong-questions-container {
   background-color: #f5f7fa;
   min-height: 100vh;
-}
-
-/* 页面头部样式 */
-.page-header {
-	display: flex;
-	align-items: center;
-	padding: 20rpx 30rpx;
-	background-color: #fff;
-	border-radius: 16rpx;
-	margin-bottom: 20rpx;
-	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
-	position: relative;
-}
-
-.back-button {
-	position: absolute;
-	left: 30rpx;
-	width: 60rpx;
-	height: 60rpx;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border-radius: 50%;
-	background-color: #f5f5f5;
-}
-
-.back-icon {
-	font-size: 40rpx;
-	color: #333;
-	font-weight: bold;
-}
-
-.page-title {
-	font-size: 36rpx;
-	font-weight: bold;
-	color: #333;
-	flex: 1;
-	text-align: center;
 }
 
 .filter-bar {

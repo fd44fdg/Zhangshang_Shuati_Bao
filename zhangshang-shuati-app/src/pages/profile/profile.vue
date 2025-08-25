@@ -4,7 +4,7 @@
 		<view class="user-card">
 			<!-- 未登录状态 -->
 			<view v-if="!isLoggedIn" class="login-prompt">
-				<image class="avatar-placeholder" src="/static/images/avatar-placeholder.svg" mode="aspectFill"></image>
+				<image class="avatar-placeholder" src="/static/images/avatar-placeholder.png" mode="aspectFill"></image>
 				<text class="login-text">点击登录</text>
 				<button class="login-btn" @click="goToLogin">立即登录</button>
 			</view>
@@ -12,7 +12,7 @@
 			<!-- 已登录状态 -->
 			<view v-else class="user-info">
 				<view class="user-header">
-					<image class="avatar" :src="userInfo.avatar || '/static/images/avatar-placeholder.svg'" mode="aspectFill"></image>
+					<image class="avatar" :src="userInfo.avatar || '/static/images/avatar-placeholder.png'" mode="aspectFill"></image>
 					<view class="user-details">
 						<view class="nickname">{{ userInfo.nickname || '未设置昵称' }}</view>
 						<view class="level">{{ userStats.level || 'LV.1 新手' }}</view>

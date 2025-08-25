@@ -15,7 +15,7 @@ export function adaptUserData(userData) {
     id: userData.id,
     username: userData.username || userData.name,
     email: userData.email,
-    avatar: userData.avatar || '/static/images/avatar-placeholder.svg',
+    avatar: userData.avatar || '/static/images/avatar-placeholder.png',
     nickname: userData.nickname || userData.username,
     phone: userData.phone,
     gender: userData.gender,

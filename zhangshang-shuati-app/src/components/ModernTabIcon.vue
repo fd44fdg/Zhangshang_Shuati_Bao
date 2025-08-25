@@ -55,7 +55,7 @@ export default {
         transform: scale(0.95);
     }
 
-    .modern-tab-icon--active .icon-svg {
+    .modern-tab-icon--active .icon-image {
         transform: scale(1.1);
         filter: drop-shadow(0 2px 4px rgba(74, 144, 226, 0.3));
     }
@@ -123,7 +123,7 @@ export default {
   transform: translateY(-2px);
 }
 
-.modern-tab-icon--active .icon-svg {
+.modern-tab-icon--active .icon-image {
   filter: drop-shadow(0 2px 4px rgba(74, 144, 226, 0.3));
 }
 
@@ -137,7 +137,7 @@ export default {
   color: #4A90E2;
 }
 
-.modern-tab-icon:hover .icon-svg {
+.modern-tab-icon:hover .icon-image {
   transform: scale(1.1);
 }
 /* #endif */

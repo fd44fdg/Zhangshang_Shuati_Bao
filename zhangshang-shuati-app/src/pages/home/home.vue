@@ -4,7 +4,7 @@
 		<view class="welcome-section">
 			<view class="welcome-card">
 				<view class="user-info">
-					<image class="avatar" :src="userInfo.avatar || '/static/images/avatar-placeholder.svg'" mode="aspectFill"></image>
+					<image class="avatar" :src="userInfo.avatar || '/static/images/avatar-placeholder.png'" mode="aspectFill"></image>
 					<view class="user-text">
 						<text class="greeting">{{ greeting }}</text>
 						<text class="username">{{ userInfo.nickname || '未登录用户' }}</text>

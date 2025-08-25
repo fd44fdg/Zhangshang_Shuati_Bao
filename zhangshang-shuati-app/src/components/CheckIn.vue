@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import config from '@/config/index.js';
+// import config from '@/config/index.js';
 
 export default {
   name: "CheckIn",
@@ -32,19 +32,32 @@ export default {
     this.getCheckInStatus();
   },
   methods: {
+    // 获取配置信息
+    getConfig() {
+      return {
+        api: {
+          baseUrl: process.env.VUE_APP_API_BASE_URL || 'http://localhost:3002/api/v1'
+        },
+        storage: {
+          token: 'zs_token'
+        }
+      };
+    },
     getAuthHeader() {
+      const config = this.getConfig();
       const token = uni.getStorageSync(config.storage.token);
       return token ? { 'Authorization': `Bearer ${token}` } : {};
     },
     async getCheckInStatus() {
       try {
+        const config = this.getConfig();
         const res = await uni.request({
           url: `${config.api.baseUrl}/checkin/status`,
           method: 'GET',
           header: this.getAuthHeader(),
         });
 
-        if (res.statusCode === 200 && res.data.success) {
+        if (res.statusCode === 200 && res.data && res.data.success) {
           this.isCheckedIn = res.data.data.isCheckedIn;
           this.continuousDays = res.data.data.continuousDays;
         } else {
@@ -53,6 +66,9 @@ export default {
         }
       } catch (error) {
         console.error('请求签到状态异常', error);
+        // 设置默认值，避免界面错误
+        this.isCheckedIn = false;
+        this.continuousDays = 0;
       }
     },
     async handleCheckIn() {
@@ -65,13 +81,14 @@ export default {
       }
 
       try {
+        const config = this.getConfig();
         const res = await uni.request({
           url: `${config.api.baseUrl}/checkin`,
           method: 'POST',
           header: this.getAuthHeader(),
         });
 
-        if (res.statusCode === 200 && res.data.success) {
+        if (res.statusCode === 200 && res.data && res.data.success) {
           this.isCheckedIn = true;
           this.continuousDays = res.data.data.continuousDays;
           uni.showToast({
@@ -81,7 +98,7 @@ export default {
           });
         } else {
           uni.showToast({
-            title: res.data.message || '签到失败',
+            title: (res.data && res.data.message) || '签到失败',
             icon: 'none'
           });
         }
