@@ -3,7 +3,7 @@ const db = require('../config/db');
 const { verifyToken: authMiddleware } = require('../middleware/auth');
 const { sendSuccess } = require('../utils/responseHandler');
 const ApiError = require('../utils/ApiError');
-const catchAsync = require('../utils/catchAsync');
+const { asyncHandler } = require('../middleware/errorHandler');
 
 const router = express.Router();
 
@@ -19,7 +19,7 @@ const router = express.Router();
  * @apiParam {String} [category] 可选的分类筛选
  * @apiParam {String} [difficulty] 可选的难度筛选
  */
-router.get('/favorites', authMiddleware, catchAsync(async (req, res) => {
+router.get('/favorites', authMiddleware, asyncHandler(async (req, res) => {
     const userId = req.user.id;
     const { page = 1, limit = 10, category, difficulty } = req.query;
     // Note: Filtering logic would be more complex in a real app
@@ -42,7 +42,7 @@ router.get('/favorites', authMiddleware, catchAsync(async (req, res) => {
  * @apiGroup Study
  * @apiParam {Number} questionId 题目ID
  */
-router.post('/favorites/:questionId', authMiddleware, catchAsync(async (req, res) => {
+router.post('/favorites/:questionId', authMiddleware, asyncHandler(async (req, res) => {
     const userId = req.user.id;
     const { questionId } = req.params;
 
@@ -64,7 +64,7 @@ router.post('/favorites/:questionId', authMiddleware, catchAsync(async (req, res
  * @apiGroup Study
  * @apiParam {Number} questionId 题目ID
  */
-router.delete('/favorites/:questionId', authMiddleware, catchAsync(async (req, res) => {
+router.delete('/favorites/:questionId', authMiddleware, asyncHandler(async (req, res) => {
     const userId = req.user.id;
     const { questionId } = req.params;
     const result = await db.query('DELETE FROM user_favorites WHERE user_id = ? AND question_id = ?', [userId, questionId]);
@@ -79,7 +79,7 @@ router.delete('/favorites/:questionId', authMiddleware, catchAsync(async (req, r
  * @apiGroup Study
  * @apiParam {Number} questionId 题目ID
  */
-router.get('/favorites/check/:questionId', authMiddleware, catchAsync(async (req, res) => {
+router.get('/favorites/check/:questionId', authMiddleware, asyncHandler(async (req, res) => {
     const userId = req.user.id;
     const questionId = parseInt(req.params.questionId, 10);
 
@@ -101,7 +101,7 @@ router.get('/favorites/check/:questionId', authMiddleware, catchAsync(async (req
  * @apiParam {String} [difficulty] 可选的难度筛选
  * @apiParam {String} [mastered] 是否已掌握 ('true' or 'false')
  */
-router.get('/wrong-questions', authMiddleware, catchAsync(async (req, res) => {
+router.get('/wrong-questions', authMiddleware, asyncHandler(async (req, res) => {
     const userId = req.user.id;
     const { page = 1, limit = 10, mastered } = req.query;
     // Simplified query
@@ -125,7 +125,7 @@ router.get('/wrong-questions', authMiddleware, catchAsync(async (req, res) => {
  * @apiParam {Number} questionId 题目ID
  * @apiParam {Boolean} isMastered 是否已掌握
  */
-router.put('/wrong-questions/:questionId/status', authMiddleware, catchAsync(async (req, res) => {
+router.put('/wrong-questions/:questionId/status', authMiddleware, asyncHandler(async (req, res) => {
     const userId = req.user.id;
     const { questionId } = req.params;
     const { isMastered } = req.body;
@@ -143,7 +143,7 @@ router.put('/wrong-questions/:questionId/status', authMiddleware, catchAsync(asy
 
 // ===== Study Records & Submission =====
 // This is a simplified version of submission logic
-router.post('/submit', authMiddleware, catchAsync(async (req, res) => {
+router.post('/submit', authMiddleware, asyncHandler(async (req, res) => {
     const userId = req.user.id;
     const { questionId, userAnswer, isCorrect } = req.body;
 
@@ -243,7 +243,7 @@ router.post('/submit', authMiddleware, catchAsync(async (req, res) => {
  * @apiParam {Number} [page=1] 页码
  * @apiParam {Number} [limit=10] 每页数量
  */
-router.get('/records', authMiddleware, catchAsync(async (req, res) => {
+router.get('/records', authMiddleware, asyncHandler(async (req, res) => {
     const userId = req.user.id;
     const { startDate, endDate, page = 1, limit = 10 } = req.query;
 
@@ -288,7 +288,7 @@ router.get('/records', authMiddleware, catchAsync(async (req, res) => {
  * @apiName GetStudyStats
  * @apiGroup Study
  */
-router.get('/stats', authMiddleware, catchAsync(async (req, res) => {
+router.get('/stats', authMiddleware, asyncHandler(async (req, res) => {
     const userId = req.user.id;
 
     // Calculate overall stats for the user
@@ -313,7 +313,7 @@ router.get('/stats', authMiddleware, catchAsync(async (req, res) => {
 }));
 
 // ===== 学习记录 =====
-router.get('/history', authMiddleware, catchAsync(async (req, res) => {
+router.get('/history', authMiddleware, asyncHandler(async (req, res) => {
   try {
     const userId = req.user.id;
     const page = parseInt(req.query.page) || 1;
@@ -357,7 +357,7 @@ router.get('/history', authMiddleware, catchAsync(async (req, res) => {
 }));
 
 // ===== 考试模式 =====
-router.post('/exam', authMiddleware, catchAsync(async (req, res) => {
+router.post('/exam', authMiddleware, asyncHandler(async (req, res) => {
   try {
     const userId = req.user.id;
     const { category, difficulty, questionCount = 10 } = req.body;
@@ -396,7 +396,7 @@ router.post('/exam', authMiddleware, catchAsync(async (req, res) => {
   }
 }));
 
-router.post('/exam/:id/submit', authMiddleware, catchAsync(async (req, res) => {
+router.post('/exam/:id/submit', authMiddleware, asyncHandler(async (req, res) => {
   try {
     const examId = parseInt(req.params.id);
     const { answers, timeSpent } = req.body;
@@ -433,7 +433,7 @@ router.post('/exam/:id/submit', authMiddleware, catchAsync(async (req, res) => {
 // ===================================
 
 // GET /study/articles/favorites - Get user's favorite articles
-router.get('/articles/favorites', authMiddleware, catchAsync(async (req, res) => {
+router.get('/articles/favorites', authMiddleware, asyncHandler(async (req, res) => {
     const userId = req.user.id;
     const { page = 1, limit = 10 } = req.query;
 
@@ -461,9 +461,8 @@ router.get('/articles/favorites', authMiddleware, catchAsync(async (req, res) =>
     sendSuccess(res, { items: pageData, total });
 }));
 
-
 // POST /study/articles/:articleId/favorite - Toggle favorite status for an article
-router.post('/articles/:articleId/favorite', authMiddleware, catchAsync(async (req, res) => {
+router.post('/articles/:articleId/favorite', authMiddleware, asyncHandler(async (req, res) => {
     const userId = req.user.id;
     const articleId = parseInt(req.params.articleId, 10);
 
@@ -487,7 +486,7 @@ router.post('/articles/:articleId/favorite', authMiddleware, catchAsync(async (r
 }));
 
 // GET /study/articles/:articleId/favorite/check - Check if an article is favorited
-router.get('/articles/:articleId/favorite/check', authMiddleware, catchAsync(async (req, res) => {
+router.get('/articles/:articleId/favorite/check', authMiddleware, asyncHandler(async (req, res) => {
     const userId = req.user.id;
     const articleId = parseInt(req.params.articleId, 10);
 

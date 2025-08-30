@@ -1,9 +1,10 @@
 const express = require('express');
 const db = require('../config/db');
+const config = require('../config');
 const { verifyToken: authMiddleware } = require('../middleware/auth');
 const { sendSuccess } = require('../utils/responseHandler');
 const ApiError = require('../utils/ApiError');
-const catchAsync = require('../utils/catchAsync');
+const { asyncHandler } = require('../middleware/errorHandler');
 const jwt = require('jsonwebtoken');
 
 const router = express.Router();
@@ -12,7 +13,7 @@ const router = express.Router();
 // Article Category Management
 // ===================================
 
-router.get('/articles/categories', catchAsync(async (req, res) => {
+router.get('/articles/categories', asyncHandler(async (req, res) => {
     const categories = await db.query(`
         SELECT c.*, COUNT(a.id) as articleCount 
         FROM article_categories c 
@@ -22,7 +23,7 @@ router.get('/articles/categories', catchAsync(async (req, res) => {
     sendSuccess(res, { items: categories, total: categories.length });
 }));
 
-router.post('/articles/categories', authMiddleware, catchAsync(async (req, res) => {
+router.post('/articles/categories', authMiddleware, asyncHandler(async (req, res) => {
     const { name, description, slug } = req.body;
     if (!name || !slug) throw new ApiError(400, '分类名称和slug不能为空');
 
@@ -31,7 +32,7 @@ router.post('/articles/categories', authMiddleware, catchAsync(async (req, res) 
     sendSuccess(res, newCategory[0], '分类创建成功', 201);
 }));
 
-router.put('/articles/categories/:id', authMiddleware, catchAsync(async (req, res) => {
+router.put('/articles/categories/:id', authMiddleware, asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { name, description, slug } = req.body;
     if (!name && !description && !slug) throw new ApiError(400, '没有要更新的字段');
@@ -43,19 +44,18 @@ router.put('/articles/categories/:id', authMiddleware, catchAsync(async (req, re
     sendSuccess(res, updatedCategory[0], '分类更新成功');
 }));
 
-router.delete('/articles/categories/:id', authMiddleware, catchAsync(async (req, res) => {
+router.delete('/articles/categories/:id', authMiddleware, asyncHandler(async (req, res) => {
     const { id } = req.params;
     const [result] = await pool.execute('DELETE FROM article_categories WHERE id = ?', [id]);
     if (result.affectedRows === 0) throw new ApiError(404, '分类不存在');
     sendSuccess(res, null, '分类删除成功');
 }));
 
-
 // ===================================
 // Article Management
 // ===================================
 
-router.get('/articles', catchAsync(async (req, res) => {
+router.get('/articles', asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, keyword, category, status, sort = 'latest' } = req.query;
     // Note: The logic for filtering and sorting would be more complex in a real app
     // and should be handled with dynamic SQL query building. This is a simplified version.
@@ -65,9 +65,9 @@ router.get('/articles', catchAsync(async (req, res) => {
     sendSuccess(res, { items: articles, total });
 }));
 
-router.get('/articles/:id', catchAsync(async (req, res) => {
+router.get('/articles/:id', asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key-that-is-long-and-secure';
+    // 使用统一的JWT配置
     
     // Optional-auth: Check for a user token to determine like/favorite status
     let userId = null;
@@ -75,7 +75,7 @@ router.get('/articles/:id', catchAsync(async (req, res) => {
     if (authHeader && authHeader.startsWith('Bearer ')) {
         const token = authHeader.split(' ')[1];
         try {
-            const decoded = jwt.verify(token, JWT_SECRET);
+            const decoded = jwt.verify(token, config.jwt.secret);
             userId = decoded.id;
         } catch (e) {
             // Invalid token, proceed as a guest user
@@ -113,7 +113,7 @@ router.get('/articles/:id', catchAsync(async (req, res) => {
     sendSuccess(res, article);
 }));
 
-router.post('/articles', authMiddleware, catchAsync(async (req, res) => {
+router.post('/articles', authMiddleware, asyncHandler(async (req, res) => {
     const { title, content, categoryId, status = 'published', summary, cover, tags } = req.body;
     const authorId = req.user.id;
     if (!title || !content || !categoryId) throw new ApiError(400, '标题、内容和分类ID不能为空');
@@ -130,7 +130,7 @@ router.post('/articles', authMiddleware, catchAsync(async (req, res) => {
 // Article Interaction
 // ===================================
 
-router.get('/articles/:id/comments', catchAsync(async (req, res) => {
+router.get('/articles/:id/comments', asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { page = 1, limit = 10 } = req.query;
 
@@ -148,7 +148,7 @@ router.get('/articles/:id/comments', catchAsync(async (req, res) => {
     sendSuccess(res, { items: comments, total });
 }));
 
-router.post('/articles/:id/comments', authMiddleware, catchAsync(async (req, res) => {
+router.post('/articles/:id/comments', authMiddleware, asyncHandler(async (req, res) => {
     const articleId = req.params.id;
     const userId = req.user.id;
     const { content, parentId = null } = req.body;
@@ -168,7 +168,7 @@ router.post('/articles/:id/comments', authMiddleware, catchAsync(async (req, res
     sendSuccess(res, newComments[0], '评论发布成功', 201);
 }));
 
-router.post('/articles/:id/like', authMiddleware, catchAsync(async (req, res) => {
+router.post('/articles/:id/like', authMiddleware, asyncHandler(async (req, res) => {
     const articleId = req.params.id;
     const userId = req.user.id;
 
@@ -186,7 +186,7 @@ router.post('/articles/:id/like', authMiddleware, catchAsync(async (req, res) =>
     sendSuccess(res, { liked, likeCount }, liked ? '点赞成功' : '已取消点赞');
 }));
 
-router.post('/articles/:id/favorite', authMiddleware, catchAsync(async (req, res) => {
+router.post('/articles/:id/favorite', authMiddleware, asyncHandler(async (req, res) => {
     const articleId = req.params.id;
     const userId = req.user.id;
 

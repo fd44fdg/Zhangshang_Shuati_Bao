@@ -77,3 +77,7 @@ cypress/videos/
 
 # Nginx logs
 nginx/logs/
+
+# Problem files
+nul
+*/nul

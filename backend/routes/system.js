@@ -2,7 +2,7 @@ const express = require('express');
 const db = require('../config/db');
 const { sendSuccess } = require('../utils/responseHandler');
 const ApiError = require('../utils/ApiError');
-const catchAsync = require('../utils/catchAsync');
+const { asyncHandler } = require('../middleware/errorHandler');
 
 const router = express.Router();
 
@@ -11,7 +11,7 @@ const router = express.Router();
  * @description Get system settings
  * @access Public
  */
-router.get('/settings', catchAsync(async (req, res) => {
+router.get('/settings', asyncHandler(async (req, res) => {
     try {
         // 尝试从数据库获取系统设置
         const settings = await db.query('SELECT * FROM system_settings ORDER BY id DESC LIMIT 1');
@@ -80,7 +80,7 @@ router.get('/settings', catchAsync(async (req, res) => {
  * @description A more detailed health check
  * @access Public
  */
-router.get('/health-check', catchAsync(async (req, res) => {
+router.get('/health-check', asyncHandler(async (req, res) => {
     let databaseStatus = 'disconnected';
     let databaseError = null;
     

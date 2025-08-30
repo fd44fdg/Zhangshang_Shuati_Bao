@@ -1,8 +1,8 @@
 const express = require('express');
-const { pool } = require('../config/database');
+const db = require('../config/db');
 const { sendSuccess } = require('../utils/responseHandler');
 const ApiError = require('../utils/ApiError');
-const catchAsync = require('../utils/catchAsync');
+const { asyncHandler } = require('../middleware/errorHandler');
 
 const router = express.Router();
 
@@ -23,7 +23,7 @@ const router = express.Router();
  * @apiSuccess {Number} limit 每页数量.
  * @apiSuccess {Boolean} hasMore 是否有更多结果.
  */
-router.get('/', catchAsync(async (req, res) => {
+router.get('/', asyncHandler(async (req, res) => {
     const { keyword, type = 'all', page = 1, limit = 10 } = req.query;
 
     if (!keyword || !keyword.trim()) {
@@ -61,8 +61,8 @@ router.get('/', catchAsync(async (req, res) => {
     const fullQuery = queryParts.join(' UNION ALL ') + ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
     const countQuery = `SELECT (${countParts.join(' + ')}) as total`;
 
-    const [results] = await pool.execute(fullQuery, [...params, limitNum, offset]);
-    const [[{ total }]] = await pool.execute(countQuery, params);
+    const [results] = await db.query(fullQuery, [...params, limitNum, offset]);
+    const [[{ total }]] = await db.query(countQuery, params);
 
     sendSuccess(res, { items: results, total });
 }));

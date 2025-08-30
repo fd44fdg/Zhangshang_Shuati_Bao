@@ -3,10 +3,11 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const axios = require('axios'); // 引入 axios
+const config = require('../config');
 const { query, getOne, insert } = require('../config/database-adapter');
 const { verifyToken } = require('../middleware/auth');
 const ApiError = require('../utils/ApiError');
-const catchAsync = require('../utils/catchAsync');
+const { asyncHandler } = require('../middleware/errorHandler');
 
 // 微信小程序配置
 const WECHAT_APP_ID = process.env.WECHAT_APP_ID || 'YOUR_WECHAT_APP_ID';
@@ -17,7 +18,7 @@ const WECHAT_APP_SECRET = process.env.WECHAT_APP_SECRET || 'YOUR_WECHAT_APP_SECR
  * @route POST /auth/register
  * @access Public
  */
-router.post('/auth/register', catchAsync(async (req, res) => {
+router.post('/auth/register', asyncHandler(async (req, res) => {
   const { username, email, password, nickname } = req.body;
   
   // 验证必填字段
@@ -54,8 +55,8 @@ router.post('/auth/register', catchAsync(async (req, res) => {
   // 生成JWT令牌
   const token = jwt.sign(
     { id: result.id, username, role: 'user' },
-    process.env.JWT_SECRET || 'your-secret-key',
-    { expiresIn: '7d' }
+    config.jwt.secret,
+    { expiresIn: config.jwt.expiresIn }
   );
   
   // 返回用户信息（不含密码）和令牌
@@ -80,7 +81,7 @@ router.post('/auth/register', catchAsync(async (req, res) => {
  * @route POST /auth/login
  * @access Public
  */
-router.post('/auth/login', catchAsync(async (req, res) => {
+router.post('/auth/login', asyncHandler(async (req, res) => {
   const { username, password } = req.body;
   
   // 验证必填字段
@@ -105,8 +106,8 @@ router.post('/auth/login', catchAsync(async (req, res) => {
   // 生成JWT令牌
   const token = jwt.sign(
     { id: user.id, username: user.username, role: user.role },
-    process.env.JWT_SECRET || 'your-secret-key',
-    { expiresIn: '7d' }
+    config.jwt.secret,
+    { expiresIn: config.jwt.expiresIn }
   );
   
   // 返回用户信息（不含密码）和令牌
@@ -132,7 +133,7 @@ router.post('/auth/login', catchAsync(async (req, res) => {
  * @route POST /auth/change-password
  * @access Private
  */
-router.post('/auth/change-password', verifyToken, catchAsync(async (req, res) => {
+router.post('/auth/change-password', verifyToken, asyncHandler(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
   const userId = req.user.id;
   
@@ -178,7 +179,7 @@ router.post('/auth/change-password', verifyToken, catchAsync(async (req, res) =>
  * @route POST /auth/logout
  * @access Private
  */
-router.post('/auth/logout', verifyToken, catchAsync(async (req, res) => {
+router.post('/auth/logout', verifyToken, asyncHandler(async (req, res) => {
   // 实际上，JWT令牌是无状态的，服务器端无法使其失效
   // 客户端需要自行清除令牌
   
@@ -193,7 +194,7 @@ router.post('/auth/logout', verifyToken, catchAsync(async (req, res) => {
  * @route GET /auth/verify
  * @access Public
  */
-router.get('/auth/verify', catchAsync(async (req, res) => {
+router.get('/auth/verify', asyncHandler(async (req, res) => {
   const authHeader = req.headers.authorization;
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -204,7 +205,7 @@ router.get('/auth/verify', catchAsync(async (req, res) => {
   
   try {
     // 验证令牌
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const decoded = jwt.verify(token, config.jwt.secret);
     
     // 查询用户
     const user = await getOne('SELECT id, username, email, nickname, avatar_url, role FROM users WHERE id = ?', [decoded.id]);
@@ -234,7 +235,7 @@ router.get('/auth/verify', catchAsync(async (req, res) => {
  * @route POST /auth/wechatLogin
  * @access Public
  */
-router.post('/auth/wechatLogin', catchAsync(async (req, res) => {
+router.post('/auth/wechatLogin', asyncHandler(async (req, res) => {
   const { code, userInfo } = req.body;
 
   if (!code) {
@@ -278,8 +279,8 @@ router.post('/auth/wechatLogin', catchAsync(async (req, res) => {
   // 4. 生成JWT令牌
   const token = jwt.sign(
     { id: user.id, username: user.username, role: user.role, openid: user.openid },
-    process.env.JWT_SECRET || 'your-secret-key',
-    { expiresIn: '7d' }
+    config.jwt.secret,
+    { expiresIn: config.jwt.expiresIn }
   );
 
   // 返回用户信息（不含敏感信息）和令牌

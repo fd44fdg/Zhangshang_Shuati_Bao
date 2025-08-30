@@ -1,0 +1,14 @@
+packages:
+  - admin-panel
+  - backend
+  - zhangshang-shuati-app
+
+ignoredBuiltDependencies:
+  - '@parcel/watcher'
+  - core-js
+  - cypress
+  - esbuild
+  - sqlite3
+  - vue-demi
+  - vue-echarts
+  - yorkie

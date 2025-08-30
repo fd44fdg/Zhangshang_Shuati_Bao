@@ -26,7 +26,7 @@ const config = {
   // 测试环境配置
   test: {
     api: {
-      baseUrl: process.env.VUE_APP_API_BASE_URL || 'http://localhost:3001/api/v1',
+      baseUrl: process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000/api/v1',  // 修复：统一端口
       timeout: process.env.VUE_APP_API_TIMEOUT || 5000
     },
     debug: process.env.VUE_APP_DEBUG === 'true',

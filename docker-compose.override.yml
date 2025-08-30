@@ -1,0 +1,16 @@
+services:
+  # phpMyAdmin 数据库管理工具 (仅开发环境使用)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: zhangshang-shuati-phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_HOST=db
+      - PMA_PORT=3306
+      - MYSQL_ROOT_PASSWORD=password
+    depends_on:
+      - db
+    networks:
+      - app-network

@@ -68,4 +68,44 @@ export function fetchUserStats(id) {
     url: `/users/${id}/stats`,
     method: 'get'
   })
+}
+
+/**
+ * 获取系统统计数据
+ */
+export function fetchSystemStats() {
+  return request({
+    url: '/stats',
+    method: 'get'
+  })
+}
+
+/**
+ * 获取最近活动记录
+ */
+export function fetchRecentActivities() {
+  return request({
+    url: '/activities',
+    method: 'get'
+  })
+}
+
+/**
+ * 获取用户增长数据
+ */
+export function fetchUserGrowthData() {
+  return request({
+    url: '/stats/user-growth',
+    method: 'get'
+  })
+}
+
+/**
+ * 获取分类分布数据
+ */
+export function fetchCategoryDistribution() {
+  return request({
+    url: '/stats/category-distribution',
+    method: 'get'
+  })
 } 

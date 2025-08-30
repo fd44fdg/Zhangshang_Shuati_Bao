@@ -108,6 +108,12 @@
 import { ref, reactive, onMounted } from 'vue'
 import * as echarts from 'echarts'
 import { User, Document, Folder, EditPen } from '@element-plus/icons-vue'
+import { 
+  fetchSystemStats, 
+  fetchRecentActivities, 
+  fetchUserGrowthData, 
+  fetchCategoryDistribution 
+} from '@/api/admin'
 
 export default {
   name: 'Dashboard',
@@ -122,36 +128,16 @@ export default {
     const categoryChartRef = ref(null)
     
     const stats = reactive({
-      userCount: 1234,
-      questionCount: 5678,
-      categoryCount: 25,
-      answerCount: 98765
+      userCount: 0,
+      questionCount: 0,
+      categoryCount: 0,
+      answerCount: 0
     })
     
-    const recentActivities = ref([
-      {
-        id: 1,
-        content: '用户 张三 注册了账号',
-        time: '2024-01-15 10:30:00'
-      },
-      {
-        id: 2,
-        content: '管理员添加了新题目《JavaScript基础》',
-        time: '2024-01-15 09:15:00'
-      },
-      {
-        id: 3,
-        content: '用户 李四 完成了100道题目',
-        time: '2024-01-15 08:45:00'
-      },
-      {
-        id: 4,
-        content: '系统自动备份数据库',
-        time: '2024-01-15 02:00:00'
-      }
-    ])
+    const recentActivities = ref([])
+    const loading = ref(false)
     
-    const initUserChart = () => {
+    const initUserChart = (growthData) => {
       const chart = echarts.init(userChartRef.value)
       const option = {
         tooltip: {
@@ -159,13 +145,13 @@ export default {
         },
         xAxis: {
           type: 'category',
-          data: ['1月', '2月', '3月', '4月', '5月', '6月']
+          data: growthData.months || ['1月', '2月', '3月', '4月', '5月', '6月']
         },
         yAxis: {
           type: 'value'
         },
         series: [{
-          data: [120, 200, 150, 80, 70, 110],
+          data: growthData.data || [120, 200, 150, 80, 70, 110],
           type: 'line',
           smooth: true,
           itemStyle: {
@@ -176,7 +162,7 @@ export default {
       chart.setOption(option)
     }
     
-    const initCategoryChart = () => {
+    const initCategoryChart = (categoryData) => {
       const chart = echarts.init(categoryChartRef.value)
       const option = {
         tooltip: {
@@ -185,7 +171,7 @@ export default {
         series: [{
           type: 'pie',
           radius: '50%',
-          data: [
+          data: categoryData || [
             { value: 1048, name: 'JavaScript' },
             { value: 735, name: 'Vue.js' },
             { value: 580, name: 'React' },
@@ -204,16 +190,53 @@ export default {
       chart.setOption(option)
     }
     
+    // 加载仪表板数据
+    const loadDashboardData = async () => {
+      loading.value = true
+      try {
+        // 并行加载所有数据
+        const [statsRes, activitiesRes, growthRes, categoryRes] = await Promise.all([
+          fetchSystemStats(),
+          fetchRecentActivities(),
+          fetchUserGrowthData(),
+          fetchCategoryDistribution()
+        ])
+        
+        // 更新统计数据
+        if (statsRes.data) {
+          Object.assign(stats, statsRes.data)
+        }
+        
+        // 更新活动记录
+        if (activitiesRes.data) {
+          recentActivities.value = activitiesRes.data
+        }
+        
+        // 更新图表
+        if (growthRes.data) {
+          initUserChart(growthRes.data)
+        }
+        
+        if (categoryRes.data) {
+          initCategoryChart(categoryRes.data)
+        }
+      } catch (error) {
+        console.error('加载仪表板数据失败:', error)
+      } finally {
+        loading.value = false
+      }
+    }
+    
     onMounted(() => {
-      initUserChart()
-      initCategoryChart()
+      loadDashboardData()
     })
     
     return {
       userChartRef,
       categoryChartRef,
       stats,
-      recentActivities
+      recentActivities,
+      loading
     }
   }
 }

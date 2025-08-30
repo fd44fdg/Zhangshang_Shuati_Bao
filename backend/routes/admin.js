@@ -1,17 +1,17 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const { pool } = require('../config/database');
+const db = require('../config/db');
 const { verifyToken: authMiddleware } = require('../middleware/auth');
 const { sendSuccess } = require('../utils/responseHandler');
 const ApiError = require('../utils/ApiError');
-const catchAsync = require('../utils/catchAsync');
+const { asyncHandler } = require('../middleware/errorHandler');
 
 const router = express.Router();
 
 // 管理员权限验证中间件
 const requireAdmin = async (req, res, next) => {
   try {
-    const [users] = await pool.execute(
+    const [users] = await db.query(
       'SELECT role FROM users WHERE id = ?',
       [req.user.userId]
     );
@@ -68,7 +68,7 @@ router.get('/users', authMiddleware, requireAdmin, async (req, res) => {
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
     
     // 获取总数
-    const [countResult] = await pool.execute(
+    const [countResult] = await db.query(
       `SELECT COUNT(*) as total FROM users ${whereClause}`,
       queryParams
     );
@@ -76,7 +76,7 @@ router.get('/users', authMiddleware, requireAdmin, async (req, res) => {
     const total = countResult[0].total;
     
     // 获取用户列表 (已优化 N+1 查询问题, 并使用驼峰命名)
-    const [users] = await pool.execute(
+    const [users] = await db.query(
       `SELECT 
          u.id, u.username, u.email, u.phone, u.nickname, u.role, u.avatar, u.bio, u.status, u.points, u.level,
          u.created_at AS createdAt, 
@@ -128,7 +128,7 @@ router.post('/users', authMiddleware, requireAdmin, async (req, res) => {
     }
     
     // 检查用户名是否已存在
-    const [existingUsername] = await pool.execute(
+    const [existingUsername] = await db.query(
       'SELECT id FROM users WHERE username = ?',
       [username]
     );
@@ -141,7 +141,7 @@ router.post('/users', authMiddleware, requireAdmin, async (req, res) => {
     }
     
     // 检查邮箱是否已存在
-    const [existingEmail] = await pool.execute(
+    const [existingEmail] = await db.query(
       'SELECT id FROM users WHERE email = ?',
       [email]
     );
@@ -157,14 +157,14 @@ router.post('/users', authMiddleware, requireAdmin, async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     
     // 创建用户
-    const [result] = await pool.execute(
+    const [result] = await db.query(
       `INSERT INTO users (username, email, password, phone, nickname, role, avatar, bio, status) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [username, email, hashedPassword, phone, nickname, role, avatar, bio, status]
     );
     
     // 初始化用户统计
-    await pool.execute(
+    await db.query(
       `INSERT INTO user_stats (user_id, total_questions, correct_questions, correct_rate) 
        VALUES (?, 0, 0, 0)`,
       [result.insertId]
@@ -194,7 +194,7 @@ router.put('/users/:id', authMiddleware, requireAdmin, async (req, res) => {
     const { username, email, phone, nickname, role, avatar, bio, status } = req.body;
     
     // 检查用户是否存在
-    const [existingUser] = await pool.execute(
+    const [existingUser] = await db.query(
       'SELECT id FROM users WHERE id = ?',
       [id]
     );
@@ -212,7 +212,7 @@ router.put('/users/:id', authMiddleware, requireAdmin, async (req, res) => {
     
     if (username !== undefined) {
       // 检查用户名是否已被其他用户使用
-      const [existingUsername] = await pool.execute(
+      const [existingUsername] = await db.query(
         'SELECT id FROM users WHERE username = ? AND id != ?',
         [username, id]
       );
@@ -230,7 +230,7 @@ router.put('/users/:id', authMiddleware, requireAdmin, async (req, res) => {
     
     if (email !== undefined) {
       // 检查邮箱是否已被其他用户使用
-      const [existingEmail] = await pool.execute(
+      const [existingEmail] = await db.query(
         'SELECT id FROM users WHERE email = ? AND id != ?',
         [email, id]
       );
@@ -286,7 +286,7 @@ router.put('/users/:id', authMiddleware, requireAdmin, async (req, res) => {
     updateFields.push('updated_at = CURRENT_TIMESTAMP');
     updateValues.push(id);
     
-    await pool.execute(
+    await db.query(
       `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`,
       updateValues
     );
@@ -311,7 +311,7 @@ router.delete('/users/:id', authMiddleware, requireAdmin, async (req, res) => {
     const { id } = req.params;
     
     // 检查用户是否存在
-    const [existingUser] = await pool.execute(
+    const [existingUser] = await db.query(
       'SELECT id, role FROM users WHERE id = ?',
       [id]
     );
@@ -332,9 +332,9 @@ router.delete('/users/:id', authMiddleware, requireAdmin, async (req, res) => {
     }
     
     // 删除相关数据
-    await pool.execute('DELETE FROM user_stats WHERE user_id = ?', [id]);
-    await pool.execute('DELETE FROM user_answers WHERE user_id = ?', [id]);
-    await pool.execute('DELETE FROM users WHERE id = ?', [id]);
+    await db.query('DELETE FROM user_stats WHERE user_id = ?', [id]);
+    await db.query('DELETE FROM user_answers WHERE user_id = ?', [id]);
+    await db.query('DELETE FROM users WHERE id = ?', [id]);
     
     res.status(200).json({ success: true, message: '用户删除成功' });
   } catch (error) {
@@ -349,7 +349,7 @@ router.get('/users/:id/stats', authMiddleware, requireAdmin, async (req, res) =>
     const { id } = req.params;
     
     // 一次性获取用户和统计信息
-    const [users] = await pool.execute(
+    const [users] = await db.query(
       `SELECT 
          u.username, u.email, u.created_at AS createdAt,
          s.total_questions AS totalQuestions,
@@ -367,7 +367,7 @@ router.get('/users/:id/stats', authMiddleware, requireAdmin, async (req, res) =>
     }
     
     // 获取最近答题记录
-    const [recentActivities] = await pool.execute(
+    const [recentActivities] = await db.query(
       `SELECT 
          q.title AS activity, 
          ua.is_correct AS isCorrect,
@@ -409,7 +409,7 @@ router.get('/users/:id', authMiddleware, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const [users] = await pool.execute(
+    const [users] = await db.query(
       `SELECT 
         u.id, u.username, u.email, u.phone, u.nickname, u.role, u.avatar, u.bio, u.status, u.points, u.level,
         u.created_at AS createdAt, 
@@ -456,7 +456,7 @@ const adminOnly = (req, res, next) => {
 router.use(authMiddleware, adminOnly);
 
 // --- Dashboard Stats ---
-router.get('/dashboard/stats', catchAsync(async (req, res) => {
+router.get('/dashboard/stats', asyncHandler(async (req, res) => {
     const [
         [{ userCount }],
         [{ questionCount }],
@@ -464,11 +464,11 @@ router.get('/dashboard/stats', catchAsync(async (req, res) => {
         [{ knowledgeCount }],
         [{ todaySignups }]
     ] = await Promise.all([
-        pool.execute('SELECT COUNT(*) as userCount FROM users'),
-        pool.execute('SELECT COUNT(*) as questionCount FROM questions'),
-        pool.execute('SELECT COUNT(*) as articleCount FROM articles'),
-        pool.execute('SELECT COUNT(*) as knowledgeCount FROM knowledge_points'),
-        pool.execute('SELECT COUNT(*) as todaySignups FROM users WHERE DATE(created_at) = CURDATE()')
+        db.query('SELECT COUNT(*) as userCount FROM users'),
+        db.query('SELECT COUNT(*) as questionCount FROM questions'),
+        db.query('SELECT COUNT(*) as articleCount FROM articles'),
+        db.query('SELECT COUNT(*) as knowledgeCount FROM knowledge_points'),
+        db.query('SELECT COUNT(*) as todaySignups FROM users WHERE DATE(created_at) = CURDATE()')
     ]);
 
     const stats = {
@@ -483,7 +483,7 @@ router.get('/dashboard/stats', catchAsync(async (req, res) => {
 }));
 
 // --- User Management ---
-router.get('/users', catchAsync(async (req, res) => {
+router.get('/users', asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, keyword } = req.query;
     const offset = (page - 1) * limit;
 
@@ -500,21 +500,138 @@ router.get('/users', catchAsync(async (req, res) => {
     usersQuery += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
     const usersParams = [...params, parseInt(limit), parseInt(offset)];
     
-    const [users] = await pool.execute(usersQuery, usersParams);
-    const [[{ total }]] = await pool.execute(countQuery, params);
+    const [users] = await db.query(usersQuery, usersParams);
+    const [[{ total }]] = await db.query(countQuery, params);
 
     sendSuccess(res, { items: users, total });
 }));
 
-router.put('/users/:id/status', catchAsync(async (req, res) => {
+router.put('/users/:id/status', asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
     if (status === undefined) throw new ApiError(400, '缺少status参数');
 
-    const [result] = await pool.execute('UPDATE users SET status = ? WHERE id = ?', [status, id]);
+    const [result] = await db.query('UPDATE users SET status = ? WHERE id = ?', [status, id]);
     if (result.affectedRows === 0) throw new ApiError(404, '用户不存在');
 
     sendSuccess(res, { id, status }, '用户状态更新成功');
+}));
+
+// 管理员仪表板统计数据
+router.get('/stats', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
+    const [userCount] = await db.query('SELECT COUNT(*) as count FROM users');
+    const [questionCount] = await db.query('SELECT COUNT(*) as count FROM questions');
+    const [categoryCount] = await db.query('SELECT COUNT(*) as count FROM question_categories');
+    const [answerCount] = await db.query('SELECT COUNT(*) as count FROM user_answer_log');
+    
+    const stats = {
+        userCount: userCount[0].count,
+        questionCount: questionCount[0].count,
+        categoryCount: categoryCount[0].count,
+        answerCount: answerCount[0].count
+    };
+    
+    sendSuccess(res, stats);
+}));
+
+// 获取最近活动记录
+router.get('/activities', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
+    const [activities] = await db.query(`
+        SELECT 
+            'user' as type,
+            username as title,
+            CONCAT('用户 ', username, ' 注册了账号') as content,
+            created_at as time
+        FROM users 
+        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        
+        UNION ALL
+        
+        SELECT 
+            'question' as type,
+            title as title,
+            CONCAT('管理员添加了新题目《', title, '》') as content,
+            created_at as time
+        FROM questions 
+        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        
+        UNION ALL
+        
+        SELECT 
+            'answer' as type,
+            '答题记录' as title,
+            CONCAT('用户完成了一次答题') as content,
+            created_at as time
+        FROM user_answer_log 
+        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        
+        ORDER BY time DESC 
+        LIMIT 10
+    `);
+    
+    const formattedActivities = activities.map(activity => ({
+        id: Math.random().toString(36).substr(2, 9),
+        content: activity.content,
+        time: activity.time
+    }));
+    
+    sendSuccess(res, formattedActivities);
+}));
+
+// 获取用户增长数据
+router.get('/stats/user-growth', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
+    const [growthData] = await db.query(`
+        SELECT 
+            DATE(created_at) as date,
+            COUNT(*) as count
+        FROM users 
+        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+        GROUP BY DATE(created_at)
+        ORDER BY date ASC
+    `);
+    
+    // 生成最近6个月的月份标签
+    const months = [];
+    const monthData = [];
+    for (let i = 5; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        const monthStr = `${date.getMonth() + 1}月`;
+        months.push(monthStr);
+        
+        // 计算该月的用户总数
+        const monthUsers = growthData.filter(item => {
+            const itemDate = new Date(item.date);
+            return itemDate.getMonth() === date.getMonth() && itemDate.getFullYear() === date.getFullYear();
+        });
+        
+        monthData.push(monthUsers.reduce((sum, item) => sum + item.count, 0));
+    }
+    
+    sendSuccess(res, {
+        months,
+        data: monthData
+    });
+}));
+
+// 获取分类分布数据
+router.get('/stats/category-distribution', authMiddleware, requireAdmin, asyncHandler(async (req, res) => {
+    const [categoryData] = await db.query(`
+        SELECT 
+            qc.name as category,
+            COUNT(q.id) as count
+        FROM question_categories qc
+        LEFT JOIN questions q ON qc.id = q.category_id
+        GROUP BY qc.id, qc.name
+        ORDER BY count DESC
+    `);
+    
+    const distribution = categoryData.map(item => ({
+        name: item.category,
+        value: item.count
+    }));
+    
+    sendSuccess(res, distribution);
 }));
 
 // Note: Other admin-specific endpoints for managing content (articles, questions, etc.)

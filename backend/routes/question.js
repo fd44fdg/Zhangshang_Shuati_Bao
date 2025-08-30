@@ -3,13 +3,13 @@ const db = require('../config/db');
 const { verifyToken: authMiddleware } = require('../middleware/auth');
 const { sendSuccess } = require('../utils/responseHandler');
 const ApiError = require('../utils/ApiError');
-const catchAsync = require('../utils/catchAsync');
+const { asyncHandler } = require('../middleware/errorHandler');
 
 const router = express.Router();
 
 // --- Question Categories ---
 
-router.get('/categories', catchAsync(async (req, res) => {
+router.get('/categories', asyncHandler(async (req, res) => {
     const categories = await db.query(`
         SELECT c.*, COUNT(q.id) as questionCount
         FROM question_categories c
@@ -19,7 +19,7 @@ router.get('/categories', catchAsync(async (req, res) => {
     sendSuccess(res, { items: categories, total: categories.length });
 }));
 
-router.post('/categories', authMiddleware, catchAsync(async (req, res) => {
+router.post('/categories', authMiddleware, asyncHandler(async (req, res) => {
     const { name, description } = req.body;
     if (!name) throw new ApiError(400, '分类名称不能为空');
 
@@ -28,7 +28,7 @@ router.post('/categories', authMiddleware, catchAsync(async (req, res) => {
     sendSuccess(res, newCategory, '分类创建成功', 201);
 }));
 
-router.put('/categories/:id', authMiddleware, catchAsync(async (req, res) => {
+router.put('/categories/:id', authMiddleware, asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { name, description } = req.body;
     if (!name && !description) throw new ApiError(400, '没有提供要更新的字段');
@@ -40,7 +40,7 @@ router.put('/categories/:id', authMiddleware, catchAsync(async (req, res) => {
     sendSuccess(res, updatedCategory, '分类更新成功');
 }));
 
-router.delete('/categories/:id', authMiddleware, catchAsync(async (req, res) => {
+router.delete('/categories/:id', authMiddleware, asyncHandler(async (req, res) => {
     const { id } = req.params;
     const countResult = await db.query('SELECT COUNT(*) as count FROM questions WHERE category_id = ?', [id]);
     if (countResult[0].count > 0) throw new ApiError(400, '该分类下仍有题目，无法删除');
@@ -53,7 +53,7 @@ router.delete('/categories/:id', authMiddleware, catchAsync(async (req, res) => 
 
 // --- Questions ---
 
-router.get('/', catchAsync(async (req, res) => {
+router.get('/', asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, category_id } = req.query;
     // Simplified query. A real implementation would have more filters.
     let query = 'SELECT * FROM questions';
@@ -69,8 +69,8 @@ router.get('/', catchAsync(async (req, res) => {
     query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
     params.push(parseInt(limit), (page - 1) * limit);
 
-    const [questions] = await pool.execute(query, params);
-    const [[{ total }]] = await pool.execute(countQuery, params.slice(0, params.length-2)); // remove limit/offset for count
+    const questions = await db.query(query, params);
+    const [[{ total }]] = await db.execute(countQuery, params.slice(0, params.length-2)); // remove limit/offset for count
 
     // Parse JSON fields
     questions.forEach(q => {
@@ -81,9 +81,9 @@ router.get('/', catchAsync(async (req, res) => {
     sendSuccess(res, { items: questions, total });
 }));
 
-router.get('/:id', catchAsync(async (req, res) => {
+router.get('/:id', asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const [[question]] = await pool.execute('SELECT * FROM questions WHERE id = ?', [id]);
+    const [[question]] = await db.query('SELECT * FROM questions WHERE id = ?', [id]);
     if (!question) throw new ApiError(404, '题目不存在');
     
     question.options = JSON.parse(question.options);
@@ -93,7 +93,7 @@ router.get('/:id', catchAsync(async (req, res) => {
 }));
 
 // 单个题目创建（增强版）
-router.post('/', authMiddleware, catchAsync(async (req, res) => {
+router.post('/', authMiddleware, asyncHandler(async (req, res) => {
     const { 
         title, content, category_id, type, options, correct_answer, 
         difficulty, explanation, tags, knowledge_points, score, 
@@ -113,7 +113,7 @@ router.post('/', authMiddleware, catchAsync(async (req, res) => {
         throw new ApiError(400, '请设置正确答案');
     }
     
-    const [result] = await pool.execute(
+    const [result] = await db.query(
         `INSERT INTO questions (
             title, content, category_id, type, options, correct_answer, 
             difficulty, explanation, tags, knowledge_points, score, 
@@ -130,12 +130,12 @@ router.post('/', authMiddleware, catchAsync(async (req, res) => {
         ]
     );
     
-    const [[newQuestion]] = await pool.execute('SELECT * FROM questions WHERE id = ?', [result.insertId]);
+    const [[newQuestion]] = await db.query('SELECT * FROM questions WHERE id = ?', [result.insertId]);
     sendSuccess(res, newQuestion, '题目创建成功', 201);
 }));
 
 // 批量创建题目
-router.post('/batch', authMiddleware, catchAsync(async (req, res) => {
+router.post('/batch', authMiddleware, asyncHandler(async (req, res) => {
     const { questions } = req.body;
     
     if (!Array.isArray(questions) || questions.length === 0) {
@@ -163,7 +163,7 @@ router.post('/batch', authMiddleware, catchAsync(async (req, res) => {
                 continue;
             }
             
-            const [result] = await pool.execute(
+            const [result] = await db.query(
                 `INSERT INTO questions (
                     title, content, category_id, type, options, correct_answer, 
                     difficulty, explanation, tags, knowledge_points, score, 
@@ -196,12 +196,12 @@ router.post('/batch', authMiddleware, catchAsync(async (req, res) => {
 }));
 
 // 从模板创建题目
-router.post('/from-template/:templateId', authMiddleware, catchAsync(async (req, res) => {
+router.post('/from-template/:templateId', authMiddleware, asyncHandler(async (req, res) => {
     const { templateId } = req.params;
     const { customData } = req.body;
     
     // 获取模板
-    const [[template]] = await pool.execute('SELECT * FROM question_templates WHERE id = ?', [templateId]);
+    const [[template]] = await db.query('SELECT * FROM question_templates WHERE id = ?', [templateId]);
     if (!template) {
         throw new ApiError(404, '题目模板不存在');
     }
@@ -211,7 +211,7 @@ router.post('/from-template/:templateId', authMiddleware, catchAsync(async (req,
     // 合并模板数据和自定义数据
     const questionData = { ...templateData, ...customData };
     
-    const [result] = await pool.execute(
+    const [result] = await db.query(
         `INSERT INTO questions (
             title, content, category_id, type, options, correct_answer, 
             difficulty, explanation, tags, knowledge_points, score, 
@@ -228,13 +228,13 @@ router.post('/from-template/:templateId', authMiddleware, catchAsync(async (req,
         ]
     );
     
-    const [[newQuestion]] = await pool.execute('SELECT * FROM questions WHERE id = ?', [result.insertId]);
+    const [[newQuestion]] = await db.query('SELECT * FROM questions WHERE id = ?', [result.insertId]);
     sendSuccess(res, newQuestion, '从模板创建题目成功', 201);
 }));
 
 // 题目模板管理
-router.get('/templates', authMiddleware, catchAsync(async (req, res) => {
-    const [templates] = await pool.execute(`
+router.get('/templates', authMiddleware, asyncHandler(async (req, res) => {
+    const [templates] = await db.query(`
         SELECT t.*, u.username as creator_name 
         FROM question_templates t 
         LEFT JOIN users u ON t.created_by = u.id 
@@ -243,24 +243,24 @@ router.get('/templates', authMiddleware, catchAsync(async (req, res) => {
     sendSuccess(res, { items: templates, total: templates.length });
 }));
 
-router.post('/templates', authMiddleware, catchAsync(async (req, res) => {
+router.post('/templates', authMiddleware, asyncHandler(async (req, res) => {
     const { name, description, template_data, category_id } = req.body;
     
     if (!name || !template_data) {
         throw new ApiError(400, '模板名称和数据不能为空');
     }
     
-    const [result] = await pool.execute(
+    const [result] = await db.query(
         'INSERT INTO question_templates (name, description, template_data, category_id, created_by) VALUES (?, ?, ?, ?, ?)',
         [name, description || '', JSON.stringify(template_data), category_id, req.user.id]
     );
     
-    const [[newTemplate]] = await pool.execute('SELECT * FROM question_templates WHERE id = ?', [result.insertId]);
+    const [[newTemplate]] = await db.query('SELECT * FROM question_templates WHERE id = ?', [result.insertId]);
     sendSuccess(res, newTemplate, '模板创建成功', 201);
 }));
 
 // 文件上传接口
-router.post('/upload', authMiddleware, catchAsync(async (req, res) => {
+router.post('/upload', authMiddleware, asyncHandler(async (req, res) => {
     // 这里需要配合multer中间件处理文件上传
     if (!req.file) {
         throw new ApiError(400, '请选择要上传的文件');
@@ -279,7 +279,7 @@ router.post('/upload', authMiddleware, catchAsync(async (req, res) => {
 }));
 
 // Excel批量导入题目
-router.post('/import/excel', authMiddleware, catchAsync(async (req, res) => {
+router.post('/import/excel', authMiddleware, asyncHandler(async (req, res) => {
     if (!req.file) {
         throw new ApiError(400, '请上传Excel文件');
     }
@@ -297,7 +297,7 @@ router.post('/import/excel', authMiddleware, catchAsync(async (req, res) => {
 }));
 
 // 导出题目为Excel
-router.get('/export/excel', authMiddleware, catchAsync(async (req, res) => {
+router.get('/export/excel', authMiddleware, asyncHandler(async (req, res) => {
     const { category_id, difficulty, type } = req.query;
     
     let query = 'SELECT * FROM questions WHERE 1=1';
@@ -318,7 +318,7 @@ router.get('/export/excel', authMiddleware, catchAsync(async (req, res) => {
         params.push(type);
     }
     
-    const [questions] = await pool.execute(query, params);
+    const [questions] = await db.query(query, params);
     
     // 这里需要使用xlsx库生成Excel文件
     // 示例响应，实际需要实现Excel生成逻辑
@@ -329,8 +329,8 @@ router.get('/export/excel', authMiddleware, catchAsync(async (req, res) => {
 }));
 
 // 题目统计分析
-router.get('/analytics', authMiddleware, catchAsync(async (req, res) => {
-    const [categoryStats] = await pool.execute(`
+router.get('/analytics', authMiddleware, asyncHandler(async (req, res) => {
+    const [categoryStats] = await db.query(`
         SELECT 
             c.name as category_name,
             COUNT(q.id) as question_count,
@@ -340,7 +340,7 @@ router.get('/analytics', authMiddleware, catchAsync(async (req, res) => {
         GROUP BY c.id, c.name
     `);
     
-    const [difficultyStats] = await pool.execute(`
+    const [difficultyStats] = await db.query(`
         SELECT 
             difficulty,
             COUNT(*) as count
@@ -348,7 +348,7 @@ router.get('/analytics', authMiddleware, catchAsync(async (req, res) => {
         GROUP BY difficulty
     `);
     
-    const [typeStats] = await pool.execute(`
+    const [typeStats] = await db.query(`
         SELECT 
             type,
             COUNT(*) as count
@@ -356,7 +356,7 @@ router.get('/analytics', authMiddleware, catchAsync(async (req, res) => {
         GROUP BY type
     `);
     
-    const [[totalStats]] = await pool.execute(`
+    const [[totalStats]] = await db.query(`
         SELECT 
             COUNT(*) as total_questions,
             AVG(score) as avg_score,
@@ -373,7 +373,7 @@ router.get('/analytics', authMiddleware, catchAsync(async (req, res) => {
 }));
 
 // PUT and DELETE for questions would follow a similar pattern.
-router.put('/:id', authMiddleware, catchAsync(async (req, res) => {
+router.put('/:id', authMiddleware, asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { 
         title, content, category_id, type, options, correct_answer, 
@@ -381,7 +381,7 @@ router.put('/:id', authMiddleware, catchAsync(async (req, res) => {
         images, attachments, time_limit, status 
     } = req.body;
     
-    const [result] = await pool.execute(
+    const [result] = await db.query(
         `UPDATE questions SET 
             title = ?, content = ?, category_id = ?, type = ?, options = ?, 
             correct_answer = ?, difficulty = ?, explanation = ?, tags = ?, 
@@ -403,14 +403,14 @@ router.put('/:id', authMiddleware, catchAsync(async (req, res) => {
         throw new ApiError(404, '题目不存在');
     }
     
-    const [[updatedQuestion]] = await pool.execute('SELECT * FROM questions WHERE id = ?', [id]);
+    const [[updatedQuestion]] = await db.query('SELECT * FROM questions WHERE id = ?', [id]);
     sendSuccess(res, updatedQuestion, '题目更新成功');
 }));
 
-router.delete('/:id', authMiddleware, catchAsync(async (req, res) => {
+router.delete('/:id', authMiddleware, asyncHandler(async (req, res) => {
     const { id } = req.params;
     
-    const [result] = await pool.execute('DELETE FROM questions WHERE id = ?', [id]);
+    const [result] = await db.query('DELETE FROM questions WHERE id = ?', [id]);
     
     if (result.affectedRows === 0) {
         throw new ApiError(404, '题目不存在');

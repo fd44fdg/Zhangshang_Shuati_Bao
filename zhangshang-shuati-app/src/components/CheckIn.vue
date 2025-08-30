@@ -36,7 +36,7 @@ export default {
     getConfig() {
       return {
         api: {
-          baseUrl: process.env.VUE_APP_API_BASE_URL || 'http://localhost:3002/api/v1'
+          baseUrl: process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000/api/v1'
         },
         storage: {
           token: 'zs_token'
@@ -51,6 +51,15 @@ export default {
     async getCheckInStatus() {
       try {
         const config = this.getConfig();
+        const token = uni.getStorageSync(config.storage.token);
+        
+        // 如果没有token，不发送请求
+        if (!token) {
+          this.isCheckedIn = false;
+          this.continuousDays = 0;
+          return;
+        }
+        
         const res = await uni.request({
           url: `${config.api.baseUrl}/checkin/status`,
           method: 'GET',
@@ -61,8 +70,13 @@ export default {
           this.isCheckedIn = res.data.data.isCheckedIn;
           this.continuousDays = res.data.data.continuousDays;
         } else {
-          // 可能需要处理token失效等情况
-          console.error('获取签到状态失败', res);
+          // 如果是401错误，说明token失效，静默处理
+          if (res.statusCode === 401) {
+            this.isCheckedIn = false;
+            this.continuousDays = 0;
+          } else {
+            console.error('获取签到状态失败', res);
+          }
         }
       } catch (error) {
         console.error('请求签到状态异常', error);
@@ -80,8 +94,19 @@ export default {
         return;
       }
 
+      const config = this.getConfig();
+      const token = uni.getStorageSync(config.storage.token);
+      
+      // 如果没有token，提示用户登录
+      if (!token) {
+        uni.showToast({
+          title: '请先登录',
+          icon: 'none'
+        });
+        return;
+      }
+
       try {
-        const config = this.getConfig();
         const res = await uni.request({
           url: `${config.api.baseUrl}/checkin`,
           method: 'POST',

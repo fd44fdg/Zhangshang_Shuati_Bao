@@ -156,8 +156,8 @@
 
 <script>
 	import CheckIn from '@/components/CheckIn.vue';
-	import { getUserStats } from '@/api/auth';
-	import { getStatsSummary } from '@/api/stats';
+	import { getUserStats } from '@/api/user';
+	import { getStatsSummary, getKnowledgeProgress, getRecentMistakes } from '@/api/stats';
 	import { mapGetters } from 'vuex';
 	
 	export default {
@@ -246,6 +246,20 @@
 			}, 1000)
 		},
 		methods: {
+			// 格式化学习时间
+			formatStudyTime(questionCount) {
+				if (!questionCount) return '0分钟';
+				// 假设每道题平均2分钟
+				const minutes = questionCount * 2;
+				if (minutes < 60) {
+					return `${minutes}分钟`;
+				} else {
+					const hours = Math.floor(minutes / 60);
+					const remainingMinutes = minutes % 60;
+					return remainingMinutes > 0 ? `${hours}小时${remainingMinutes}分钟` : `${hours}小时`;
+				}
+			},
+			
 			// 加载所有数据
 			async loadAllData() {
 				if (!this.isLoggedIn) {
@@ -273,9 +287,13 @@
 			async loadUserStats() {
 				try {
 					const response = await getUserStats();
-					if (response && response.code === 200 && response.data) {
+					if (response && response.success && response.data) {
 						this.userStats = {
-							continuousDays: response.data.continuousDays || 0,
+							continuousDays: response.data.continuousStudyDays || 0,
+							totalCount: response.data.totalCount || 0,
+							accuracy: response.data.accuracy || 0,
+							todayCount: response.data.todayCount || 0,
+							studyDays: response.data.studyDays || 0,
 							...response.data
 						};
 					}
@@ -288,11 +306,11 @@
 			async loadTodayStats() {
 				try {
 					const response = await getStatsSummary();
-					if (response && response.code === 200 && response.data) {
+					if (response && response.success && response.data) {
 						this.todayStats = {
-							questionsCount: response.data.todayQuestions || 0,
-							correctRate: response.data.todayCorrectRate || 0,
-							studyTime: response.data.todayStudyTime || 0,
+							questionsCount: response.data.todayCount || 0,
+							correctRate: response.data.accuracy || 0,
+							studyTime: this.formatStudyTime(response.data.todayCount || 0),
 							...response.data
 						};
 					}
@@ -304,65 +322,30 @@
 			// 加载知识点进度
 			async loadKnowledgeProgress() {
 				try {
-					// 如果有API接口，在这里调用
-					// const response = await getKnowledgeProgress();
-					// if (response && response.code === 200) {
-					//     this.knowledgeProgress = response.data;
-					// }
-					
-					// 临时使用模拟数据
-					this.knowledgeProgress = [
-						{
-							id: 1,
-							title: "JavaScript基础",
-							progress: 75,
-							completedCount: 30,
-							totalCount: 40
-						},
-						{
-							id: 2,
-							title: "Vue.js框架",
-							progress: 60,
-							completedCount: 18,
-							totalCount: 30
-						},
-						{
-							id: 3,
-							title: "CSS布局",
-							progress: 40,
-							completedCount: 12,
-							totalCount: 30
-						}
-					];
+					const response = await getKnowledgeProgress();
+					if (response && response.success && response.data) {
+						this.knowledgeProgress = response.data;
+					} else {
+						this.knowledgeProgress = [];
+					}
 				} catch (error) {
 					console.error('加载知识点进度失败:', error);
+					this.knowledgeProgress = [];
 				}
 			},
 			
 			// 加载最近错题
 			async loadRecentMistakes() {
 				try {
-					// 如果有API接口，在这里调用
-					// const response = await getRecentMistakes();
-					// if (response && response.code === 200) {
-					//     this.recentMistakes = response.data;
-					// }
-					
-					// 临时使用模拟数据
-					this.recentMistakes = [
-						{
-							id: 1,
-							title: "JavaScript闭包的概念",
-							type: "单选题"
-						},
-						{
-							id: 2,
-							title: "CSS Flexbox布局",
-							type: "多选题"
-						}
-					];
+					const response = await getRecentMistakes();
+					if (response && response.success && response.data) {
+						this.recentMistakes = response.data;
+					} else {
+						this.recentMistakes = [];
+					}
 				} catch (error) {
 					console.error('加载最近错题失败:', error);
+					this.recentMistakes = [];
 				}
 			},
 			

@@ -24,9 +24,9 @@ const dbConfig = {
 };
 
 module.exports = {
-  // 端口配置
+  // 端口配置 - 与 docker-compose.yml 保持一致
   ports: {
-    backend: process.env.PORT || 3002,
+    backend: process.env.PORT || 3000,  // 修复：与Docker配置一致
     admin: process.env.ADMIN_PORT || 8080
   },
 
@@ -48,8 +48,14 @@ module.exports = {
 
   // JWT配置
   jwt: {
-    secret: process.env.JWT_SECRET || 'your-secret-key-change-in-production',
-    expiresIn: '7d'
+    secret: process.env.JWT_SECRET || (() => {
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error('JWT_SECRET must be set in production environment');
+      }
+      console.warn('⚠️  Using default JWT secret in development. Set JWT_SECRET in production!');
+      return 'dev-only-secret-key-not-for-production-use';
+    })(),
+    expiresIn: process.env.JWT_EXPIRES_IN || '7d'
   },
 
   // 文件上传配置

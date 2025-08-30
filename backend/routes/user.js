@@ -7,7 +7,7 @@ const db = require('../config/db');
 const { verifyToken: authMiddleware } = require('../middleware/auth');
 const { sendSuccess } = require('../utils/responseHandler');
 const ApiError = require('../utils/ApiError');
-const catchAsync = require('../utils/catchAsync');
+const { asyncHandler } = require('../middleware/errorHandler');
 const config = require('../config');
 
 const router = express.Router();
@@ -68,7 +68,7 @@ const getUserProfile = async (userId) => {
 };
 
 // 获取用户信息
-router.get('/profile', authMiddleware, catchAsync(async (req, res) => {
+router.get('/profile', authMiddleware, asyncHandler(async (req, res) => {
   const userProfile = await getUserProfile(req.user.userId);
   
   if (!userProfile) {
@@ -79,7 +79,7 @@ router.get('/profile', authMiddleware, catchAsync(async (req, res) => {
 }));
 
 // 更新用户信息
-router.put('/profile', authMiddleware, catchAsync(async (req, res) => {
+router.put('/profile', authMiddleware, asyncHandler(async (req, res) => {
   const { nickname, avatar, gender, birthday, bio, learning_goal } = req.body;
   
   // 构建更新字段
@@ -135,7 +135,7 @@ router.put('/profile', authMiddleware, catchAsync(async (req, res) => {
 }));
 
 // 修改密码
-router.put('/password', authMiddleware, catchAsync(async (req, res) => {
+router.put('/password', authMiddleware, asyncHandler(async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   
   if (!currentPassword || !newPassword) {
@@ -176,7 +176,7 @@ router.put('/password', authMiddleware, catchAsync(async (req, res) => {
 }));
 
 // 头像上传接口
-router.post('/avatar', authMiddleware, upload.single('avatar'), catchAsync(async (req, res) => {
+router.post('/avatar', authMiddleware, upload.single('avatar'), asyncHandler(async (req, res) => {
   if (!req.file) {
     throw new ApiError(400, '请选择要上传的头像');
   }
@@ -195,7 +195,7 @@ router.post('/avatar', authMiddleware, upload.single('avatar'), catchAsync(async
 }));
 
 // 获取用户统计数据
-router.get('/stats', authMiddleware, catchAsync(async (req, res) => {
+router.get('/stats', authMiddleware, asyncHandler(async (req, res) => {
   const userId = req.user.userId;
   
   const stats = await db.query(
@@ -232,7 +232,7 @@ router.get('/stats', authMiddleware, catchAsync(async (req, res) => {
 }));
 
 // 获取用户签到状态
-router.get('/checkin/status', authMiddleware, catchAsync(async (req, res) => {
+router.get('/checkin/status', authMiddleware, asyncHandler(async (req, res) => {
   const userId = req.user.userId;
   const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD格式
   
@@ -281,7 +281,7 @@ router.get('/checkin/status', authMiddleware, catchAsync(async (req, res) => {
 }));
 
 // 执行签到操作
-router.post('/checkin', authMiddleware, catchAsync(async (req, res) => {
+router.post('/checkin', authMiddleware, asyncHandler(async (req, res) => {
   const userId = req.user.userId;
   const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD格式
   
@@ -394,7 +394,7 @@ router.post('/checkin', authMiddleware, catchAsync(async (req, res) => {
 }));
 
 // 更新用户统计数据（答题后调用）
-router.post('/stats/update', authMiddleware, catchAsync(async (req, res) => {
+router.post('/stats/update', authMiddleware, asyncHandler(async (req, res) => {
   const { isCorrect, questionId } = req.body;
   const userId = req.user.userId;
   
@@ -499,7 +499,7 @@ router.post('/stats/update', authMiddleware, catchAsync(async (req, res) => {
 }));
 
 // GET /api/user/list - 获取用户列表（需要管理员权限）
-router.get('/list', authMiddleware, catchAsync(async (req, res) => {
+router.get('/list', authMiddleware, asyncHandler(async (req, res) => {
   // 简单的权限检查
   if (req.user.role !== 'admin') {
     return res.status(403).json({ code: 40301, message: '无权访问' });
@@ -541,7 +541,7 @@ router.get('/list', authMiddleware, catchAsync(async (req, res) => {
 }));
 
 // POST /api/user/create - 创建新用户（需要管理员权限）
-router.post('/create', authMiddleware, catchAsync(async (req, res) => {
+router.post('/create', authMiddleware, asyncHandler(async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ code: 40301, message: '无权访问' });
   }
@@ -600,7 +600,7 @@ router.post('/create', authMiddleware, catchAsync(async (req, res) => {
 }));
 
 // PUT /api/user/update/:id - 更新用户信息
-router.put('/update/:id', authMiddleware, catchAsync(async (req, res) => {
+router.put('/update/:id', authMiddleware, asyncHandler(async (req, res) => {
     const userIdToUpdate = parseInt(req.params.id, 10);
     const { username, email, role } = req.body;
 
@@ -669,9 +669,8 @@ router.put('/update/:id', authMiddleware, catchAsync(async (req, res) => {
     res.json({ code: 20000, message: '更新成功', data: updatedUsers[0] });
 }));
 
-
 // DELETE /api/user/delete/:id - 删除用户
-router.delete('/delete/:id', authMiddleware, catchAsync(async (req, res) => {
+router.delete('/delete/:id', authMiddleware, asyncHandler(async (req, res) => {
     const userIdToDelete = parseInt(req.params.id, 10);
     
     if (req.user.role !== 'admin') {
@@ -758,7 +757,5 @@ router.delete('/delete/:id', authMiddleware, catchAsync(async (req, res) => {
       }
     }
 }));
-
-
 
 module.exports = router;

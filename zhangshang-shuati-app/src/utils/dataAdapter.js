@@ -207,8 +207,9 @@ export function adaptStudyRecordData(recordData) {
 export function adaptApiResponse(response, dataAdapter) {
   if (!response) return null;
   
-  // 标准化响应格式
+  // 标准化响应格式 - 支持新的success字段和旧的code字段
   const standardResponse = {
+    success: response.success || (response.code === 200) || (response.status === 200),
     code: response.code || response.status || 200,
     message: response.message || response.msg || 'success',
     data: response.data || response.result || response

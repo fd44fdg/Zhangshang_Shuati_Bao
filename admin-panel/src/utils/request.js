@@ -41,8 +41,11 @@ service.interceptors.response.use(
   response => {
     const res = response.data
 
-    // 如果自定义代码不是200，则判断为错误。
-    if (res.code !== 200) {
+    // 支持新的success字段和旧的code字段
+    const isSuccess = res.success === true || res.code === 200
+    
+    // 如果请求不成功，则判断为错误。
+    if (!isSuccess) {
       ElMessage({
         message: res.message || 'Error',
         type: 'error',

@@ -21,6 +21,8 @@ const systemRoutes = require('./routes/system');
 const searchRoutes = require('./routes/search');
 const checkinRoutes = require('./routes/checkin');
 const statsRoutes = require('./routes/stats');
+const articleRoutes = require('./routes/article');
+const examRoutes = require('./routes/exam');
 
 const { sendSuccess, sendError } = require('./utils/responseHandler');
 const ApiError = require('./utils/ApiError');
@@ -73,6 +75,8 @@ app.use(`${apiPrefix}/system`, systemRoutes);
 app.use(`${apiPrefix}/search`, searchRoutes);
 app.use(`${apiPrefix}/stats`, statsRoutes);
 app.use(`${apiPrefix}`, checkinRoutes);
+app.use(`${apiPrefix}/articles`, articleRoutes);
+app.use(`${apiPrefix}/exams`, examRoutes);
 
 // 健康检查端点
 app.get('/health', (req, res) => {

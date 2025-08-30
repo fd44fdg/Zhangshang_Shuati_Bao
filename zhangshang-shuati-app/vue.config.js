@@ -12,14 +12,14 @@ module.exports = {
     sourceMap: false,
     loaderOptions: {
       scss: {
-        additionalData: `@use "@/uni.scss" as *;`
+        prependData: `@use "@/uni.scss" as *;`
       }
     }
   },
   
   // 开发服务器配置
   devServer: {
-    port: 8084,
+    port: 8085,
     host: '0.0.0.0',
     https: false,
     hot: true,

@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const config = require('../config');
 const ApiError = require('../utils/ApiError');
 
 /**
@@ -24,7 +25,7 @@ const verifyToken = (req, res, next) => {
     }
     
     // 验证token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const decoded = jwt.verify(token, config.jwt.secret);
     
     // 将用户信息添加到请求对象
     req.user = decoded;
@@ -141,7 +142,7 @@ const optionalAuth = (req, res, next) => {
       return next();
     }
     
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const decoded = jwt.verify(token, config.jwt.secret);
     req.user = decoded;
     next();
   } catch (error) {
