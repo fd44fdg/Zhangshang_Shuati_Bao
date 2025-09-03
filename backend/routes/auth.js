@@ -11,8 +11,10 @@ router.post('/register', asyncHandler(async (req, res) => {
     res.setHeader('Deprecation', 'true');
     res.setHeader('Link', '</api/v1/auth/register>; rel="successor-version"');
   }
-  const newUser = await authService.register(req.body);
-  sendSuccess(res, newUser, '注册成功', 201);
+    console.log('[E2E-DEBUG] auth route /register - received request', { path: req.path, method: req.method });
+    const newUser = await authService.register(req.body);
+    console.log('[E2E-DEBUG] auth route /register - service returned');
+    sendSuccess(res, newUser, '注册成功', 201);
 }));
 
 router.post('/login', asyncHandler(async (req, res) => {
@@ -20,8 +22,10 @@ router.post('/login', asyncHandler(async (req, res) => {
     res.setHeader('Deprecation', 'true');
     res.setHeader('Link', '</api/v1/auth/login>; rel="successor-version"');
   }
-  const result = await authService.login(req.body);
-  sendSuccess(res, result, '登录成功');
+    console.log('[E2E-DEBUG] auth route /login - received request', { path: req.path, method: req.method });
+    const result = await authService.login(req.body);
+    console.log('[E2E-DEBUG] auth route /login - service returned');
+    sendSuccess(res, result, '登录成功');
 }));
 
 router.post('/change-password', verifyToken, asyncHandler(async (req, res) => {

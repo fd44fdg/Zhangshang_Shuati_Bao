@@ -10,6 +10,8 @@ class SettingsManager {
       notification: true,
       sound: true,
       vibration: false,
+  // 夜间模式开关，false 表示浅色模式
+  darkMode: false,
       difficulty: 'medium',
       questionCount: 20,
       autoNext: false

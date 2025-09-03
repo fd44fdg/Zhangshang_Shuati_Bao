@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  contract-tests:
+    name: Contract Tests (Backend)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies (workspace)
+        run: pnpm install -w
+
+      - name: Contract scan (routes)
+        run: node scripts/contract-scan.js
+
+      - name: Run backend contract tests
+        run: pnpm -C backend run test:api
+
+  e2e-auth:
+    name: E2E Auth (Real DB)
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: 114514
+          MYSQL_DATABASE: shuati_db
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -p114514 || exit 1" 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies (workspace)
+        run: pnpm install -w
+
+      - name: Wait for MySQL
+        run: |
+          for i in {1..60}; do
+            if mysqladmin ping -h 127.0.0.1 -uroot -p114514 --silent; then
+              echo "MySQL is up"; break; fi; sleep 1; done
+
+      - name: Prepare backend .env
+        working-directory: backend
+        run: |
+          cat > .env << 'EOF'
+          NODE_ENV=development
+          PORT=3000
+          USE_SQLITE=false
+          DB_HOST=127.0.0.1
+          DB_PORT=3306
+          DB_USER=root
+          DB_PASSWORD=114514
+          DB_NAME=shuati_db
+          JWT_SECRET=ci_secret_change_me_please_32chars_min
+          JWT_EXPIRES_IN=1d
+          CORS_ORIGINS=http://localhost:8080,http://localhost:3000
+          EOF
+
+      - name: Init DB (migrate + seed)
+        working-directory: backend
+        run: pnpm run db:init:seed
+
+      - name: Run E2E auth test (real DB)
+        working-directory: backend
+        env:
+          USE_REAL_DB_FOR_TEST: 'true'
+          NODE_ENV: test
+        run: pnpm run test:e2e:auth

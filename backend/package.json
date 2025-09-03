@@ -13,6 +13,7 @@
     "postinstall": "npm run validate:env",
     "test": "cross-env NODE_ENV=test jest",
     "test:api": "cross-env NODE_ENV=test jest -c jest.api.config.js",
+    "test:e2e:auth": "cross-env NODE_ENV=test USE_REAL_DB_FOR_TEST=true jest tests/auth.e2e.test.js",
     "test:watch": "cross-env NODE_ENV=test jest --watch",
     "test:coverage": "cross-env NODE_ENV=test jest --coverage",
     "test:ci": "cross-env NODE_ENV=test jest --ci --coverage --watchAll=false",

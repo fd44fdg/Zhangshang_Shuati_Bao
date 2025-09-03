@@ -1,5 +1,7 @@
 const mysql = require('mysql2/promise');
 const { pool } = require('../config/database');
+// Also import the application's DB client (knex or mock) so we can destroy it after tests
+const appDb = require('../config/db');
 
 // 测试数据库配置
 process.env.NODE_ENV = 'test';
@@ -53,6 +55,15 @@ afterAll(async () => {
     if (pool) {
       await pool.end();
       console.log('✅ 数据库连接池已关闭');
+    }
+    // If the application uses Knex for DB access, destroy its pool as well to free handles
+    try {
+      if (appDb && typeof appDb.destroy === 'function') {
+        await appDb.destroy();
+        console.log('✅ 应用级 Knex 连接已销毁');
+      }
+    } catch (err) {
+      console.warn('关闭应用级数据库连接时出错:', err.message);
     }
   } catch (error) {
     console.warn('⚠️ 关闭数据库连接池时出现警告:', error.message);

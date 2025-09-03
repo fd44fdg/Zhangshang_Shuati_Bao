@@ -2,14 +2,33 @@ const knex = require('knex');
 const knexfile = require('../knexfile');
 
 const environment = process.env.NODE_ENV || 'development';
-const config = knexfile[environment];
+const useRealTestDb = (environment === 'test') && (process.env.USE_REAL_DB_FOR_TEST === 'true');
+const cfgEnv = (environment === 'test' && process.env.USE_REAL_DB_FOR_TEST === 'true') ? 'development' : environment;
+const config = knexfile[cfgEnv];
 
 if (!config) {
   throw new Error(`Knex configuration for environment '${environment}' not found in knexfile.js`);
 }
 
-// In tests, stub knex to avoid loading native sqlite bindings
-const db = (process.env.NODE_ENV === 'test') ? require('../tests/mocks/db') : knex(config);
+// In tests, stub knex to avoid loading native sqlite bindings unless explicitly using real DB for tests
+
+let db;
+if (process.env.NODE_ENV === 'test') {
+  try {
+    const knexEmitter = require('events');
+  } catch (_) {}
+
+  // Only initialize real Knex when tests explicitly request a real DB and the configured dialect is MySQL
+  const isMysqlConfigured = config && (config.client && config.client.toString().includes('mysql') || config.dialect === 'mysql');
+  if (useRealTestDb && isMysqlConfigured) {
+    db = knex(config);
+  } else {
+    // Use mock DB for tests to avoid native bindings and speed up tests
+    db = require('../tests/mocks/db');
+  }
+} else {
+  db = knex(config);
+}
 
 // Add compatibility layer for old db.query() calls
 db.query = async function(sql, params = []) {
@@ -44,5 +63,24 @@ db.getOne = async function(sql, params = []) {
   const [rows] = await db.query(sql, params);
   return rows && rows.length > 0 ? rows[0] : null;
 };
+
+// Hook DB query timings (only when real knex is used)
+try {
+  const { incDbQuery } = require('../utils/metrics');
+  if (db && db.client && db.client.on) {
+    const pending = new Map();
+    db.client.on('query', (query) => {
+      pending.set(query.__knexQueryUid, Date.now());
+    });
+    db.client.on('query-response', (_resp, query) => {
+      const start = pending.get(query.__knexQueryUid);
+      if (start) {
+        const dur = Date.now() - start;
+        incDbQuery(dur);
+        pending.delete(query.__knexQueryUid);
+      }
+    });
+  }
+} catch (_) {}
 
 module.exports = db;

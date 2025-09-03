@@ -19,11 +19,14 @@ class MonitoringService {
     return (req, res, next) => {
       const startTime = Date.now();
       this.requestCount++;
+      const routeKey = (req.baseUrl || '') + (req.route ? req.route.path : req.path || '');
 
       // Track response
       res.on('finish', () => {
         const responseTime = Date.now() - startTime;
         this.responseTimeSum += responseTime;
+
+        try { require('../utils/metrics').recordRequest(req.method, routeKey, res.statusCode, responseTime); } catch (_) {}
 
         // Log slow requests
         if (responseTime > 1000) {
@@ -212,6 +215,12 @@ class MonitoringService {
 
   // Get detailed metrics for monitoring systems
   getMetrics() {
+    let extra = {};
+    try {
+      const { getHttpStats, getDbStats } = require('../utils/metrics');
+      extra = { http: getHttpStats(), db: getDbStats() };
+    } catch (_) {}
+
     const memUsage = process.memoryUsage();
     
     return {
@@ -222,7 +231,9 @@ class MonitoringService {
         errors_total: this.errorCount,
         db_queries_total: this.dbQueryCount,
         avg_response_time: this.requestCount > 0 ? 
-          Math.round(this.responseTimeSum / this.requestCount) : 0
+          Math.round(this.responseTimeSum / this.requestCount) : 0,
+        // extra http/db stats
+        ...extra
       },
       system: {
         memory_usage_bytes: memUsage.rss,
@@ -316,7 +327,70 @@ module.exports = {
   metricsMiddleware: (req, res, next) => {
     if (req.path === '/metrics' || req.path === '/metrics/') {
       const metrics = monitoring.getMetrics();
-      res.json(metrics);
+
+      const accept = (req.get('accept') || '').toLowerCase();
+      const wantProm = (req.query && (req.query.format === 'prom' || req.query.format === 'prometheus')) || accept.includes('text/plain');
+
+      if (wantProm) {
+        // Render Prometheus-style plain text
+        let lines = [];
+        try {
+          const { getHttpStats, getDbStats } = require('../utils/metrics');
+          const http = getHttpStats();
+          const db = getDbStats();
+          const esc = (s) => String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+          const label = (kv) => '{' + Object.entries(kv).map(([k,v]) => `${k}="${esc(v)}"`).join(',') + '}';
+
+          // HTTP totals
+          lines.push('# HELP app_http_requests_total Total HTTP requests');
+          lines.push('# TYPE app_http_requests_total counter');
+          lines.push(`app_http_requests_total ${http.total}`);
+
+          lines.push('# HELP app_http_requests_errors_total Total HTTP error responses (status >= 400)');
+          lines.push('# TYPE app_http_requests_errors_total counter');
+          lines.push(`app_http_requests_errors_total ${http.errors}`);
+
+          lines.push('# HELP app_http_request_duration_ms_avg Average HTTP request duration in milliseconds');
+          lines.push('# TYPE app_http_request_duration_ms_avg gauge');
+          lines.push(`app_http_request_duration_ms_avg ${http.avg}`);
+
+          // Per-route
+          lines.push('# HELP app_http_request_route_duration_ms_avg Average duration per route');
+          lines.push('# TYPE app_http_request_route_duration_ms_avg gauge');
+          lines.push('# HELP app_http_request_route_duration_ms_p95 P95 duration per route');
+          lines.push('# TYPE app_http_request_route_duration_ms_p95 gauge');
+          for (const key of Object.keys(http.routes || {})) {
+            const routeStat = http.routes[key];
+            const sp = key.split(' ');
+            const method = sp[0] || 'GET';
+            const route = sp.slice(1).join(' ');
+            const lbl = label({ method, route });
+            lines.push(`app_http_request_route_duration_ms_avg${lbl} ${routeStat.avg}`);
+            lines.push(`app_http_request_route_duration_ms_p95${lbl} ${routeStat.p95}`);
+          }
+
+          // DB totals
+          lines.push('# HELP app_db_queries_total Total DB queries');
+          lines.push('# TYPE app_db_queries_total counter');
+          lines.push(`app_db_queries_total ${db.total}`);
+
+          lines.push('# HELP app_db_query_duration_ms_avg Average DB query duration in milliseconds');
+          lines.push('# TYPE app_db_query_duration_ms_avg gauge');
+          lines.push(`app_db_query_duration_ms_avg ${db.avg}`);
+
+          lines.push('# HELP app_db_query_duration_ms_p95 P95 DB query duration in milliseconds');
+          lines.push('# TYPE app_db_query_duration_ms_p95 gauge');
+          lines.push(`app_db_query_duration_ms_p95 ${db.p95}`);
+
+          res.set('Content-Type', 'text/plain; charset=utf-8');
+          res.send(lines.join('\n'));
+        } catch (e) {
+          // Fallback to JSON if rendering fails
+          res.json(metrics);
+        }
+      } else {
+        res.json(metrics);
+      }
     } else {
       next();
     }

@@ -1,10 +1,16 @@
 <script>
+	import theme from './utils/theme'
+
 	export default {
 		onLaunch: function() {
 			console.log('App Launch')
+			// 在应用启动时应用主题
+			theme.applyThemeFromSettings()
 		},
 		onShow: function() {
 			console.log('App Show')
+			// 每次返回前台也确保主题同步
+			theme.applyThemeFromSettings()
 		},
 		onHide: function() {
 			console.log('App Hide')
@@ -26,4 +32,50 @@
 		background-size: cover !important;
 		background-position: center center !important;
 	}
+
+/* 全局主题变量（浅色为默认） */
+:root {
+	--bg-color: #f5f5f5;
+	--card-bg: #ffffff;
+	--text-primary: #333333;
+	--text-secondary: #999999;
+	--accent: #4A90E2;
+	--border-color: #f5f5f5;
+	--accent-active: #007AFF;
+	/* extra semantic variables for icons and states */
+	--icon-accent: var(--accent);
+	--warning: #FFD700;
+	--danger: #FF6B6B;
+	--success: #34C759;
+	--shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+}
+
+/* 深色主题覆盖 */
+body.dark-mode, .dark-mode {
+	--bg-color: #071022;
+	--card-bg: #0b1320;
+	--text-primary: #e6eef8;
+	--text-secondary: #9fb0c9;
+	--accent: #60a5fa;
+	--border-color: #0b1320;
+	--accent-active: #60a5fa;
+	--icon-accent: var(--accent);
+	--warning: #FFD86B;
+	--danger: #FF6B6B;
+	--success: #34C759;
+	--shadow: none;
+}
+
+/* 应用变量到常用元素 */
+body, .settings-container {
+	background-color: var(--bg-color) !important;
+	color: var(--text-primary) !important;
+}
+
+.section, .header {
+	background-color: var(--card-bg) !important;
+}
+
+.item-text { color: var(--text-primary) !important; }
+.item-value, .section-title, .item-arrow { color: var(--text-secondary) !important; }
 </style>

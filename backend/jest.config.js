@@ -18,7 +18,6 @@ module.exports = {
   testTimeout: 30000,
   verbose: true,
   maxWorkers: 1,
-  runInBand: true,
   transform: {},
   transformIgnorePatterns: ['node_modules/(?!(.*\.mjs$))'],
   extensionsToTreatAsEsm: []

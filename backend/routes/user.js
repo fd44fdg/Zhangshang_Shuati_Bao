@@ -63,7 +63,7 @@ router.post('/stats/update', authMiddleware, asyncHandler(async (req, res) => {
 
 router.get('/list', authMiddleware, asyncHandler(async (req, res) => {
   if (req.user.role !== 'admin') {
-    return res.status(403).json({ code: 40301, message: '无权访问' });
+    throw new ApiError(403, '无权访问');
   }
 
   const result = await userService.getUserList(req.query);
@@ -72,7 +72,7 @@ router.get('/list', authMiddleware, asyncHandler(async (req, res) => {
 
 router.post('/create', authMiddleware, asyncHandler(async (req, res) => {
   if (req.user.role !== 'admin') {
-    return res.status(403).json({ code: 40301, message: '无权访问' });
+    throw new ApiError(403, '无权访问');
   }
 
   const newUser = await userService.createUser(req.body);

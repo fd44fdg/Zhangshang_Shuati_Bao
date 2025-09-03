@@ -39,6 +39,14 @@ const examRoutes = require('./routes/exam');
 const app = express();
 const PORT = config.ports.backend;
 
+// Instrument app.listen to help debug test server startup during e2e tests
+// This logs when supertest or other code calls app.listen()
+const _originalListen = app.listen.bind(app);
+app.listen = (...args) => {
+  console.log('[E2E-DEBUG] app.listen called with args:', args && args.length ? args : 'no-args');
+  return _originalListen(...args);
+};
+
 // ========================================
 // Production Security Middleware
 // ========================================

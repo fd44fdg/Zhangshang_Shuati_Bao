@@ -41,7 +41,7 @@
 }
 
 .uni-tabbar-item.uni-tabbar-item-active .uni-tabbar-item-text {
-  color: #007AFF !important;
+  color: var(--accent-active, #007AFF) !important;
   font-weight: 600 !important;
   text-shadow: 0 0 8px rgba(0, 122, 255, 0.3) !important;
 }
@@ -69,7 +69,7 @@
   transform: translateX(-50%) !important;
   width: 24px !important;
   height: 2px !important;
-  background: linear-gradient(90deg, #007AFF, #5AC8FA) !important;
+  background: linear-gradient(90deg, var(--accent-active, #007AFF), #5AC8FA) !important;
   border-radius: 1px !important;
   box-shadow: 0 0 8px rgba(0, 122, 255, 0.5) !important;
   animation: pulse 2s infinite !important;

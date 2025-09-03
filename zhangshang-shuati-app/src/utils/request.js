@@ -68,13 +68,6 @@ class Request {
             // 业务错误
             this.handleBusinessError(normalized, reject)
           }
-            // 未授权，清除登录信息并跳转登录页
-            this.handleUnauthorized()
-            reject(new Error('登录已过期，请重新登录'))
-          } else {
-            // HTTP错误
-            this.handleHttpError(res.statusCode, reject)
-          }
         },
         fail: (error) => {
           // 隐藏加载中

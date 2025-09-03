@@ -32,11 +32,11 @@
 
 /* 选中状态样式 */
 .uni-tabbar-item.uni-tabbar-item-active .uni-tabbar-item-text {
-  color: #007AFF !important;
+  color: var(--accent-active, #007AFF) !important;
 }
 
 .uni-tabbar-item.uni-tabbar-item-active .uni-tabbar-item-text::first-line {
-  color: #007AFF !important;
+  color: var(--accent-active, #007AFF) !important;
   text-shadow: 0 1px 3px rgba(0, 122, 255, 0.3) !important;
 }
 
@@ -64,7 +64,7 @@
 
 /* 背景样式 */
 .uni-tabbar {
-  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%) !important;
+  background: linear-gradient(180deg, var(--card-bg, #ffffff) 0%, var(--bg-color, #f8f9fa) 100%) !important;
   border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08) !important;
 }

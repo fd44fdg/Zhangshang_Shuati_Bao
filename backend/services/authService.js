@@ -13,20 +13,24 @@ class AuthService {
       throw new ApiError(400, '用户名、邮箱和密码为必填项');
     }
     
+    console.log('[E2E-DEBUG] authService.register - checking existing username');
     const existingUser = await db('users').where({ username }).first();
     if (existingUser) {
       throw new ApiError(400, '用户名已被使用');
     }
     
+    console.log('[E2E-DEBUG] authService.register - checking existing email');
     const existingEmail = await db('users').where({ email }).first();
     if (existingEmail) {
       throw new ApiError(400, '邮箱已被注册');
     }
     
+    console.log('[E2E-DEBUG] authService.register - hashing password');
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     
-    const [id] = await db('users').insert({
+    console.log('[E2E-DEBUG] authService.register - inserting user to DB');
+    const insertResult = await db('users').insert({
       username,
       email,
       password_hash: hashedPassword,
@@ -35,8 +39,13 @@ class AuthService {
       status: 1
     });
     
+    console.log('[E2E-DEBUG] authService.register - insert result', insertResult);
+    // knex may return insert id array or object depending on driver
+    const id = Array.isArray(insertResult) ? insertResult[0] : insertResult;
     const user = await db('users').where({ id }).first();
+    console.log('[E2E-DEBUG] authService.register - user loaded', !!user, user && user.id);
     
+    console.log('[E2E-DEBUG] authService.register - signing token');
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
       config.jwt.secret,
