@@ -58,6 +58,9 @@
 	--warning-dark: #FFA500;
 	--card-bg-2: #f8fbff;
 	--card-bg-3: #e8f4ff;
+	/* avatar defaults */
+	--avatar-bg: #4A90E2;
+	--avatar-fg: #FFFFFF;
 }
 
 /* 深色主题覆盖 */
@@ -82,6 +85,9 @@ body.dark-mode, .dark-mode {
 	--danger-bg: rgba(255, 107, 107, 0.06);
 	--card-bg-2: #071428;
 	--card-bg-3: #08182b;
+	/* avatar overrides for dark mode */
+	--avatar-bg: #1f3b5a;
+	--avatar-fg: #e6eef8;
 }
 
 /* 应用变量到常用元素 */

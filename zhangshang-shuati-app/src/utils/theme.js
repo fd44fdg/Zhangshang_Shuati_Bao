@@ -2,34 +2,34 @@
 import settings from './settings'
 
 const THEME_CLASS = 'dark-mode'
+function getCssVar(name, fallback) {
+  try {
+    if (typeof document !== 'undefined' && document.documentElement) {
+      const v = getComputedStyle(document.documentElement).getPropertyValue(name)
+      if (v) return v.trim()
+    }
+  } catch (e) {}
+  return fallback
+}
 
 function applyThemeFromSettings() {
   const s = settings.getSettings()
-  applyTheme(s.darkMode)
+  applyTheme(s && s.darkMode)
 }
 
 function setMetaThemeColor(color) {
   try {
     if (typeof document !== 'undefined') {
       let meta = document.querySelector('meta[name="theme-color"]')
-    function getCssVar(name, fallback) {
-      try {
-        if (typeof document !== 'undefined' && document.documentElement) {
-          const v = getComputedStyle(document.documentElement).getPropertyValue(name)
-          if (v) return v.trim()
-        }
-      } catch (e) {}
-      return fallback
-    }
       if (!meta) {
         meta = document.createElement('meta')
         meta.name = 'theme-color'
         document.head.appendChild(meta)
       }
-          setMetaThemeColor(getCssVar('--bg-color', '#0b1320'))
+      meta.content = color
     }
   } catch (e) {
-          setMetaThemeColor(getCssVar('--card-bg', '#ffffff'))
+    // ignore
   }
 }
 
@@ -39,10 +39,10 @@ function applyTheme(isDark) {
     if (typeof window !== 'undefined' && document && document.body) {
       if (isDark) {
         document.body.classList.add(THEME_CLASS)
-        setMetaThemeColor('#0b1320')
+  setMetaThemeColor(getCssVar('--bg-color', '#0b1320'))
       } else {
         document.body.classList.remove(THEME_CLASS)
-        setMetaThemeColor('#ffffff')
+  setMetaThemeColor(getCssVar('--bg-color', '#ffffff'))
       }
     }
   } catch (e) {
