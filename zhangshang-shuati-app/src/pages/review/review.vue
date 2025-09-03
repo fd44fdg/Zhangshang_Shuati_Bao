@@ -266,12 +266,12 @@ export default {
 
 <style scoped>
 .review-container {
-	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	background: linear-gradient(135deg, var(--accent, #667eea) 0%, var(--accent-dark, #764ba2) 100%);
 	min-height: 100vh;
 	padding-bottom: 20rpx;
 }
 
-/* 头部导航 */
+/* 头部 */
 .review-header {
 	display: flex;
 	align-items: center;
@@ -292,17 +292,17 @@ export default {
 
 .back-icon {
 	font-size: 32rpx;
-	color: white;
+	color: var(--card-bg, white);
 	font-weight: bold;
 }
 
 .header-title {
 	font-size: 36rpx;
 	font-weight: bold;
-	color: white;
+	color: var(--card-bg, white);
 }
 
-/* 进度概览 */
+/* 概览卡 */
 .progress-overview {
 	padding: 0 30rpx 30rpx;
 }
@@ -324,7 +324,7 @@ export default {
 	display: block;
 	font-size: 48rpx;
 	font-weight: bold;
-	color: white;
+	color: var(--card-bg, white);
 	margin-bottom: 8rpx;
 }
 
@@ -333,9 +333,9 @@ export default {
 	color: rgba(255, 255, 255, 0.8);
 }
 
-/* 知识分类 */
+/* 内容区 */
 .knowledge-categories {
-	background: white;
+	background: var(--card-bg, white);
 	border-radius: 30rpx 30rpx 0 0;
 	padding: 40rpx 30rpx 30rpx;
 	margin-top: 20rpx;
@@ -350,7 +350,7 @@ export default {
 .title-text {
 	font-size: 32rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--text-primary, #333);
 	margin-left: 12rpx;
 }
 
@@ -361,17 +361,17 @@ export default {
 }
 
 .category-card {
-	background: white;
+	background: var(--card-bg, white);
 	border-radius: 16rpx;
 	padding: 24rpx;
-	box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
-	border: 2rpx solid #f0f0f0;
+	box-shadow: var(--shadow, 0 4rpx 20rpx rgba(0, 0, 0, 0.08));
+	border: 2rpx solid var(--border-color, #f0f0f0);
 	transition: all 0.3s ease;
 }
 
 .category-card.completed {
-	border-color: #4A90E2;
-	background: linear-gradient(135deg, #f8fbff 0%, #e8f4ff 100%);
+	border-color: var(--accent, #4A90E2);
+	background: linear-gradient(135deg, var(--card-bg-2, #f8fbff) 0%, var(--card-bg-3, #e8f4ff) 100%);
 }
 
 .card-header {
@@ -382,8 +382,8 @@ export default {
 }
 
 .progress-badge {
-	background: #4A90E2;
-	color: white;
+	background: var(--accent, #4A90E2);
+	color: var(--card-bg, white);
 	padding: 8rpx 16rpx;
 	border-radius: 20rpx;
 	font-size: 22rpx;
@@ -391,7 +391,7 @@ export default {
 }
 
 .category-card.completed .progress-badge {
-	background: #52c41a;
+	background: var(--success, #52c41a);
 }
 
 .card-content {
@@ -401,21 +401,21 @@ export default {
 .category-title {
 	font-size: 28rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--text-primary, #333);
 	margin-bottom: 8rpx;
 	display: block;
 }
 
 .category-desc {
 	font-size: 24rpx;
-	color: #666;
+	color: var(--text-secondary, #666);
 	line-height: 1.4;
 	margin-bottom: 12rpx;
 	display: block;
 }
 
 .knowledge-stats {
-	background: #f8f9fa;
+	background: var(--border-color, #f8f9fa);
 	padding: 8rpx 12rpx;
 	border-radius: 8rpx;
 	display: inline-block;
@@ -423,7 +423,7 @@ export default {
 
 .stats-text {
 	font-size: 22rpx;
-	color: #4A90E2;
+	color: var(--accent, #4A90E2);
 	font-weight: bold;
 }
 
@@ -436,7 +436,7 @@ export default {
 .progress-bar {
 	flex: 1;
 	height: 8rpx;
-	background: #f0f0f0;
+	background: var(--border-color, #f0f0f0);
 	border-radius: 4rpx;
 	margin-right: 16rpx;
 	overflow: hidden;
@@ -444,24 +444,24 @@ export default {
 
 .progress-fill {
 	height: 100%;
-	background: linear-gradient(90deg, #4A90E2 0%, #357ABD 100%);
+	background: linear-gradient(90deg, var(--accent, #4A90E2) 0%, var(--accent-dark, #357ABD) 100%);
 	border-radius: 4rpx;
 	transition: width 0.3s ease;
 }
 
 .category-card.completed .progress-fill {
-	background: linear-gradient(90deg, #52c41a 0%, #389e0d 100%);
+	background: linear-gradient(90deg, var(--success, #52c41a) 0%, #389e0d 100%);
 }
 
 .status-text {
 	font-size: 22rpx;
-	color: #666;
+	color: var(--text-secondary, #666);
 	font-weight: bold;
 }
 
 /* 最近学习 */
 .recent-study {
-	background: white;
+	background: var(--card-bg, white);
 	padding: 30rpx;
 }
 
@@ -475,9 +475,9 @@ export default {
 	display: flex;
 	align-items: center;
 	padding: 20rpx;
-	background: #f8f9fa;
+	background: var(--border-color, #f8f9fa);
 	border-radius: 12rpx;
-	border-left: 4rpx solid #4A90E2;
+	border-left: 4rpx solid var(--accent, #4A90E2);
 }
 
 .recent-icon {
@@ -490,7 +490,7 @@ export default {
 
 .recent-title {
 	font-size: 26rpx;
-	color: #333;
+	color: var(--text-primary, #333);
 	font-weight: bold;
 	margin-bottom: 4rpx;
 	display: block;
@@ -498,7 +498,7 @@ export default {
 
 .recent-time {
 	font-size: 22rpx;
-	color: #999;
+	color: var(--text-secondary, #999);
 }
 
 .recent-progress {
@@ -507,7 +507,7 @@ export default {
 
 .progress-num {
 	font-size: 22rpx;
-	color: #4A90E2;
+	color: var(--accent, #4A90E2);
 	font-weight: bold;
 	display: block;
 	margin-bottom: 4rpx;
@@ -516,20 +516,20 @@ export default {
 .mini-progress {
 	width: 60rpx;
 	height: 4rpx;
-	background: #f0f0f0;
+	background: var(--border-color, #f0f0f0);
 	border-radius: 2rpx;
 	overflow: hidden;
 }
 
 .mini-fill {
 	height: 100%;
-	background: #4A90E2;
+	background: var(--accent, #4A90E2);
 	border-radius: 2rpx;
 }
 
 /* 快速复习 */
 .quick-review {
-	background: white;
+	background: var(--card-bg, white);
 	padding: 30rpx;
 }
 
@@ -540,12 +540,12 @@ export default {
 
 .action-card {
 	flex: 1;
-	background: white;
+	background: var(--card-bg, white);
 	border-radius: 16rpx;
 	padding: 24rpx;
 	text-align: center;
-	box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
-	border: 2rpx solid #f0f0f0;
+	box-shadow: var(--shadow, 0 4rpx 20rpx rgba(0, 0, 0, 0.08));
+	border: 2rpx solid var(--border-color, #f0f0f0);
 }
 
 .action-icon {
@@ -559,24 +559,24 @@ export default {
 }
 
 .action-icon.weak {
-	background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 100%);
+	background: linear-gradient(135deg, var(--warning, #ff9a56) 0%, var(--danger, #ff6b35) 100%);
 }
 
 .action-icon.random {
-	background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+	background: linear-gradient(135deg, var(--accent-dark, #a78bfa) 0%, var(--accent, #8b5cf6) 100%);
 }
 
 .action-title {
 	font-size: 26rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--text-primary, #333);
 	margin-bottom: 8rpx;
 	display: block;
 }
 
 .action-desc {
 	font-size: 22rpx;
-	color: #666;
+	color: var(--text-secondary, #666);
 	line-height: 1.4;
 }
 </style>

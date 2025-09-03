@@ -254,7 +254,7 @@ export default {
 <style scoped>
 .feedback-container {
 	padding: 20rpx;
-	background-color: #f5f5f5;
+	background-color: var(--bg-color, #f5f5f5);
 	min-height: 100vh;
 }
 
@@ -263,10 +263,10 @@ export default {
 	display: flex;
 	align-items: center;
 	padding: 20rpx 30rpx;
-	background-color: #fff;
+	background-color: var(--card-bg, #fff);
 	border-radius: 16rpx;
 	margin-bottom: 20rpx;
-	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+	box-shadow: var(--shadow, 0 2rpx 10rpx rgba(0, 0, 0, 0.05));
 	position: relative;
 }
 
@@ -279,36 +279,30 @@ export default {
 	align-items: center;
 	justify-content: center;
 	border-radius: 50%;
-	background-color: #f5f5f5;
+	background-color: var(--border-color, #f5f5f5);
 }
 
 .back-icon {
 	font-size: 40rpx;
-	color: #333;
+	color: var(--text-primary, #333);
 	font-weight: bold;
 }
 
 .page-title {
 	font-size: 36rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--text-primary, #333);
 	flex: 1;
 	text-align: center;
-}
-
-.feedback-container {
-	padding: 20rpx;
-	background-color: #f5f5f5;
-	min-height: 100vh;
 }
 
 .header {
 	text-align: center;
 	padding: 40rpx 20rpx;
-	background-color: white;
+	background-color: var(--card-bg, white);
 	border-radius: 16rpx;
 	margin-bottom: 20rpx;
-	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+	box-shadow: var(--shadow, 0 2rpx 10rpx rgba(0, 0, 0, 0.05));
 }
 
 .header-icon {
@@ -320,13 +314,13 @@ export default {
 .header-title {
 	font-size: 36rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--text-primary, #333);
 	margin-bottom: 10rpx;
 }
 
 .header-subtitle {
 	font-size: 26rpx;
-	color: #999;
+	color: var(--text-secondary, #999);
 }
 
 .feedback-form {
@@ -334,16 +328,16 @@ export default {
 }
 
 .form-section {
-	background-color: white;
+	background-color: var(--card-bg, white);
 	border-radius: 16rpx;
 	padding: 30rpx;
 	margin-bottom: 20rpx;
-	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+	box-shadow: var(--shadow, 0 2rpx 10rpx rgba(0, 0, 0, 0.05));
 }
 
 .section-title {
 	font-size: 28rpx;
-	color: #999;
+	color: var(--text-secondary, #999);
 	margin-bottom: 20rpx;
 }
 
@@ -357,7 +351,7 @@ export default {
 	width: calc(50% - 20rpx);
 	margin: 10rpx;
 	padding: 20rpx;
-	background-color: #f9f9f9;
+	background-color: var(--muted, #f9f9f9);
 	border-radius: 12rpx;
 	display: flex;
 	align-items: center;
@@ -365,7 +359,7 @@ export default {
 }
 
 .type-option.active {
-	background-color: #4A90E2;
+	background-color: var(--accent, #4A90E2);
 }
 
 .type-icon {
@@ -374,36 +368,36 @@ export default {
 }
 
 .type-option.active .type-icon {
-	color: white;
+	color: var(--card-bg, white);
 }
 
 .type-text {
 	font-size: 28rpx;
-	color: #333;
+	color: var(--text-primary, #333);
 }
 
 .type-option.active .type-text {
-	color: white;
+	color: var(--card-bg, white);
 }
 
 .feedback-textarea {
 	width: 100%;
 	min-height: 200rpx;
-	background-color: #f9f9f9;
+	background-color: var(--muted, #f9f9f9);
 	border-radius: 12rpx;
 	padding: 20rpx;
 	font-size: 28rpx;
-	color: #333;
+	color: var(--text-primary, #333);
 }
 
 .contact-input {
 	width: 100%;
 	height: 80rpx;
-	background-color: #f9f9f9;
+	background-color: var(--muted, #f9f9f9);
 	border-radius: 12rpx;
 	padding: 0 20rpx;
 	font-size: 28rpx;
-	color: #333;
+	color: var(--text-primary, #333);
 }
 
 .submit-section {
@@ -413,8 +407,8 @@ export default {
 .submit-btn {
 	width: 100%;
 	height: 90rpx;
-	background-color: #4A90E2;
-	color: white;
+	background-color: var(--accent, #4A90E2);
+	color: var(--card-bg, white);
 	font-size: 32rpx;
 	font-weight: bold;
 	border-radius: 45rpx;
@@ -424,15 +418,15 @@ export default {
 }
 
 .submit-btn.disabled {
-	background-color: #ccc;
-	color: #fff;
+	background-color: var(--muted, #ccc);
+	color: var(--card-bg, #fff);
 }
 
 .history-section {
-	background-color: white;
+	background-color: var(--card-bg, white);
 	border-radius: 16rpx;
 	padding: 30rpx;
-	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+	box-shadow: var(--shadow, 0 2rpx 10rpx rgba(0, 0, 0, 0.05));
 }
 
 .history-list {
@@ -441,7 +435,7 @@ export default {
 
 .history-item {
 	padding: 20rpx;
-	background-color: #f9f9f9;
+	background-color: var(--muted, #f9f9f9);
 	border-radius: 12rpx;
 	margin-bottom: 20rpx;
 }
@@ -460,17 +454,17 @@ export default {
 .history-type {
 	font-size: 28rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--text-primary, #333);
 }
 
 .history-date {
 	font-size: 24rpx;
-	color: #999;
+	color: var(--text-secondary, #999);
 }
 
 .history-content {
 	font-size: 26rpx;
-	color: #666;
+	color: var(--text-secondary, #666);
 	margin-bottom: 10rpx;
 	line-height: 1.5;
 }
@@ -487,17 +481,17 @@ export default {
 }
 
 .status-text.pending {
-	background-color: #FFB74D;
-	color: white;
+	background-color: var(--warning, #FFB74D);
+	color: var(--card-bg, white);
 }
 
 .status-text.processing {
-	background-color: #64B5F6;
-	color: white;
+	background-color: var(--accent, #64B5F6);
+	color: var(--card-bg, white);
 }
 
 .status-text.resolved {
-	background-color: #81C784;
-	color: white;
+	background-color: var(--success, #81C784);
+	color: var(--card-bg, white);
 }
 </style>

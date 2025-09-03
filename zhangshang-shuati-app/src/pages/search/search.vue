@@ -432,17 +432,17 @@ import BackToTop from '@/components/BackToTop/index.vue'
 <style scoped>
 	.search-container {
 		padding: 20rpx;
-		background-color: #f5f5f5;
+		background-color: var(--bg-color, #f5f5f5);
 		min-height: 100vh;
 	}
 	
 	/* 搜索头部 */
 	.search-header {
-		background-color: #ffffff;
+		background-color: var(--card-bg, #ffffff);
 		border-radius: 16rpx;
 		padding: 30rpx;
 		margin-bottom: 30rpx;
-		box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
+		box-shadow: var(--shadow, 0 4rpx 12rpx rgba(0,0,0,0.1));
 	}
 	
 	.search-box {
@@ -455,7 +455,7 @@ import BackToTop from '@/components/BackToTop/index.vue'
 		flex: 1;
 		display: flex;
 		align-items: center;
-		background-color: #f8f9fa;
+		background-color: var(--border-color, #f8f9fa);
 		border-radius: 25rpx;
 		padding: 0 20rpx;
 		margin-right: 20rpx;
@@ -463,7 +463,7 @@ import BackToTop from '@/components/BackToTop/index.vue'
 	
 	.search-icon {
 		font-size: 32rpx;
-		color: #999999;
+		color: var(--text-secondary, #999999);
 		margin-right: 15rpx;
 	}
 	
@@ -471,7 +471,7 @@ import BackToTop from '@/components/BackToTop/index.vue'
 		flex: 1;
 		height: 80rpx;
 		font-size: 28rpx;
-		color: #333333;
+		color: var(--text-primary, #333333);
 		background-color: transparent;
 		border: none;
 		outline: none;
@@ -483,24 +483,24 @@ import BackToTop from '@/components/BackToTop/index.vue'
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background-color: #cccccc;
+		background-color: var(--muted, #cccccc);
 		border-radius: 50%;
 	}
 	
 	.clear-icon {
 		font-size: 24rpx;
-		color: #ffffff;
+		color: var(--card-bg, #ffffff);
 	}
 	
 	.search-btn {
 		padding: 20rpx 30rpx;
-		background-color: #4A90E2;
+		background-color: var(--accent, #4A90E2);
 		border-radius: 25rpx;
 	}
 	
 	.search-btn-text {
 		font-size: 28rpx;
-		color: #ffffff;
+		color: var(--card-bg, #ffffff);
 		font-weight: bold;
 	}
 	
@@ -517,33 +517,33 @@ import BackToTop from '@/components/BackToTop/index.vue'
 	.filter-item {
 		padding: 15rpx 30rpx;
 		margin-right: 20rpx;
-		background-color: #f8f9fa;
+		background-color: var(--border-color, #f8f9fa);
 		border-radius: 20rpx;
 		border: 2rpx solid transparent;
 		transition: all 0.3s ease;
 	}
 	
 	.filter-item.active {
-		background-color: #4A90E2;
-		border-color: #4A90E2;
+		background-color: var(--accent, #4A90E2);
+		border-color: var(--accent, #4A90E2);
 	}
 	
 	.filter-text {
 		font-size: 24rpx;
-		color: #666666;
+		color: var(--text-secondary, #666666);
 	}
 	
 	.filter-item.active .filter-text {
-		color: #ffffff;
+		color: var(--card-bg, #ffffff);
 	}
 	
 	/* 搜索历史 */
 	.search-history {
-		background-color: #ffffff;
+		background-color: var(--card-bg, #ffffff);
 		border-radius: 16rpx;
 		padding: 30rpx;
 		margin-bottom: 30rpx;
-		box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
+		box-shadow: var(--shadow, 0 4rpx 12rpx rgba(0,0,0,0.1));
 	}
 	
 	.history-header {
@@ -556,12 +556,12 @@ import BackToTop from '@/components/BackToTop/index.vue'
 	.history-title {
 		font-size: 28rpx;
 		font-weight: bold;
-		color: #333333;
+		color: var(--text-primary, #333333);
 	}
 	
 	.clear-history {
 		font-size: 24rpx;
-		color: #999999;
+		color: var(--text-secondary, #999999);
 	}
 	
 	.history-list {
@@ -573,7 +573,7 @@ import BackToTop from '@/components/BackToTop/index.vue'
 		display: flex;
 		align-items: center;
 		padding: 20rpx 0;
-		border-bottom: 1rpx solid #f0f0f0;
+		border-bottom: 1rpx solid var(--border-color, #f0f0f0);
 	}
 	
 	.history-item:last-child {
@@ -582,29 +582,29 @@ import BackToTop from '@/components/BackToTop/index.vue'
 	
 	.history-icon {
 		font-size: 28rpx;
-		color: #999999;
+		color: var(--text-secondary, #999999);
 		margin-right: 20rpx;
 	}
 	
 	.history-text {
 		flex: 1;
 		font-size: 26rpx;
-		color: #333333;
+		color: var(--text-primary, #333333);
 	}
 	
 	.delete-icon {
 		font-size: 32rpx;
-		color: #cccccc;
+		color: var(--muted, #cccccc);
 		padding: 10rpx;
 	}
 	
 	/* 热门搜索 */
 	.hot-search {
-		background-color: #ffffff;
+		background-color: var(--card-bg, #ffffff);
 		border-radius: 16rpx;
 		padding: 30rpx;
 		margin-bottom: 30rpx;
-		box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
+		box-shadow: var(--shadow, 0 4rpx 12rpx rgba(0,0,0,0.1));
 	}
 	
 	.hot-header {
@@ -614,7 +614,7 @@ import BackToTop from '@/components/BackToTop/index.vue'
 	.hot-title {
 		font-size: 28rpx;
 		font-weight: bold;
-		color: #333333;
+		color: var(--text-primary, #333333);
 	}
 	
 	.hot-list {
@@ -626,14 +626,14 @@ import BackToTop from '@/components/BackToTop/index.vue'
 		padding: 15rpx 25rpx;
 		margin-right: 20rpx;
 		margin-bottom: 20rpx;
-		background-color: #f8f9fa;
+		background-color: var(--border-color, #f8f9fa);
 		border-radius: 20rpx;
-		border: 1rpx solid #e9ecef;
+		border: 1rpx solid var(--muted-border, #e9ecef);
 	}
 	
 	.hot-text {
 		font-size: 24rpx;
-		color: #666666;
+		color: var(--text-secondary, #666666);
 	}
 	
 	/* 搜索结果 */
@@ -645,41 +645,41 @@ import BackToTop from '@/components/BackToTop/index.vue'
 	.empty-container {
 		padding: 100rpx 0;
 		text-align: center;
-		background-color: #ffffff;
+		background-color: var(--card-bg, #ffffff);
 		border-radius: 16rpx;
-		box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
+		box-shadow: var(--shadow, 0 4rpx 12rpx rgba(0,0,0,0.1));
 	}
 	
 	.loading-text {
 		font-size: 28rpx;
-		color: #999999;
+		color: var(--text-secondary, #999999);
 	}
 	
 	.empty-icon {
 		font-size: 80rpx;
-		color: #cccccc;
+		color: var(--muted, #cccccc);
 		display: block;
 		margin-bottom: 20rpx;
 	}
 	
 	.empty-text {
 		font-size: 28rpx;
-		color: #999999;
+		color: var(--text-secondary, #999999);
 		display: block;
 		margin-bottom: 10rpx;
 	}
 	
 	.empty-tip {
 		font-size: 24rpx;
-		color: #cccccc;
+		color: var(--muted, #cccccc);
 		display: block;
 	}
 	
 	.results-list {
-		background-color: #ffffff;
+		background-color: var(--card-bg, #ffffff);
 		border-radius: 16rpx;
 		padding: 30rpx;
-		box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
+		box-shadow: var(--shadow, 0 4rpx 12rpx rgba(0,0,0,0.1));
 	}
 	
 	.results-header {
@@ -688,12 +688,12 @@ import BackToTop from '@/components/BackToTop/index.vue'
 	
 	.results-count {
 		font-size: 24rpx;
-		color: #999999;
+		color: var(--text-secondary, #999999);
 	}
 	
 	.result-item {
 		padding: 30rpx 0;
-		border-bottom: 1rpx solid #f0f0f0;
+		border-bottom: 1rpx solid var(--border-color, #f0f0f0);
 	}
 	
 	.result-item:last-child {
@@ -714,20 +714,20 @@ import BackToTop from '@/components/BackToTop/index.vue'
 	
 	.type-text {
 		font-size: 20rpx;
-		color: #ffffff;
+		color: var(--card-bg, #ffffff);
 		font-weight: bold;
 	}
 	
 	.difficulty-tag {
 		padding: 8rpx 16rpx;
-		background-color: #f8f9fa;
+		background-color: var(--border-color, #f8f9fa);
 		border-radius: 12rpx;
-		border: 1rpx solid #e9ecef;
+		border: 1rpx solid var(--muted-border, #e9ecef);
 	}
 	
 	.difficulty-text {
 		font-size: 20rpx;
-		color: #666666;
+		color: var(--text-secondary, #666666);
 	}
 	
 	.result-content {
@@ -737,14 +737,14 @@ import BackToTop from '@/components/BackToTop/index.vue'
 	.result-title {
 		font-size: 30rpx;
 		font-weight: bold;
-		color: #333333;
+		color: var(--text-primary, #333333);
 		display: block;
 		margin-bottom: 10rpx;
 	}
 	
 	.result-description {
 		font-size: 26rpx;
-		color: #666666;
+		color: var(--text-secondary, #666666);
 		line-height: 1.5;
 		display: block;
 	}
@@ -762,12 +762,12 @@ import BackToTop from '@/components/BackToTop/index.vue'
 	
 	.meta-text {
 		font-size: 22rpx;
-		color: #999999;
+		color: var(--text-secondary, #999999);
 		margin-right: 20rpx;
 	}
 	
 	.result-arrow {
 		font-size: 24rpx;
-		color: #cccccc;
+		color: var(--muted, #cccccc);
 	}
 </style>
