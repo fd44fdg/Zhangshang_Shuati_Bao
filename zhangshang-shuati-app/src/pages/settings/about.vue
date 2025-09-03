@@ -259,41 +259,41 @@
 		position: relative;
 	}
 	
-	.back-button {
-		position: absolute;
-		left: 30rpx;
-		width: 60rpx;
-		height: 60rpx;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border-radius: 50%;
-		background-color: #f5f5f5;
-	}
+		.back-button {
+			position: absolute;
+			left: 30rpx;
+			width: 60rpx;
+			height: 60rpx;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: 50%;
+			background-color: var(--border-color, #f5f5f5);
+		}
 	
-	.back-icon {
-		font-size: 40rpx;
-		color: #333;
-		font-weight: bold;
-	}
+		.back-icon {
+			font-size: 40rpx;
+			color: var(--text-primary, #333);
+			font-weight: bold;
+		}
 	
-	.page-title {
-		font-size: 36rpx;
-		font-weight: bold;
-		color: #333;
-		flex: 1;
-		text-align: center;
-	}
+		.page-title {
+			font-size: 36rpx;
+			font-weight: bold;
+			color: var(--text-primary, #333);
+			flex: 1;
+			text-align: center;
+		}
 	
 	/* 应用信息卡片 */
-	.app-info-card {
-		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		.app-info-card {
+			background: var(--app-info-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
 		border-radius: 20px;
 		padding: 40px 20px;
 		text-align: center;
 		margin-bottom: 20px;
-		color: white;
-		box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+			color: var(--card-bg, white);
+			box-shadow: var(--app-info-shadow, 0 8px 25px rgba(102, 126, 234, 0.3));
 	}
 	
 	.app-logo {
@@ -314,8 +314,8 @@
 		margin-bottom: 20px;
 	}
 	
-	.version-info {
-		background: rgba(255, 255, 255, 0.2);
+		.version-info {
+			background: var(--version-info-bg, rgba(255, 255, 255, 0.2));
 		border-radius: 20px;
 		padding: 8px 16px;
 		display: inline-block;
@@ -327,33 +327,33 @@
 	}
 	
 	/* 通用区块样式 */
-	.intro-section,
-	.features-section,
-	.team-section,
-	.contact-section {
-		background-color: white;
-		border-radius: 15px;
-		padding: 20px;
-		margin-bottom: 15px;
-		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-	}
+		.intro-section,
+		.features-section,
+		.team-section,
+		.contact-section {
+			background-color: var(--card-bg, white);
+			border-radius: 15px;
+			padding: 20px;
+			margin-bottom: 15px;
+			box-shadow: var(--shadow, 0 2px 10px rgba(0, 0, 0, 0.05));
+		}
 	
-	.section-title {
-		font-size: 18px;
-		font-weight: bold;
-		color: #333;
-		margin-bottom: 15px;
-		padding-bottom: 8px;
-		border-bottom: 2px solid #f0f0f0;
-	}
+		.section-title {
+			font-size: 18px;
+			font-weight: bold;
+			color: var(--text-primary, #333);
+			margin-bottom: 15px;
+			padding-bottom: 8px;
+			border-bottom: 2px solid var(--border-color, #f0f0f0);
+		}
 	
 	/* 应用介绍 */
-	.intro-text {
-		font-size: 15px;
-		color: #666;
-		line-height: 1.6;
-		display: block;
-	}
+		.intro-text {
+			font-size: 15px;
+			color: var(--text-secondary, #666);
+			line-height: 1.6;
+			display: block;
+		}
 	
 	/* 功能特色 */
 	.features-list {
@@ -362,26 +362,26 @@
 		gap: 12px;
 	}
 	
-	.feature-item {
-		display: flex;
-		align-items: center;
-		padding: 12px;
-		background-color: #f8f9fa;
-		border-radius: 10px;
-		transition: all 0.3s ease;
-	}
+		.feature-item {
+			display: flex;
+			align-items: center;
+			padding: 12px;
+			background-color: var(--muted, #f8f9fa);
+			border-radius: 10px;
+			transition: all 0.3s ease;
+		}
+
+		.feature-item:active {
+			transform: scale(0.98);
+			background-color: var(--muted-hover, #e9ecef);
+		}
 	
-	.feature-item:active {
-		transform: scale(0.98);
-		background-color: #e9ecef;
-	}
-	
-	.feature-text {
-		font-size: 14px;
-		color: #555;
-		margin-left: 12px;
-		flex: 1;
-	}
+		.feature-text {
+			font-size: 14px;
+			color: var(--text-secondary, #555);
+			margin-left: 12px;
+			flex: 1;
+		}
 	
 	/* 开发团队 */
 	.team-info {
@@ -390,32 +390,32 @@
 		gap: 15px;
 	}
 	
-	.team-item {
-		display: flex;
-		align-items: center;
-		padding: 15px;
-		background-color: #f8f9fa;
-		border-radius: 12px;
-	}
+		.team-item {
+			display: flex;
+			align-items: center;
+			padding: 15px;
+			background-color: var(--muted, #f8f9fa);
+			border-radius: 12px;
+		}
 	
 	.team-details {
 		margin-left: 15px;
 		flex: 1;
 	}
 	
-	.team-role {
-		font-size: 12px;
-		color: #999;
-		display: block;
-		margin-bottom: 4px;
-	}
+		.team-role {
+			font-size: 12px;
+			color: var(--text-secondary, #999);
+			display: block;
+			margin-bottom: 4px;
+		}
 	
-	.team-name {
-		font-size: 16px;
-		color: #333;
-		font-weight: 500;
-		display: block;
-	}
+		.team-name {
+			font-size: 16px;
+			color: var(--text-primary, #333);
+			font-weight: 500;
+			display: block;
+		}
 	
 	/* 联系我们 */
 	.contact-list {
@@ -424,26 +424,26 @@
 		gap: 10px;
 	}
 	
-	.contact-item {
-		display: flex;
-		align-items: center;
-		padding: 15px;
-		background-color: #f8f9fa;
-		border-radius: 12px;
-		transition: all 0.3s ease;
-	}
+		.contact-item {
+			display: flex;
+			align-items: center;
+			padding: 15px;
+			background-color: var(--muted, #f8f9fa);
+			border-radius: 12px;
+			transition: all 0.3s ease;
+		}
+
+		.contact-item:active {
+			transform: scale(0.98);
+			background-color: var(--muted-hover, #e9ecef);
+		}
 	
-	.contact-item:active {
-		transform: scale(0.98);
-		background-color: #e9ecef;
-	}
-	
-	.contact-text {
-		font-size: 14px;
-		color: #555;
-		margin-left: 12px;
-		flex: 1;
-	}
+		.contact-text {
+			font-size: 14px;
+			color: var(--text-secondary, #555);
+			margin-left: 12px;
+			flex: 1;
+		}
 	
 	/* 法律信息 */
 	.legal-section {
@@ -455,26 +455,26 @@
 		margin-bottom: 15px;
 	}
 	
-	.legal-link {
-		font-size: 14px;
-		color: #4A90E2;
-		padding: 8px 12px;
-		transition: opacity 0.3s ease;
-	}
+		.legal-link {
+			font-size: 14px;
+			color: var(--legal-link-color, #4A90E2);
+			padding: 8px 12px;
+			transition: opacity 0.3s ease;
+		}
 	
 	.legal-link:active {
 		opacity: 0.7;
 	}
 	
-	.legal-separator {
-		font-size: 14px;
-		color: #ccc;
-		margin: 0 8px;
-	}
+		.legal-separator {
+			font-size: 14px;
+			color: var(--muted, #ccc);
+			margin: 0 8px;
+		}
 	
-	.copyright {
-		font-size: 12px;
-		color: #999;
-		display: block;
-	}
+		.copyright {
+			font-size: 12px;
+			color: var(--text-secondary, #999);
+			display: block;
+		}
 </style>
