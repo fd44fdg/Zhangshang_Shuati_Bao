@@ -52,30 +52,51 @@ function applyTheme(isDark) {
   // 尝试在 uni-app 环境更新导航栏和 tab 样式（APP / 小程序）
   try {
     if (typeof uni !== 'undefined') {
-      // 设置导航栏颜色（部分平台支持）
-      if (uni.setNavigationBarColor) {
-        try {
-          uni.setNavigationBarColor({
-            frontColor: getCssVar('--text-primary', isDark ? '#ffffff' : '#000000'),
-            backgroundColor: getCssVar('--bg-color', isDark ? '#0b1320' : '#ffffff')
-          })
-        } catch (e) {}
-      }
-
-      // 设置 tabBar 样式（如果页面使用 tabBar）
-      if (uni.setTabBarStyle) {
-        try {
-          uni.setTabBarStyle({
-            color: getCssVar('--text-secondary', isDark ? '#9fb0c9' : '#8E8E93'),
-            selectedColor: getCssVar('--accent-active', isDark ? '#60a5fa' : '#007AFF'),
-            backgroundColor: getCssVar('--bg-color', isDark ? '#071022' : '#ffffff'),
-            borderStyle: isDark ? 'black' : 'white'
-          })
-        } catch (e) {}
+      // Delegate to a robust sync helper that centralizes uni calls and fallbacks
+      try {
+        syncNativeTheme(!!isDark)
+      } catch (e) {
+        // ignore platform-specific failures
       }
     }
   } catch (e) {
     // ignore
+  }
+}
+
+// 将运行时 CSS 变量值同步到原生导航栏与 tabBar（覆盖 pages.json 中的静态配置）
+function syncNativeTheme(isDark) {
+  if (typeof uni === 'undefined') return
+
+  const frontColor = getCssVar('--text-primary', isDark ? '#ffffff' : '#000000')
+  const backgroundColor = getCssVar('--bg-color', isDark ? '#071022' : '#ffffff')
+  const tabColor = getCssVar('--text-secondary', isDark ? '#9fb0c9' : '#8E8E93')
+  const selectedColor = getCssVar('--accent-active', isDark ? '#60a5fa' : '#007AFF')
+
+  // setNavigationBarColor: Android APP & 小程序端（有的端可能不支持）
+  if (typeof uni.setNavigationBarColor === 'function') {
+    try {
+      uni.setNavigationBarColor({
+        frontColor: frontColor,
+        backgroundColor: backgroundColor
+      })
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  // setTabBarStyle: 覆盖 tabBar 的 color/selectedColor/backgroundColor
+  if (typeof uni.setTabBarStyle === 'function') {
+    try {
+      uni.setTabBarStyle({
+        color: tabColor,
+        selectedColor: selectedColor,
+        backgroundColor: backgroundColor,
+        borderStyle: isDark ? 'black' : 'white'
+      })
+    } catch (e) {
+      // ignore
+    }
   }
 }
 
