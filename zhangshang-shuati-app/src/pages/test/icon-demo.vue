@@ -78,12 +78,12 @@ export default {
 <style scoped>
 .icon-demo {
   padding: 20px;
-  background-color: #f5f5f5;
+  background-color: var(--bg-color, #f5f5f5);
   min-height: 100vh;
 }
 
 .demo-section {
-  background-color: #ffffff;
+  background-color: var(--card-bg, #ffffff);
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 20px;
@@ -92,7 +92,7 @@ export default {
 .section-title {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary, #333);
   margin-bottom: 16px;
   display: block;
 }
@@ -103,7 +103,7 @@ export default {
   align-items: center;
   margin-bottom: 24px;
   padding: 16px;
-  background-color: #f8f9fa;
+  background-color: var(--border-color, #f8f9fa);
   border-radius: 8px;
 }
 
@@ -122,20 +122,20 @@ export default {
 
 .iconfont {
   font-size: 24px;
-  color: #4A90E2;
+  color: var(--accent, #4A90E2);
   margin-bottom: 4px;
 }
 
 .icon-label {
   font-size: 12px;
-  color: #666;
+  color: var(--text-secondary, #666);
   text-align: center;
 }
 
 .custom-tabbar-demo {
   position: relative;
   height: 80px;
-  background-color: #f0f0f0;
+  background-color: var(--border-color, #f0f0f0);
   border-radius: 8px;
   overflow: hidden;
 }

@@ -409,7 +409,7 @@ export default {
 
 <style lang="scss" scoped>
 .study-records-container {
-  background-color: #f5f7fa;
+  background-color: var(--bg-color, #f5f7fa);
   min-height: 100vh;
   padding: 30rpx;
 }
@@ -418,46 +418,46 @@ export default {
 .page-header {
 	display: flex;
 	align-items: center;
-	padding: 20rpx 30rpx;
-	background-color: #fff;
+  padding: 20rpx 30rpx;
+  background-color: var(--card-bg, #fff);
 	border-radius: 16rpx;
 	margin-bottom: 20rpx;
-	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow, 0 2rpx 10rpx rgba(0, 0, 0, 0.05));
 	position: relative;
 }
 
 .back-button {
-	position: absolute;
-	left: 30rpx;
-	width: 60rpx;
-	height: 60rpx;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border-radius: 50%;
-	background-color: #f5f5f5;
+  position: absolute;
+  left: 30rpx;
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: var(--border-color, #f5f5f5);
 }
 
 .back-icon {
-	font-size: 40rpx;
-	color: #333;
-	font-weight: bold;
+  font-size: 40rpx;
+  color: var(--text-primary, #333);
+  font-weight: bold;
 }
 
 .page-title {
-	font-size: 36rpx;
-	font-weight: bold;
-	color: #333;
-	flex: 1;
-	text-align: center;
+  font-size: 36rpx;
+  font-weight: bold;
+  color: var(--text-primary, #333);
+  flex: 1;
+  text-align: center;
 }
 
 .stats-card {
-  background-color: #fff;
+  background-color: var(--card-bg, #fff);
   border-radius: 16rpx;
   padding: 30rpx;
   margin-bottom: 30rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow, 0 2rpx 12rpx rgba(0, 0, 0, 0.1));
   
   .stats-header {
     margin-bottom: 30rpx;
@@ -465,14 +465,14 @@ export default {
     .stats-title {
       font-size: 36rpx;
       font-weight: bold;
-      color: #333;
+      color: var(--text-primary, #333);
       display: block;
       margin-bottom: 10rpx;
     }
     
     .stats-subtitle {
       font-size: 28rpx;
-      color: #666;
+      color: var(--text-secondary, #666);
     }
   }
   
@@ -488,14 +488,14 @@ export default {
       .stat-value {
         font-size: 48rpx;
         font-weight: bold;
-        color: #1890ff;
+        color: var(--accent, #1890ff);
         display: block;
         margin-bottom: 10rpx;
       }
       
       .stat-label {
         font-size: 26rpx;
-        color: #666;
+        color: var(--text-secondary, #666);
       }
     }
   }
@@ -506,7 +506,7 @@ export default {
     
     .rate-label {
       font-size: 28rpx;
-      color: #333;
+      color: var(--text-primary, #333);
       margin-right: 20rpx;
       flex-shrink: 0;
     }
@@ -514,14 +514,14 @@ export default {
     .rate-bar {
       flex: 1;
       height: 16rpx;
-      background-color: #f0f0f0;
+      background-color: var(--border-color, #f0f0f0);
       border-radius: 8rpx;
       margin-right: 20rpx;
       overflow: hidden;
       
       .rate-progress {
         height: 100%;
-        background: linear-gradient(90deg, #52c41a 0%, #1890ff 100%);
+        background: linear-gradient(90deg, var(--success, #52c41a) 0%, var(--accent, #1890ff) 100%);
         border-radius: 8rpx;
         transition: width 0.3s ease;
       }
@@ -530,7 +530,7 @@ export default {
     .rate-value {
       font-size: 28rpx;
       font-weight: bold;
-      color: #52c41a;
+      color: var(--success, #52c41a);
       flex-shrink: 0;
     }
   }

@@ -319,7 +319,7 @@ export default {
 <style scoped>
 .achievements-container {
 	padding: 20rpx;
-	background-color: #f5f5f5;
+	background-color: var(--bg-color, #f5f5f5);
 	min-height: 100vh;
 }
 
@@ -328,10 +328,10 @@ export default {
 	display: flex;
 	align-items: center;
 	padding: 20rpx 30rpx;
-	background-color: #fff;
+	background-color: var(--card-bg, #fff);
 	border-radius: 16rpx;
 	margin-bottom: 20rpx;
-	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+	box-shadow: var(--shadow, 0 2rpx 10rpx rgba(0, 0, 0, 0.05));
 	position: relative;
 }
 
@@ -344,19 +344,19 @@ export default {
 	align-items: center;
 	justify-content: center;
 	border-radius: 50%;
-	background-color: #f5f5f5;
+	background-color: var(--border-color, #f5f5f5);
 }
 
 .back-icon {
 	font-size: 40rpx;
-	color: #333;
+	color: var(--text-primary, #333);
 	font-weight: bold;
 }
 
 .page-title {
 	font-size: 36rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--text-primary, #333);
 	flex: 1;
 	text-align: center;
 }
@@ -364,10 +364,10 @@ export default {
 .header {
 	text-align: center;
 	padding: 40rpx 20rpx;
-	background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+	background: linear-gradient(135deg, var(--warning, #FFD700) 0%, var(--warning-dark, #FFA500) 100%);
 	border-radius: 16rpx;
 	margin-bottom: 30rpx;
-	color: white;
+	color: var(--card-bg, white);
 }
 
 .header-title {
@@ -385,7 +385,7 @@ export default {
 
 /* 成就统计 */
 .stats-section {
-	background-color: white;
+	background-color: var(--card-bg, white);
 	border-radius: 16rpx;
 	padding: 30rpx;
 	margin-bottom: 30rpx;
@@ -404,7 +404,7 @@ export default {
 .stat-number {
 	font-size: 36rpx;
 	font-weight: bold;
-	color: #4A90E2;
+	color: var(--accent, #4A90E2);
 	display: block;
 	margin-bottom: 10rpx;
 }
@@ -418,7 +418,7 @@ export default {
 /* 分类标签 */
 .category-tabs {
 	display: flex;
-	background-color: white;
+	background-color: var(--card-bg, white);
 	border-radius: 16rpx;
 	padding: 10rpx;
 	margin-bottom: 30rpx;
@@ -436,12 +436,12 @@ export default {
 }
 
 .category-tab.active {
-	background-color: #4A90E2;
+	background-color: var(--accent, #4A90E2);
 }
 
 .tab-text {
 	font-size: 22rpx;
-	color: #333;
+	color: var(--text-primary, #333);
 	margin-top: 8rpx;
 }
 
@@ -460,9 +460,9 @@ export default {
 	display: flex;
 	align-items: center;
 	padding: 30rpx;
-	background-color: white;
+	background-color: var(--card-bg, white);
 	border-radius: 16rpx;
-	border: 2rpx solid #f0f0f0;
+	border: 2rpx solid var(--border-color, #f0f0f0);
 	transition: all 0.3s ease;
 	position: relative;
 	opacity: 0.6;
@@ -470,12 +470,12 @@ export default {
 
 .achievement-item.unlocked {
 	opacity: 1;
-	border-color: #4A90E2;
+	border-color: var(--accent, #4A90E2);
 	box-shadow: 0 4rpx 12rpx rgba(74, 144, 226, 0.1);
 }
 
 .achievement-item.featured {
-	border-color: #FFD700;
+	border-color: var(--warning, #FFD700);
 	box-shadow: 0 4rpx 12rpx rgba(255, 215, 0, 0.2);
 }
 
@@ -492,7 +492,7 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background-color: #f8f8f8;
+	background-color: var(--border-color, #f8f8f8);
 	border-radius: 50%;
 }
 
@@ -504,8 +504,8 @@ export default {
 	position: absolute;
 	top: -8rpx;
 	right: -8rpx;
-	background-color: #FFD700;
-	color: white;
+	background-color: var(--warning, #FFD700);
+	color: var(--card-bg, white);
 	font-size: 18rpx;
 	padding: 4rpx 8rpx;
 	border-radius: 10rpx;
@@ -522,14 +522,14 @@ export default {
 .achievement-title {
 	font-size: 30rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--text-primary, #333);
 	margin-bottom: 8rpx;
 	display: block;
 }
 
 .achievement-desc {
 	font-size: 26rpx;
-	color: #666;
+	color: var(--text-secondary, #666);
 	margin-bottom: 15rpx;
 	display: block;
 	line-height: 1.4;
@@ -543,7 +543,7 @@ export default {
 .progress-bar {
 	width: 100%;
 	height: 8rpx;
-	background-color: #f0f0f0;
+	background-color: var(--border-color, #f0f0f0);
 	border-radius: 4rpx;
 	overflow: hidden;
 	margin-bottom: 8rpx;
@@ -551,14 +551,14 @@ export default {
 
 .progress-fill {
 	height: 100%;
-	background: linear-gradient(90deg, #4A90E2 0%, #357ABD 100%);
+	background: linear-gradient(90deg, var(--accent, #4A90E2) 0%, var(--accent-dark, #357ABD) 100%);
 	border-radius: 4rpx;
 	transition: width 0.3s ease;
 }
 
 .progress-text {
 	font-size: 22rpx;
-	color: #999;
+	color: var(--text-secondary, #999);
 }
 
 /* 奖励信息 */
@@ -570,13 +570,13 @@ export default {
 
 .reward-text {
 	font-size: 24rpx;
-	color: #4A90E2;
+	color: var(--accent, #4A90E2);
 	font-weight: 500;
 }
 
 .unlock-date {
 	font-size: 22rpx;
-	color: #999;
+	color: var(--text-secondary, #999);
 }
 
 /* 解锁状态 */
@@ -587,7 +587,7 @@ export default {
 .unlocked-badge {
 	width: 40rpx;
 	height: 40rpx;
-	background-color: #34C759;
+	background-color: var(--success, #34C759);
 	border-radius: 50%;
 	display: flex;
 	align-items: center;
@@ -597,7 +597,7 @@ export default {
 .locked-badge {
 	width: 40rpx;
 	height: 40rpx;
-	background-color: #f0f0f0;
+	background-color: var(--border-color, #f0f0f0);
 	border-radius: 50%;
 	display: flex;
 	align-items: center;
@@ -608,13 +608,13 @@ export default {
 .empty-state {
 	text-align: center;
 	padding: 80rpx 20rpx;
-	background-color: white;
+	background-color: var(--card-bg, white);
 	border-radius: 16rpx;
 }
 
 .empty-text {
 	font-size: 28rpx;
-	color: #999;
+	color: var(--text-secondary, #999);
 	margin-top: 20rpx;
 	display: block;
 }

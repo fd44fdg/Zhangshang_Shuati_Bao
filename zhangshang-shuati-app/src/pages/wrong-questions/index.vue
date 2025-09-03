@@ -486,7 +486,7 @@ export default {
 
 <style lang="scss" scoped>
 .wrong-questions-container {
-  background-color: #f5f7fa;
+  background-color: var(--bg-color, #f5f7fa);
   min-height: 100vh;
   padding: 30rpx;
 }
@@ -496,10 +496,10 @@ export default {
 	display: flex;
 	align-items: center;
 	padding: 20rpx 30rpx;
-	background-color: #fff;
+	background-color: var(--card-bg, #fff);
 	border-radius: 16rpx;
 	margin-bottom: 20rpx;
-	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+	box-shadow: var(--shadow, 0 2rpx 10rpx rgba(0, 0, 0, 0.05));
 	position: relative;
 }
 
@@ -512,29 +512,29 @@ export default {
 	align-items: center;
 	justify-content: center;
 	border-radius: 50%;
-	background-color: #f5f5f5;
+	background-color: var(--border-color, #f5f5f5);
 }
 
 .back-icon {
 	font-size: 40rpx;
-	color: #333;
+	color: var(--text-primary, #333);
 	font-weight: bold;
 }
 
 .page-title {
 	font-size: 36rpx;
 	font-weight: bold;
-	color: #333;
+	color: var(--text-primary, #333);
 	flex: 1;
 	text-align: center;
 }
 
 .filter-bar {
-  background-color: #fff;
+  background-color: var(--card-bg, #fff);
   padding: 20rpx 30rpx;
   display: flex;
   justify-content: space-between;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow, 0 2rpx 8rpx rgba(0, 0, 0, 0.1));
   border-radius: 16rpx;
   margin-bottom: 20rpx;
   
@@ -547,14 +547,14 @@ export default {
       justify-content: space-between;
       align-items: center;
       padding: 20rpx;
-      background-color: #f8f9fa;
+      background-color: var(--border-color, #f8f9fa);
       border-radius: 8rpx;
       font-size: 28rpx;
-      color: #333;
+      color: var(--text-primary, #333);
       
       .iconfont {
         font-size: 24rpx;
-        color: #999;
+        color: var(--text-secondary, #999);
       }
     }
   }
@@ -565,8 +565,8 @@ export default {
   
   .start-practice-btn {
     width: 100%;
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--danger, #ff6b6b) 0%, var(--warning, #ee5a24) 100%);
+    color: var(--card-bg, #fff);
     border: none;
     border-radius: 12rpx;
     padding: 24rpx;
@@ -591,11 +591,11 @@ export default {
   padding: 30rpx;
   
   .question-item {
-    background-color: #fff;
+    background-color: var(--card-bg, #fff);
     border-radius: 16rpx;
     padding: 30rpx;
     margin-bottom: 20rpx;
-    box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow, 0 2rpx 12rpx rgba(0, 0, 0, 0.1));
     
     .question-header {
       display: flex;
@@ -605,7 +605,7 @@ export default {
       
       .question-id {
         font-size: 28rpx;
-        color: #666;
+        color: var(--text-secondary, #666);
         font-weight: bold;
       }
       
@@ -615,18 +615,18 @@ export default {
         border-radius: 20rpx;
         
         &.difficulty-easy {
-          background-color: #e6f7e6;
-          color: #52c41a;
+          background-color: var(--success-bg, #e6f7e6);
+          color: var(--success, #52c41a);
         }
         
         &.difficulty-medium {
-          background-color: #fff7e6;
-          color: #fa8c16;
+          background-color: var(--warning-bg, #fff7e6);
+          color: var(--warning, #fa8c16);
         }
         
         &.difficulty-hard {
-          background-color: #fff1f0;
-          color: #f5222d;
+          background-color: var(--danger-bg, #fff1f0);
+          color: var(--danger, #f5222d);
         }
       }
     }
@@ -637,7 +637,7 @@ export default {
       .content-text {
         font-size: 30rpx;
         line-height: 1.6;
-        color: #333;
+        color: var(--text-primary, #333);
         display: -webkit-box;
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 3;
@@ -658,20 +658,20 @@ export default {
         
         .meta-label {
           font-size: 26rpx;
-          color: #666;
+          color: var(--text-secondary, #666);
           margin-right: 8rpx;
         }
         
         .meta-value {
           font-size: 26rpx;
-          color: #333;
+          color: var(--text-primary, #333);
           
           &.mastered {
-            color: #52c41a;
+            color: var(--success, #52c41a);
           }
           
           &.unmastered {
-            color: #f5222d;
+            color: var(--danger, #f5222d);
           }
         }
       }
@@ -689,14 +689,14 @@ export default {
         font-size: 26rpx;
         
         &.mastered-btn {
-          background-color: #f6ffed;
-          color: #52c41a;
-          border: 1rpx solid #b7eb8f;
+          background-color: var(--success-bg, #f6ffed);
+          color: var(--success, #52c41a);
+          border: 1rpx solid var(--success-border, #b7eb8f);
           
           &.active {
-            background-color: #52c41a;
-            color: #fff;
-            border: 1rpx solid #52c41a;
+            background-color: var(--success, #52c41a);
+            color: var(--card-bg, #fff);
+            border: 1rpx solid var(--success, #52c41a);
           }
         }
         
@@ -724,13 +724,13 @@ export default {
   
   .empty-text {
     font-size: 32rpx;
-    color: #333;
+    color: var(--text-primary, #333);
     margin-bottom: 20rpx;
   }
   
   .empty-desc {
     font-size: 28rpx;
-    color: #999;
+    color: var(--text-secondary, #999);
     text-align: center;
     line-height: 1.5;
     margin-bottom: 60rpx;
@@ -740,8 +740,8 @@ export default {
     width: 300rpx;
     height: 80rpx;
     line-height: 80rpx;
-    background-color: #1890ff;
-    color: #fff;
+    background-color: var(--accent, #1890ff);
+    color: var(--card-bg, #fff);
     font-size: 30rpx;
     border-radius: 40rpx;
   }
@@ -753,7 +753,7 @@ export default {
   
   .load-more-text {
     font-size: 28rpx;
-    color: #999;
+    color: var(--text-secondary, #999);
   }
 }
 </style>
