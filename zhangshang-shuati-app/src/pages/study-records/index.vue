@@ -543,14 +543,14 @@ export default {
   margin-bottom: 30rpx;
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
   
-  .filter-item {
+    .filter-item {
     display: flex;
     align-items: center;
     margin-bottom: 20rpx;
     
     .filter-label {
       font-size: 28rpx;
-      color: #333;
+      color: var(--text-primary, #333);
       width: 150rpx;
       flex-shrink: 0;
     }
@@ -561,14 +561,14 @@ export default {
       justify-content: space-between;
       align-items: center;
       padding: 20rpx;
-      background-color: #f8f9fa;
+      background-color: var(--border-color, #f8f9fa);
       border-radius: 8rpx;
       font-size: 28rpx;
-      color: #333;
+      color: var(--text-primary, #333);
       
       .iconfont {
         font-size: 24rpx;
-        color: #999;
+        color: var(--text-secondary, #999);
       }
     }
   }
@@ -608,11 +608,11 @@ export default {
   }
   
   .record-item {
-    background-color: #fff;
+    background-color: var(--card-bg, #fff);
     border-radius: 16rpx;
     padding: 30rpx;
     margin-bottom: 20rpx;
-    box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow, 0 2rpx 12rpx rgba(0, 0, 0, 0.1));
     
     .record-header {
       display: flex;
@@ -623,13 +623,13 @@ export default {
       .record-date {
         font-size: 32rpx;
         font-weight: bold;
-        color: #333;
+        color: var(--text-primary, #333);
       }
       
       .record-weekday {
         font-size: 26rpx;
-        color: #666;
-        background-color: #f0f0f0;
+        color: var(--text-secondary, #666);
+        background-color: var(--border-color, #f0f0f0);
         padding: 6rpx 12rpx;
         border-radius: 12rpx;
       }
@@ -652,7 +652,7 @@ export default {
         
         .stat-text {
           font-size: 26rpx;
-          color: #666;
+          color: var(--text-secondary, #666);
         }
       }
     }
@@ -675,8 +675,8 @@ export default {
         
         .category-tag {
           font-size: 24rpx;
-          color: #1890ff;
-          background-color: #e6f7ff;
+          color: var(--accent, #1890ff);
+          background-color: var(--card-bg-2, #e6f7ff);
           padding: 6rpx 12rpx;
           border-radius: 12rpx;
         }
@@ -700,13 +700,13 @@ export default {
   
   .empty-text {
     font-size: 32rpx;
-    color: #333;
+    color: var(--text-primary, #333);
     margin-bottom: 20rpx;
   }
   
   .empty-desc {
     font-size: 28rpx;
-    color: #999;
+    color: var(--text-secondary, #999);
     text-align: center;
     line-height: 1.5;
     margin-bottom: 60rpx;
@@ -716,8 +716,8 @@ export default {
     width: 300rpx;
     height: 80rpx;
     line-height: 80rpx;
-    background-color: #1890ff;
-    color: #fff;
+    background-color: var(--accent, #1890ff);
+    color: var(--card-bg, #fff);
     font-size: 30rpx;
     border-radius: 40rpx;
   }
@@ -727,9 +727,9 @@ export default {
   padding: 40rpx;
   text-align: center;
   
-  .load-more-text {
+    .load-more-text {
     font-size: 28rpx;
-    color: #999;
+    color: var(--text-secondary, #999);
   }
 }
 </style>

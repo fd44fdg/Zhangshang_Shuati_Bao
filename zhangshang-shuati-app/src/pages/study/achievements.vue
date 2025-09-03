@@ -9,7 +9,7 @@
 		</view>
 		
 		<view class="header">
-			<uni-icons type="medal" size="40" color="#FFD700"></uni-icons>
+			<uni-icons type="medal" size="40" color="var(--warning, #FFD700)"></uni-icons>
 			<text class="header-title">我的成就</text>
 			<text class="header-subtitle">记录你的每一个里程碑</text>
 		</view>
@@ -34,16 +34,16 @@
 		
 		<!-- 成就分类 -->
 		<view class="category-tabs">
-			<view 
-				v-for="(category, index) in categories" 
-				:key="index"
-				class="category-tab"
-				:class="{ active: activeCategory === category.value }"
-				@click="switchCategory(category.value)"
-			>
-				<uni-icons :type="category.icon" size="18" :color="activeCategory === category.value ? '#fff' : '#4A90E2'"></uni-icons>
-				<text class="tab-text">{{ category.text }}</text>
-			</view>
+					<view 
+						v-for="(category, index) in categories" 
+						:key="index"
+						class="category-tab"
+						:class="{ active: activeCategory === category.value }"
+						@click="switchCategory(category.value)"
+					>
+						<uni-icons :type="category.icon" size="18" :color="activeCategory === category.value ? 'var(--card-bg, #fff)' : 'var(--accent, #4A90E2)'"></uni-icons>
+						<text class="tab-text">{{ category.text }}</text>
+					</view>
 		</view>
 		
 		<!-- 成就列表 -->
@@ -60,7 +60,7 @@
 					<uni-icons 
 						:type="achievement.icon" 
 						size="30" 
-						:color="achievement.unlocked ? achievement.color : '#ccc'"
+						:color="achievement.unlocked ? (achievement.color || 'var(--accent, #4A90E2)') : 'var(--muted, #ccc)'"
 					></uni-icons>
 					<view v-if="achievement.featured" class="featured-badge">
 						<text>精选</text>
