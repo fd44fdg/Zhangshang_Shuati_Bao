@@ -13,9 +13,9 @@
 		
 		<!-- 分类标签 -->
 		<scroll-view class="category-scroll" scroll-x="true" show-scrollbar="false">
-			<view class="category-list">
-				<view 
-					v-for="category in categories" 
+			padding: 20rpx;
+			background-color: var(--bg-color, #f5f5f5);
+			min-height: 100vh;
 					:key="category.key"
 					class="category-item" 
 					:class="{active: selectedCategory === category.key}"
@@ -26,13 +26,13 @@
 				</view>
 			</view>
 		</scroll-view>
-		
-		<!-- 排序选项 -->
-		<view class="sort-options">
-			<view class="sort-left">
-				<text class="article-count">共 {{filteredArticles.length}} 篇文章</text>
-			</view>
-			<view class="sort-right">
+			flex: 1;
+			display: flex;
+			align-items: center;
+			padding: 20rpx 30rpx;
+			background-color: var(--card-bg, #ffffff);
+			border-radius: 25rpx;
+			box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
 				<view 
 					v-for="sort in sortOptions" 
 					:key="sort.key"
@@ -41,92 +41,92 @@
 					@click="selectSort(sort.key)"
 				>
 					<text class="sort-text">{{sort.name}}</text>
-				</view>
-			</view>
-		</view>
+			background-color: var(--card-bg, #ffffff);
+			border-radius: 50%;
+			box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
 		
 		<!-- 文章列表 -->
 		<view class="articles-container">
-			<view v-if="loading" class="loading-container">
-				<text class="loading-text">加载中...</text>
-			</view>
+			font-size: 32rpx;
+			color: var(--text-secondary, #999999);
+			margin-right: 15rpx;
 			
 			<view v-else-if="filteredArticles.length === 0" class="empty-container">
 				<text class="empty-icon">📄</text>
-				<text class="empty-text">暂无文章</text>
-				<text class="empty-tip">换个分类试试吧</text>
+			font-size: 28rpx;
+			color: var(--text-secondary, #999999);
 			</view>
 			
 			<view v-else class="articles-list">
-				<view 
-					v-for="article in sortedArticles" 
+			font-size: 32rpx;
+			color: var(--accent, #4A90E2);
 					:key="article.id"
 					class="article-item" 
 					@click="goToArticleDetail(article)"
-				>
-					<!-- 文章封面图 -->
-					<view class="article-cover">
-						<image 
-							v-if="article.coverImage" 
-							:src="article.coverImage" 
-							class="cover-image"
-							mode="aspectFill"
-						></image>
+			display: inline-flex;
+			flex-direction: column;
+			align-items: center;
+			padding: 20rpx 30rpx;
+			margin-right: 20rpx;
+			background-color: var(--card-bg, #ffffff);
+			border: 2rpx solid var(--muted-border, #e9ecef);
+			min-width: 120rpx;
+			transition: all 0.3s ease;
 						<view v-else class="cover-placeholder">
 							<text class="placeholder-icon">📄</text>
 						</view>
-						
-						<!-- 文章标签 -->
+			background-color: var(--accent, #4A90E2);
+			border-color: var(--accent, #4A90E2);
 						<view class="article-tags">
 							<view class="tag-item category-tag" :style="{backgroundColor: getCategoryColor(article.category)}">
 								<text class="tag-text">{{article.category}}</text>
-							</view>
-							<view v-if="article.isHot" class="tag-item hot-tag">
-								<text class="tag-text">🔥 热门</text>
-							</view>
+			font-size: 26rpx;
+			color: var(--text-primary, #333333);
+			font-weight: bold;
+			margin-bottom: 5rpx;
 							<view v-if="article.isNew" class="tag-item new-tag">
 								<text class="tag-text">🆕 最新</text>
 							</view>
-						</view>
-					</view>
+			font-size: 20rpx;
+			color: var(--text-secondary, #999999);
 					
 					<!-- 文章内容 -->
 					<view class="article-content">
-						<view class="article-header">
-							<text class="article-title">{{article.title}}</text>
-							<view class="article-meta">
-								<text class="meta-item">{{article.author}}</text>
-								<text class="meta-separator">·</text>
+			padding: 12rpx 20rpx;
+			background-color: var(--muted, #f8f9fa);
+			border-radius: 16rpx;
+			border: 1rpx solid var(--muted-border, #e9ecef);
+			transition: all 0.3s ease;
 								<text class="meta-item">{{formatDate(article.publishTime)}}</text>
 							</view>
 						</view>
-						
-						<view class="article-summary">
+			background-color: var(--accent, #4A90E2);
+			border-color: var(--accent, #4A90E2);
 							<text class="summary-text">{{article.summary}}</text>
 						</view>
 						
-						<view class="article-footer">
-							<view class="article-stats">
+			font-size: 22rpx;
+			color: var(--text-secondary, #666666);
 								<view class="stat-item">
 									<text class="stat-icon">👁</text>
 									<text class="stat-text">{{formatNumber(article.viewCount)}}</text>
 								</view>
-								<view class="stat-item">
-									<text class="stat-icon">👍</text>
-									<text class="stat-text">{{formatNumber(article.likeCount)}}</text>
+			padding: 100rpx 0;
+			text-align: center;
+			background-color: var(--card-bg, #ffffff);
 								</view>
 								<view class="stat-item">
 									<text class="stat-icon">💬</text>
-									<text class="stat-text">{{formatNumber(article.commentCount)}}</text>
-								</view>
-							</view>
-							
+			font-size: 80rpx;
+			color: var(--muted, #cccccc);
+			display: block;
+			margin-bottom: 20rpx;
 							<view class="read-info">
 								<text class="read-time">{{article.readTime}}分钟阅读</text>
 								<text class="read-arrow">›</text>
-							</view>
-						</view>
-					</view>
+			font-size: 20rpx;
+			color: var(--card-bg, #ffffff);
+			font-weight: bold;
 				</view>
 			</view>
 		</view>
@@ -134,9 +134,9 @@
 		<!-- 加载更多 -->
 		<view v-if="hasMore && !loading" class="load-more" @click="loadMore">
 			<text class="load-more-text">加载更多</text>
-		</view>
-		
-		<!-- 筛选弹窗 -->
+			font-size: 32rpx;
+			font-weight: bold;
+			color: var(--text-primary, #333333);
 		<view v-if="showFilter" class="filter-modal" @click="hideFilterModal">
 			<view class="filter-content" @click.stop>
 				<view class="filter-header">
@@ -146,14 +146,14 @@
 				
 				<view class="filter-section">
 					<view class="section-title">
-						<text class="title-text">文章类型</text>
-					</view>
-					<view class="filter-options">
+			margin: 0 10rpx;
+			font-size: 22rpx;
+			color: var(--muted, #cccccc);
 						<view 
 							v-for="type in articleTypes" 
 							:key="type.key"
-							class="filter-option" 
-							:class="{active: selectedTypes.includes(type.key)}"
+			font-size: 26rpx;
+			color: var(--text-secondary, #666666);
 							@click="toggleType(type.key)"
 						>
 							<text class="option-text">{{type.name}}</text>
@@ -162,51 +162,51 @@
 				</view>
 				
 				<view class="filter-section">
-					<view class="section-title">
-						<text class="title-text">难度等级</text>
-					</view>
-					<view class="filter-options">
-						<view 
+			background-color: var(--card-bg, #ffffff);
+			border-radius: 16rpx;
+			overflow: hidden;
+			box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.1);
+			transition: transform 0.3s ease;
 							v-for="level in difficultyLevels" 
 							:key="level.key"
 							class="filter-option" 
-							:class="{active: selectedLevels.includes(level.key)}"
-							@click="toggleLevel(level.key)"
-						>
-							<text class="option-text">{{level.name}}</text>
-						</view>
-					</view>
+			width: 100%;
+			height: 100%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: var(--cover-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
 				</view>
 				
 				<view class="filter-actions">
-					<view class="reset-btn" @click="resetFilter">
+			background-color: rgba(255, 87, 34, 0.9);
 						<text class="btn-text">重置</text>
 					</view>
 					<view class="confirm-btn" @click="applyFilter">
-						<text class="btn-text">确定</text>
+			background-color: rgba(76, 175, 80, 0.9);
 					</view>
 				</view>
 			</view>
-		</view>
-	</view>
+			font-size: 22rpx;
+			color: var(--accent, #4A90E2);
 </template>
 
 <script>
-	export default {
-		data() {
+			font-size: 28rpx;
+			color: var(--accent, #4A90E2);
 			return {
 				loading: false,
 				hasMore: true,
-				selectedCategory: 'all',
-				selectedSort: 'latest',
-				showFilter: false,
+			padding: 30rpx;
+			text-align: center;
+			background-color: var(--card-bg, #ffffff);
 				selectedTypes: [],
 				selectedLevels: [],
 				categories: [
 					{ key: 'all', name: '全部', count: 156 },
 					{ key: 'frontend', name: '前端开发', count: 45 },
-					{ key: 'backend', name: '后端开发', count: 38 },
-					{ key: 'mobile', name: '移动开发', count: 25 },
+			font-size: 28rpx;
+			color: var(--accent, #4A90E2);
 					{ key: 'ai', name: '人工智能', count: 22 },
 					{ key: 'devops', name: 'DevOps', count: 18 },
 					{ key: 'design', name: '设计', count: 8 }
