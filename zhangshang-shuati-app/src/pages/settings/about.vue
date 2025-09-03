@@ -10,9 +10,9 @@
 		
 		<!-- 应用信息卡片 -->
 		<view class="app-info-card">
-			<view class="app-logo">
-				<uni-icons type="book" size="60" color="#4A90E2"></uni-icons>
-			</view>
+                <view class="app-logo">
+                	<uni-icons type="book" size="60" color="var(--accent, #4A90E2)"></uni-icons>
+            	</view>
 			<text class="app-name">掌上刷题宝</text>
 			<text class="app-slogan">让学习更高效，让知识更有趣</text>
 			<view class="version-info">
@@ -33,19 +33,19 @@
 			<view class="section-title">功能特色</view>
 			<view class="features-list">
 				<view class="feature-item">
-					<uni-icons type="star" size="20" color="#FFD700"></uni-icons>
+					<uni-icons type="star" size="20" color="var(--warning, #FFD700)"></uni-icons>
 					<text class="feature-text">智能题库，覆盖多个学科领域</text>
 				</view>
 				<view class="feature-item">
-					<uni-icons type="checkmarkempty" size="20" color="#34C759"></uni-icons>
+					<uni-icons type="checkmarkempty" size="20" color="var(--success, #34C759)"></uni-icons>
 					<text class="feature-text">个性化学习，精准推荐练习内容</text>
 				</view>
 				<view class="feature-item">
-					<uni-icons type="calendar" size="20" color="#4A90E2"></uni-icons>
+					<uni-icons type="calendar" size="20" color="var(--accent, #4A90E2)"></uni-icons>
 					<text class="feature-text">学习记录，追踪进步轨迹</text>
 				</view>
 				<view class="feature-item">
-					<uni-icons type="medal" size="20" color="#FF6B6B"></uni-icons>
+					<uni-icons type="medal" size="20" color="var(--danger, #FF6B6B)"></uni-icons>
 					<text class="feature-text">成就系统，激发学习动力</text>
 				</view>
 			</view>
@@ -56,14 +56,14 @@
 			<view class="section-title">开发团队</view>
 			<view class="team-info">
 				<view class="team-item">
-					<uni-icons type="person" size="24" color="#4A90E2"></uni-icons>
+					<uni-icons type="person" size="24" color="var(--accent, #4A90E2)"></uni-icons>
 					<view class="team-details">
 						<text class="team-role">技术开发</text>
 						<text class="team-name">Claude 3.5 Sonnet</text>
 					</view>
 				</view>
 				<view class="team-item">
-					<uni-icons type="color" size="24" color="#FF6B6B"></uni-icons>
+					<uni-icons type="color" size="24" color="var(--danger, #FF6B6B)"></uni-icons>
 					<view class="team-details">
 						<text class="team-role">UI设计</text>
 						<text class="team-name">AI Design Team</text>
@@ -77,14 +77,14 @@
 			<view class="section-title">联系我们</view>
 			<view class="contact-list">
 				<view class="contact-item" @click="copyEmail">
-					<uni-icons type="email" size="20" color="#4A90E2"></uni-icons>
+					<uni-icons type="email" size="20" color="var(--accent, #4A90E2)"></uni-icons>
 					<text class="contact-text">support@shuatibao.com</text>
-					<uni-icons type="copy" size="16" color="#999"></uni-icons>
+					<uni-icons type="copy" size="16" color="var(--text-secondary, #999999)"></uni-icons>
 				</view>
 				<view class="contact-item" @click="openWebsite">
-					<uni-icons type="home" size="20" color="#4A90E2"></uni-icons>
+					<uni-icons type="home" size="20" color="var(--accent, #4A90E2)"></uni-icons>
 					<text class="contact-text">www.shuatibao.com</text>
-					<uni-icons type="right" size="16" color="#999"></uni-icons>
+					<uni-icons type="right" size="16" color="var(--text-secondary, #999999)"></uni-icons>
 				</view>
 			</view>
 		</view>
@@ -243,7 +243,7 @@
 <style scoped>
 	.about-container {
 		padding: 20px;
-		background-color: #f8f9fa;
+		background-color: var(--bg-color, #f8f9fa);
 		min-height: 100vh;
 	}
 	
@@ -252,10 +252,10 @@
 		display: flex;
 		align-items: center;
 		padding: 20rpx 30rpx;
-		background-color: #fff;
+		background-color: var(--card-bg, #fff);
 		border-radius: 16rpx;
 		margin-bottom: 20rpx;
-		box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+		box-shadow: var(--shadow, 0 2rpx 10rpx rgba(0, 0, 0, 0.05));
 		position: relative;
 	}
 	
