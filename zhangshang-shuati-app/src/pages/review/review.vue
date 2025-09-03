@@ -286,7 +286,7 @@ export default {
 	width: 60rpx;
 	height: 60rpx;
 	border-radius: 50%;
-	background-color: rgba(255, 255, 255, 0.2);
+	background-color: var(--back-button-bg, rgba(255, 255, 255, 0.2));
 	margin-right: 20rpx;
 }
 
@@ -308,7 +308,7 @@ export default {
 }
 
 .overview-card {
-	background: rgba(255, 255, 255, 0.15);
+	background: var(--overview-card-bg, rgba(255, 255, 255, 0.15));
 	border-radius: 20rpx;
 	padding: 30rpx;
 	display: flex;
@@ -330,7 +330,7 @@ export default {
 
 .overview-label {
 	font-size: 24rpx;
-	color: rgba(255, 255, 255, 0.8);
+	color: var(--overview-label-color, rgba(255, 255, 255, 0.8));
 }
 
 /* 内容区 */
