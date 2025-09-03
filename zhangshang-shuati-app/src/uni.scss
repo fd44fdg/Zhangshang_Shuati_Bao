@@ -103,12 +103,12 @@ $uni-font-size-paragraph: 15px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   
-  .list-item {
+    .list-item {
     min-height: 100rpx;
     display: flex;
     align-items: center;
     padding: 20rpx;
-    border-bottom: 1rpx solid #f0f0f0;
+    border-bottom: 1rpx solid var(--muted-border, #f0f0f0);
   }
 }
 
@@ -136,8 +136,8 @@ $uni-font-size-paragraph: 15px;
     transform: scale(0.9);
   }
   
-  .icon {
-    color: #ffffff;
+    .icon {
+    color: var(--card-bg, #ffffff);
     font-size: 32rpx;
   }
 }
@@ -297,9 +297,9 @@ $uni-font-size-paragraph: 15px;
 .uni-tabbar {
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
-  background: rgba(250, 250, 250, 0.85) !important;
-  border-top: 0.5px solid rgba(0, 0, 0, 0.05) !important;
-  box-shadow: 0 -1px 20px rgba(0, 0, 0, 0.08) !important;
+  background: var(--tabbar-bg-color, rgba(250, 250, 250, 0.85)) !important;
+  border-top: 0.5px solid var(--tabbar-border-color, rgba(0, 0, 0, 0.05)) !important;
+  box-shadow: var(--tabbar-box-shadow, 0 -1px 20px rgba(0, 0, 0, 0.08)) !important;
   height: 60px !important;
 }
 
@@ -321,7 +321,7 @@ $uni-font-size-paragraph: 15px;
   text-align: center !important;
   white-space: pre-line !important;
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
-  color: #8E8E93 !important;
+  color: var(--tabbar-text-color, #8E8E93) !important;
 }
 
 /* 图标部分（文本的第一行）样式 */
@@ -334,7 +334,7 @@ $uni-font-size-paragraph: 15px;
 
 .uni-tabbar-item:hover {
   transform: translateY(-2px) !important;
-  background: rgba(0, 122, 255, 0.05) !important;
+  background: var(--tabbar-hover-bg, rgba(0, 122, 255, 0.05)) !important;
   border-radius: 16px !important;
 }
 
@@ -345,14 +345,14 @@ $uni-font-size-paragraph: 15px;
 
 /* 激活状态的整体设计 */
 .uni-tabbar-item.uni-tabbar-item-active {
-  background: linear-gradient(135deg, rgba(0, 122, 255, 0.08), rgba(0, 122, 255, 0.04)) !important;
+  background: var(--tabbar-active-bg, linear-gradient(135deg, rgba(0, 122, 255, 0.08), rgba(0, 122, 255, 0.04))) !important;
   border-radius: 16px !important;
   transform: translateY(-1px) !important;
 }
 
 /* 激活状态的图标效果 */
 .uni-tabbar-item.uni-tabbar-item-active .uni-tabbar-item-text {
-  color: #007AFF !important;
+  color: var(--tabbar-active-color, #007AFF) !important;
   font-weight: 500 !important;
 }
 
@@ -383,9 +383,9 @@ $uni-font-size-paragraph: 15px;
   transform: translateX(-50%) !important;
   width: 20px !important;
   height: 2px !important;
-  background: linear-gradient(90deg, #007AFF, #5AC8FA) !important;
+  background: var(--tabbar-indicator-bg, linear-gradient(90deg, var(--accent-active, #007AFF), #5AC8FA)) !important;
   border-radius: 1px !important;
-  box-shadow: 0 0 6px rgba(0, 122, 255, 0.4) !important;
+  box-shadow: var(--tabbar-indicator-shadow, 0 0 6px rgba(0, 122, 255, 0.4)) !important;
   animation: pulse-modern 2s infinite !important;
 }
 
@@ -426,7 +426,7 @@ $uni-font-size-paragraph: 15px;
   }
   
   .uni-tabbar-item .uni-tabbar-item-text {
-    color: #A0A0A0 !important;
+    color: var(--text-secondary, #A0A0A0) !important;
   }
 }
 
