@@ -113,26 +113,24 @@
             <button class="result-button restart-button" @click="restartExam">重新开始</button>
           </view>
           <view class="result-actions" style="margin-top: 16rpx;">
-            <button class="result-button" style="background-color:#e0e0e0;color:#333;" @click="exitSession">返回考试</button>
+            <button class="result-button" style="background-color:#e0e0e0;color:#333;" @click="exitSession">返回</button>
           </view>
         </view>
       </view>
     </view>
 
-    <!-- 解析/答题卡弹窗（简洁、符合常见习惯：过滤 + 网格跳转） -->
+    <!-- 解析/答题卡弹窗 -->
     <view v-if="showReview" class="review-modal">
       <view class="review-card">
         <view class="review-header">
           <text class="review-title">试卷解析/答题卡</text>
           <text class="close-icon" @click="closeReview">✖</text>
         </view>
-        <!-- 模式切换：答题卡 / 解析 -->
         <view class="review-mode-tabs">
           <view class="mode-tab" :class="{active: reviewMode==='card'}" @click="reviewMode='card'">答题卡</view>
           <view class="mode-tab" :class="{active: reviewMode==='analysis'}" @click="reviewMode='analysis'">解析</view>
         </view>
 
-        <!-- 仅在答题卡模式展示筛选 -->
         <view class="review-filters" v-if="reviewMode==='card'">
           <view class="filter-tabs">
             <view class="filter-tab" :class="{active: activeFilter === 'all'}" @click="activeFilter='all'">全部</view>
@@ -143,7 +141,6 @@
         </view>
 
         <scroll-view class="review-content" scroll-y scroll-with-animation>
-          <!-- 答题卡模式：题号网格 -->
           <view v-if="reviewMode==='card'">
             <view class="grid">
               <view 
@@ -159,7 +156,6 @@
             <view class="review-tips">点击题号可跳转到对应题目；颜色：绿色=正确，红色=错误，灰色=未答，蓝框=当前题。</view>
           </view>
 
-          <!-- 解析模式：当前题目解析 -->
           <view v-else class="analysis-content">
             <view class="analysis-header">第 {{ currentIndex+1 }} 题 / 共 {{ questions.length }} 题</view>
             <view class="analysis-question">{{ (currentQuestion && (currentQuestion.content || currentQuestion.title)) || '' }}</view>
@@ -190,20 +186,16 @@
 
 <script>
 export default {
-    data() {
+  data() {
     return {
-      // 解析筛选状态
       activeFilter: 'all',
-      // 解析模式：card(答题卡)/analysis(解析)
       reviewMode: 'card',
       pageTitle: '模拟考试',
-      // 入参
       selectedSubjectIndex: 0,
       selectedDurationIndex: 1,
-      selectedDifficultyIndex: 1, // 为练习模式添加
-      questionCount: 50, // 为练习模式添加
-      mode: 'exam', // 添加模式区分: exam/practice
-      // 状态
+      selectedDifficultyIndex: 1,
+      questionCount: 50,
+      mode: 'exam',
       questions: [],
       currentIndex: 0,
       selectedOptions: [],
@@ -258,32 +250,47 @@ export default {
       return '不及格'
     }
   },
-    onLoad() {
-    let cfg = null
-    try { cfg = uni.getStorageSync('examSessionConfig') || null; if (cfg) uni.removeStorageSync('examSessionConfig') } catch(e){}
-    if (cfg) {
-      this.pageTitle = cfg.pageTitle || '模拟考试'
-      this.mode = cfg.mode || 'exam'
-      this.selectedSubjectIndex = (cfg.selectedSubjectIndex !== undefined && cfg.selectedSubjectIndex !== null) ? Number(cfg.selectedSubjectIndex) : 0
-      
-      if (this.mode === 'practice') {
-        this.selectedDifficultyIndex = (cfg.selectedDifficultyIndex !== undefined && cfg.selectedDifficultyIndex !== null) ? Number(cfg.selectedDifficultyIndex) : 1;
-        this.questionCount = (cfg.questionCount !== undefined && cfg.questionCount !== null) ? Number(cfg.questionCount) : 20;
-        // 练习模式默认给一个很长的考试时间
-        this.selectedDurationIndex = 3; // 120 分钟
-      } else { // 考试模式
-        this.selectedDurationIndex = (cfg.selectedDurationIndex !== undefined && cfg.selectedDurationIndex !== null) ? Number(cfg.selectedDurationIndex) : 1
-      }
+  onLoad() {
+    let cfg = null;
+    try { 
+        cfg = uni.getStorageSync('examSessionConfig') || {}; 
+        if (cfg) uni.removeStorageSync('examSessionConfig');
+    } catch(e) {
+        cfg = {};
     }
-    uni.setNavigationBarTitle({ title: this.pageTitle })
-    this.initQuestions()
+
+    this.pageTitle = cfg.pageTitle || '模拟考试';
+    this.mode = cfg.mode || 'exam';
+    uni.setNavigationBarTitle({ title: this.pageTitle });
+
+    if (cfg.questions && cfg.questions.length > 0) {
+        this.initFromQuestions(cfg.questions);
+    } else {
+        this.selectedSubjectIndex = (cfg.selectedSubjectIndex !== undefined && cfg.selectedSubjectIndex !== null) ? Number(cfg.selectedSubjectIndex) : 0;
+        if (this.mode === 'practice') {
+            this.selectedDifficultyIndex = (cfg.selectedDifficultyIndex !== undefined && cfg.selectedDifficultyIndex !== null) ? Number(cfg.selectedDifficultyIndex) : 1;
+            this.questionCount = (cfg.questionCount !== undefined && cfg.questionCount !== null) ? Number(cfg.questionCount) : 20;
+            this.selectedDurationIndex = 3; // 120 minutes
+        } else { // exam mode
+            this.selectedDurationIndex = (cfg.selectedDurationIndex !== undefined && cfg.selectedDurationIndex !== null) ? Number(cfg.selectedDurationIndex) : 1;
+        }
+        this.initQuestions();
+    }
   },
   methods: {
+    initFromQuestions(questions) {
+        this.questions = questions;
+        this.selectedOptions = new Array(this.questions.length).fill(null);
+        this.multipleAnswers = Object.create(null);
+        this.startTime = Date.now();
+        this.remainingTime = 3600; // 默认1小时
+        this.startTimer();
+    },
     handleExit() {
       if (!this.examCompleted && this.questions.length) {
         uni.showModal({
-          title: '退出考试',
-          content: '确定要退出当前考试吗？进度将丢失。',
+          title: '退出',
+          content: `确定要退出当前${this.mode === 'practice' ? '练习' : '考试'}吗？进度将丢失。`,
           success: (res) => {
             if (res.confirm) this.goBack()
           }
@@ -292,21 +299,13 @@ export default {
         this.goBack()
       }
     },
-        goBack() {
-      if (this.timer) clearInterval(this.timer)
-      // 根据模式返回不同页面
-      const url = this.mode === 'practice' ? '/pages/practice/practice' : '/pages/g/exam/exam';
-      uni.switchTab({
-        url: url,
-        fail: () => {
-          // 如果 switchTab 失败 (例如在非 TabBar 页面)，则 reLaunch
-          uni.reLaunch({ url: url })
-        }
-      })
+    goBack() {
+      if (this.timer) clearInterval(this.timer);
+      uni.navigateBack({ delta: 1 });
     },
     exitSession() { this.goBack() },
     async initQuestions() {
-      uni.showLoading({ title: '正在生成试卷...' })
+      uni.showLoading({ title: '正在生成题目...' })
       try {
         await new Promise(r => setTimeout(r, 300))
         this.questions = this.generateMockExamQuestions()
@@ -354,12 +353,11 @@ export default {
     goToQuestion(idx) { if (idx>=0 && idx<this.questions.length) this.currentIndex = idx },
 
     showSubmitConfirm() {
-      // 交卷确认前，主动 flush 一次响应式，降低用户感知延迟
       this.$forceUpdate()
       this.$nextTick(() => {
         uni.showModal({
-          title: '确认交卷',
-          content: '确定要交卷吗？',
+          title: `确认${this.mode === 'practice' ? '完成练习' : '交卷'}`,
+          content: `确定要${this.mode === 'practice' ? '完成本次练习' : '提交试卷'}吗？`,
           success: (res) => { if (res.confirm) this.submitExam() }
         })
       })
@@ -389,18 +387,15 @@ export default {
       this.correctCount = correct
     },
     toggleReview() {
-      // 打开解析时隐藏“考试结果”模态，避免遮挡；关闭时恢复
       this.showReview = !this.showReview
       if (this.examCompleted) {
         this.showResultModal = !this.showReview
       }
     },
     openReview(){
-      // 从浮动按钮进入解析弹层
       this.showReview = true
       if (this.examCompleted) this.showResultModal = false
     },
-    // 题目状态：correct/wrong/unanswered
     getQuestionStatus(idx, q){
       const qn = q || this.questions[idx]
       if (!qn) return 'unanswered'
@@ -430,9 +425,7 @@ export default {
       this.closeReview()
     },
     closeReview(){
-      // 关闭解析面板
       this.showReview = false
-      // 若存在考试结果层，关闭跳转后的遮挡
       if (this.examCompleted) this.showResultModal = false
     },
     isCorrectOption(q, i) { return Array.isArray(q.answer) ? q.answer.includes(i) : q.answer === i },
@@ -443,7 +436,6 @@ export default {
       return sel === i
     },
     restartExam() {
-      // 重置状态，回到第一题，重新计时
       this.examCompleted = false
       this.currentIndex = 0
       this.selectedOptions = new Array(this.questions.length).fill(null)
@@ -454,29 +446,25 @@ export default {
       if (this.timer) clearInterval(this.timer)
       this.startTimer()
     },
-        generateMockExamQuestions() {
-      // 与 exam.vue 的生成策略一致，保持 UI/内容风格统一
+    generateMockExamQuestions() {
       const questions = []
-      const types = ['single','multiple','boolean']
-      const subjects = ['计算机基础','数据结构','操作系统','计算机网络','数据库']
+      const types = ['single', 'multiple', 'boolean']
+      const subjects = ['计算机基础', '数据结构', '操作系统', '计算机网络', '数据库']
       const difficulties = ['简单', '中等', '困难']
-
       const subject = subjects[this.selectedSubjectIndex] || '综合'
       const difficulty = difficulties[this.selectedDifficultyIndex] || '中等'
+      const count = this.mode === 'practice' ? this.questionCount : ([50, 40, 45, 40, 35][this.selectedSubjectIndex] || 50)
 
-      // 根据模式（练习/考试）决定题目数量
-      const count = this.mode === 'practice' ? this.questionCount : ([50,40,45,40,35][this.selectedSubjectIndex] || 50)
-
-      for (let i=0; i<count; i++){
-        const type = types[Math.floor(Math.random()*types.length)]
+      for (let i = 0; i < count; i++) {
+        const type = types[Math.floor(Math.random() * types.length)]
         if (type === 'single') {
-          questions.push({ id:i+1, type:'single', content:`${subject}单选题（${difficulty}）：这是第${i+1}道${subject}考试题，请选择正确答案。`, options:['选项A','选项B','选项C','选项D'], answer: Math.floor(Math.random()*4), explanation:`这是第${i+1}道题的详细解析，解释了为什么这个答案是正确的。`, score:2 })
+          questions.push({ id: i + 1, type: 'single', content: `${subject}单选题（${difficulty}）：这是第${i + 1}道练习题，请选择正确答案。`, options: ['选项A', '选项B', '选项C', '选项D'], answer: Math.floor(Math.random() * 4), explanation: `这是第${i + 1}道题的详细解析。`, score: 2 })
         } else if (type === 'multiple') {
-          const countAns = Math.floor(Math.random()*3)+1
-          const ans=[]; while(ans.length<countAns){ const n=Math.floor(Math.random()*4); if(!ans.includes(n)) ans.push(n) }
-          questions.push({ id:i+1, type:'multiple', content:`${subject}多选题（${difficulty}）：这是第${i+1}道${subject}考试题，请选择所有正确答案。`, options:['选项A','选项B','选项C','选项D'], answer: ans, explanation:`这是第${i+1}道题的详细解析，解释了为什么这些答案是正确的。`, score:4 })
+          const answerCount = Math.floor(Math.random() * 3) + 1
+          const ans = []; while (ans.length < answerCount) { const n = Math.floor(Math.random() * 4); if (!ans.includes(n)) ans.push(n) }
+          questions.push({ id: i + 1, type: 'multiple', content: `${subject}多选题（${difficulty}）：这是第${i + 1}道练习题，请选择所有正确答案。`, options: ['选项A', '选项B', '选项C', '选项D'], answer: ans, explanation: `这是第${i + 1}道题的详细解析。`, score: 4 })
         } else {
-          questions.push({ id:i+1, type:'boolean', content:`${subject}判断题（${difficulty}）：这是第${i+1}道${subject}考试题，请判断正误。`, answer: Math.random()>0.5, explanation:`这是第${i+1}道题的详细解析，解释了为什么这个判断是正确或错误的。`, score:2 })
+          questions.push({ id: i + 1, type: 'boolean', content: `${subject}判断题（${difficulty}）：这是第${i + 1}道练习题，请判断正误。`, answer: Math.random() > 0.5, explanation: `这是第${i + 1}道题的详细解析。`, score: 2 })
         }
       }
       return questions

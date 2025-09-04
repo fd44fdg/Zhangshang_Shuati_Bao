@@ -63,28 +63,28 @@
 	--avatar-fg: #FFFFFF;
 }
 
-/* 深色主题覆盖 */
+/* 深色主题覆盖（更亮、更易读） */
 body.dark-mode, .dark-mode {
-	--bg-color: #071022;
-	--card-bg: #0b1320;
-	--text-primary: #e6eef8;
-	--text-secondary: #9fb0c9;
-	--accent: #60a5fa;
-	--border-color: #0b1320;
+	--bg-color: #0f172a; /* slate-900 */
+	--card-bg: #111827; /* slate-800 */
+	--text-primary: #e5e7eb; /* slate-200 */
+	--text-secondary: #cbd5e1; /* slate-300 */
+	--accent: #60a5fa; /* 蓝色保持 */
+	--border-color: #1f2937; /* slate-700 */
 	--accent-active: #60a5fa;
 	--icon-accent: var(--accent);
 	--warning: #FFD86B;
 	--danger: #FF6B6B;
 	--success: #34C759;
-	--shadow: none;
+	--shadow: 0 1rpx 6rpx rgba(0,0,0,0.2);
 	/* dark-mode variants for helpers */
-	--muted: #5b6b7a;
-	--muted-border: #0b1320;
-	--success-bg: rgba(36, 78, 45, 0.12);
-	--warning-bg: rgba(255, 216, 107, 0.08);
-	--danger-bg: rgba(255, 107, 107, 0.06);
-	--card-bg-2: #071428;
-	--card-bg-3: #08182b;
+	--muted: #94a3b8; /* slate-400 */
+	--muted-border: #1f2937; /* 统一分隔线 */
+	--success-bg: rgba(36, 78, 45, 0.16);
+	--warning-bg: rgba(255, 216, 107, 0.12);
+	--danger-bg: rgba(255, 107, 107, 0.10);
+	--card-bg-2: #0f1e35;
+	--card-bg-3: #12203c;
 	/* avatar overrides for dark mode */
 	--avatar-bg: #1f3b5a;
 	--avatar-fg: #e6eef8;
@@ -102,4 +102,61 @@ body, .settings-container {
 
 .item-text { color: var(--text-primary) !important; }
 .item-value, .section-title, .item-arrow { color: var(--text-secondary) !important; }
+
+/* 平滑过渡：切换主题时避免突兀闪烁 */
+body.theme-transition, body.theme-transition * {
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* 全局容器与基础元素使用主题变量，避免白边与错配 */
+page, #app, .uni-app, .app-root {
+  background-color: var(--bg-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* 常见容器统一背景与边框（降低白边出现概率） */
+.card, .section, .header, .list, .modal, .picker-content,
+.question-card, .today-stats, .knowledge-progress, .recommendations,
+.favorites-list .question-item, .menu-list, .data-item {
+  background-color: var(--card-bg) !important;
+  border-color: var(--muted-border) !important;
+}
+
+/* 分隔线与通用边框颜色在暗色中使用弱边框变量 */
+hr, .divider, .border, .border-top, .border-bottom, .uni-list-item, .uni-card {
+  border-color: var(--muted-border) !important;
+}
+
+/* uni 组件在暗色下的适配，尽可能消除白边 */
+.dark-mode .uni-list, .dark-mode .uni-list-item, .dark-mode .uni-card,
+.dark-mode .uni-popup, .dark-mode .uni-modal, .dark-mode .uni-navbar,
+.dark-mode .uni-searchbar, .dark-mode .uni-easyinput, .dark-mode .uni-forms-item,
+.dark-mode .uni-section, .dark-mode .uni-group {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--muted-border) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+/* tabbar 与 fixed 底部栏 */
+.dark-mode .uni-tabbar, .dark-mode .custom-tabbar, .dark-mode .custom-tab-bar {
+  background-color: var(--card-bg) !important;
+  border-top-color: var(--muted-border) !important;
+}
+
+/* 底部导航栏白边修复（统一边线与背景，去掉默认阴影） */
+.uni-tabbar, .custom-tabbar, .custom-tab-bar {
+  background-color: var(--card-bg) !important;
+  border-top: 1rpx solid var(--muted-border) !important;
+  box-shadow: none !important;
+}
+.uni-tabbar__bd, .uni-tabbar__bar, .uni-tabbar__content {
+  background-color: var(--card-bg) !important;
+}
+.uni-tabbar::before, .uni-tabbar::after { display: none !important; }
+
+/* 图标容器透明，避免出现图标白底块（若素材自带白底则需更换素材） */
+.uni-tabbar .uni-tabbar__icon, .custom-tabbar .tabbar-icon {
+  background-color: transparent !important;
+}
 </style>

@@ -1,71 +1,57 @@
-
 <template>
 	<view class="practice-container">
-		<!-- 配置模式 -->
-		<view class="setup-mode">
-			<view class="header">
-				<text class="header-title">{{ pageTitle || '刷题练习' }}</text>
-			</view>
-			
-			<!-- 模式提示卡片 -->
-			<view v-if="currentMode" class="mode-tip-card">
-				<view class="mode-icon">{{ getModeIcon() }}</view>
-				<view class="mode-content">
-					<text class="mode-title">{{ getModeTitle() }}</text>
-					<text class="mode-desc">{{ getModeDescription() }}</text>
+		<view class="header">
+			<text class="title">专项练习</text>
+			<text class="subtitle">请选择一个你想要深入练习的领域</text>
+		</view>
+
+		<!-- 练习设置 -->
+		<view class="settings-card">
+			<view class="setting-item">
+				<view class="item-label">
+					<ModernIcon type="exam" :size="20" />
+					<text>题目数量</text>
+				</view>
+				<view class="stepper">
+					<button @click="decrement" :disabled="practiceConfig.count <= 10">-</button>
+					<text>{{ practiceConfig.count }}</text>
+					<button @click="increment" :disabled="practiceConfig.count >= 50">+</button>
 				</view>
 			</view>
-			
-			<view class="content-section">
-				<view class="info-card">
-					<text class="info-text">选择你想要练习的题目类型和难度，开始刷题吧！</text>
+			<view class="setting-item">
+				<view class="item-label">
+					<ModernIcon type="settings" :size="20" />
+					<text>练习难度</text>
 				</view>
-				
-				<view class="section">
-					<view class="section-title">选择分类</view>
-					<view class="category-list">
-						<view 
-							v-for="(category, index) in categories" 
-							:key="index"
-							class="category-item"
-							:class="{ active: selectedCategory === index }"
-							@click="selectCategory(index)"
-						>
-							<text class="category-name">{{ category }}</text>
-						</view>
-					</view>
+				<view class="difficulty-selector">
+					<text 
+						v-for="(item, index) in difficultyOptions" 
+						:key="index" 
+						class="difficulty-option"
+						:class="{ active: practiceConfig.difficulty === item.value }"
+						@click="setDifficulty(item.value)"
+					>{{ item.text }}</text>
 				</view>
-				
-				<view class="section">
-					<view class="section-title">选择难度</view>
-					<view class="difficulty-list">
-						<view 
-							v-for="(difficulty, index) in difficulties" 
-							:key="index"
-							class="difficulty-item"
-							:class="{ active: selectedDifficulty === index }"
-							@click="selectDifficulty(index)"
-						>
-							<text class="difficulty-name">{{ difficulty.name }}</text>
-							<text class="difficulty-desc">{{ difficulty.desc }}</text>
-						</view>
-					</view>
+			</view>
+		</view>
+
+		<view class="category-grid">
+			<view 
+				v-for="(category, index) in categories" 
+				:key="category.id"
+				class="category-card"
+				:style="{ animationDelay: (index * 0.05) + 's' }"
+				@click="startPractice(category)"
+			>
+				<view class="card-icon-wrapper">
+					<ModernIcon :type="category.icon" :size="32" />
 				</view>
-				
-				<view class="section">
-					<view class="section-title">题目数量</view>
-					<slider 
-						:value="questionCount" 
-						:min="5" 
-						:max="50" 
-						:step="5" 
-						:show-value="true"
-						@change="onQuestionCountChange"
-					/>
+				<view class="card-content">
+					<text class="category-name">{{ category.name }}</text>
+					<text class="category-desc">{{ category.description }}</text>
 				</view>
-				
-				<view class="button-section">
-					<button class="start-button" @click="startPractice">开始练习</button>
+				<view class="card-arrow">
+					<uni-icons type="right" size="16" color="#C0C4CC"></uni-icons>
 				</view>
 			</view>
 		</view>
@@ -73,401 +59,252 @@
 </template>
 
 <script>
+import ModernIcon from '@/components/ModernIcon.vue';
+import uniIcons from '@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue';
+import { subjects } from '@/mock/subjects.js';
+
 export default {
+	name: "Practice",
+	components: {
+		ModernIcon,
+		uniIcons
+	},
 	data() {
 		return {
-			// 配置数据
-			categories: ['数学', '语文', '英语', '物理', '化学', '生物'],
-			difficulties: [
-				{ name: '简单', desc: '基础题型，适合入门' },
-				{ name: '中等', desc: '标准题型，适合巩固' },
-				{ name: '困难', desc: '挑战题型，适合提高' }
-			],
-			selectedCategory: 0,
-			selectedDifficulty: 1,
-			questionCount: 20,
-			
-			// 当前模式
-			currentMode: '',
-			pageTitle: '',
-
-			// 用户设置
-			userSettings: null
-		}
+			categories: [],
+			practiceConfig: {
+				count: 20,
+				difficulty: 'medium'
+			},
+			difficultyOptions: [
+				{ value: 'easy', text: '简单' },
+				{ value: 'medium', text: '中等' },
+				{ value: 'hard', text: '困难' }
+			]
+		};
 	},
-	onLoad(options) {
-		console.log('Practice页面onLoad - 接收到的参数:', options)
-
-		// 确保options对象存在
-		if (!options) {
-			options = {}
-			console.log('options为空，使用默认值')
-		}
-
-		// 加载用户设置并应用默认值
-		this.loadUserSettings()
-
-		// 处理分类参数
-		if (options.category) {
-			const categoryIndex = this.categories.indexOf(options.category)
-			if (categoryIndex !== -1) {
-				this.selectedCategory = categoryIndex
-				console.log('设置分类索引:', categoryIndex)
-			}
-		}
-
-		// 处理URL参数中的模式
-		this.handleModeFromOptions(options)
-	},
-	
-	onShow() {
-		console.log('Practice页面onShow - 检查存储的模式参数')
-		
-		// 检查是否有存储的模式参数
-		const storedMode = uni.getStorageSync('practiceMode')
-		if (storedMode) {
-			console.log('从存储读取到模式参数:', storedMode)
-			this.handleModeFromOptions(storedMode)
-			// 清除存储的参数，避免重复使用
-			uni.removeStorageSync('practiceMode')
-		}
+	onLoad() {
+		this.categories = subjects;
+		this.loadDefaultSettings();
 	},
 	methods: {
-		// 加载用户设置
-		loadUserSettings() {
-			try {
-				const settings = uni.getStorageSync('app_settings')
-				if (settings) {
-					// 应用默认难度设置
-					if (settings.difficulty) {
-						const difficultyMap = { 'easy': 0, 'medium': 1, 'hard': 2 }
-						this.selectedDifficulty = difficultyMap[settings.difficulty] || 1
-						console.log('应用默认难度设置:', settings.difficulty, '→', this.selectedDifficulty)
-					}
-
-					// 应用默认题数设置
-					if (settings.questionCount) {
-						this.questionCount = settings.questionCount
-						console.log('应用默认题数设置:', settings.questionCount)
-					}
-
-					// 保存设置供答题时使用
-					this.userSettings = settings
-					console.log('用户设置已加载:', settings)
+		loadDefaultSettings() {
+			const globalSettings = uni.getStorageSync('app_settings');
+			if (globalSettings) {
+				this.practiceConfig.count = globalSettings.questionCount || 20;
+				this.practiceConfig.difficulty = globalSettings.difficulty || 'medium';
+			}
+		},
+		decrement() {
+			if (this.practiceConfig.count > 10) {
+				this.practiceConfig.count -= 10;
+			}
+		},
+		increment() {
+			if (this.practiceConfig.count < 50) { // Max 50 questions for practice
+				this.practiceConfig.count += 10;
+			}
+		},
+		setDifficulty(level) {
+			this.practiceConfig.difficulty = level;
+		},
+		startPractice(category) {
+			uni.setStorageSync('examSessionConfig', {
+				pageTitle: category.name + ' - 专项练习',
+				mode: 'practice',
+				config: {
+					category: category.id,
+					count: this.practiceConfig.count,
+					difficulty: this.practiceConfig.difficulty,
+					random: true
 				}
-			} catch (error) {
-				console.error('加载用户设置失败:', error)
-			}
-		},
-
-		selectCategory(index) {
-			this.selectedCategory = index
-		},
-		selectDifficulty(index) {
-			this.selectedDifficulty = index
-		},
-        onQuestionCountChange(e) {
-			this.questionCount = e.detail.value
-		},
-		
-		// 开始练习：跳转到统一的会话页面
-		async startPractice() {
-			try {
-				// 将当前练习的配置写入本地存储，供会话页面读取
-				uni.setStorageSync('examSessionConfig', {
-					pageTitle: '刷题练习',
-					selectedSubjectIndex: this.selectedCategory,
-					selectedDifficultyIndex: this.selectedDifficulty, // 将难度传递过去
-					questionCount: this.questionCount,
-					mode: 'practice' // 明确指定为练习模式
-				})
-				
-				// 跳转到统一的会话页面
-				uni.navigateTo({
-					url: '/pages/exam/session'
-				})
-			} catch (error) {
-				uni.showToast({
-					title: '进入练习失败，请重试',
-					icon: 'none'
-				})
-			}
-		},
-		
-		// 处理模式参数
-		handleModeFromOptions(options) {
-			if (!options || !options.mode) {
-				console.log('没有模式参数，使用默认模式')
-				return
-			}
-			
-			console.log('处理模式参数:', options.mode)
-			this.currentMode = options.mode
-			
-			switch(options.mode) {
-				case 'popular':
-					console.log('初始化热门题目模式')
-					this.selectedDifficulty = 1
-					this.questionCount = 20
-					this.pageTitle = '热门题目练习'
-					uni.setNavigationBarTitle({ title: '热门题目练习' })
-					break
-				case 'daily':
-					console.log('初始化每日一题模式')
-					this.selectedDifficulty = Math.floor(Math.random() * 3)
-					this.questionCount = 10
-					this.pageTitle = '每日一题'
-					uni.setNavigationBarTitle({ title: '每日一题' })
-					break
-				case 'review':
-					console.log('初始化知识点复习模式')
-					this.selectedDifficulty = 0
-					this.questionCount = 30
-					this.pageTitle = '知识点复习'
-					uni.setNavigationBarTitle({ title: '知识点复习' })
-					// 注意：知识点复习不自动开始，需要用户配置
-					break
-				default:
-					console.log('未知模式:', options.mode)
-			}
-			
-			// 检查是否需要自动开始（只有热门题目和每日一题才自动开始）
-			if ((options.autoStart === true || options.autoStart === 'true') && 
-			    (options.mode === 'popular' || options.mode === 'daily')) {
-				console.log('自动开始练习')
-				setTimeout(() => {
-					this.startPractice()
-				}, 800)
-			}
-			
-			console.log('模式处理完成 - 当前状态:', {
-				currentMode: this.currentMode,
-				pageTitle: this.pageTitle,
-				selectedDifficulty: this.selectedDifficulty,
-				questionCount: this.questionCount
-			})
-		},
-		getCurrentModePrefix() {
-			switch(this.currentMode) {
-				case 'popular':
-					return '🔥热门 - '
-				case 'daily':
-					return '⭐每日 - '
-				case 'review':
-					return '📚复习 - '
-				default:
-					return ''
-			}
-		},
-		
-		// 获取模式图标
-		getModeIcon() {
-			switch(this.currentMode) {
-				case 'popular':
-					return '🔥'
-				case 'daily':
-					return '⭐'
-				case 'review':
-					return '📚'
-				default:
-					return '📝'
-			}
-		},
-		
-		// 获取模式标题
-		getModeTitle() {
-			switch(this.currentMode) {
-				case 'popular':
-					return '热门题目练习'
-				case 'daily':
-					return '每日一题挑战'
-				case 'review':
-					return '知识点复习'
-				default:
-					return '自由练习'
-			}
-		},
-		
-		// 获取模式描述
-		getModeDescription() {
-			switch(this.currentMode) {
-				case 'popular':
-					return '精选热门题目，提升实战能力'
-				case 'daily':
-					return '每日一道精心选择的题目'
-				case 'review':
-					return '系统性复习重点知识'
-				default:
-					return '根据您的需要自由配置'
-			}
+			});
+			uni.navigateTo({
+				url: '/pages/exam/session'
+			});
 		}
 	}
-}
+};
 </script>
 
-<style>
+<style scoped>
 .practice-container {
-	padding: 20rpx;
-	background-color: var(--bg-color, #f5f5f5);
+	background-color: var(--bg-color, #f8f9fa);
 	min-height: 100vh;
+	padding: 40rpx 30rpx;
 }
 
-/* 配置模式样式 */
 .header {
-	display: flex;
-	align-items: center;
-	padding: 30rpx;
-	background-color: var(--card-bg, #fff);
-	border-radius: 16rpx;
-	margin-bottom: 20rpx;
-	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
-	justify-content: center; /* 居中显示标题 */
+	margin-bottom: 40rpx;
+	padding-left: 10rpx;
 }
 
-.header-title {
-	font-size: 36rpx;
-	font-weight: bold;
-	color: var(--text-primary, #333);
-}
-
-/* 模式提示卡片 */
-.mode-tip-card {
-	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-	border-radius: 16rpx;
-	padding: 30rpx;
-	margin-bottom: 20rpx;
-	display: flex;
-	align-items: center;
-	box-shadow: 0 4rpx 20rpx rgba(102, 126, 234, 0.3);
-}
-
-.mode-icon {
+.title {
 	font-size: 48rpx;
-	margin-right: 20rpx;
-}
-
-.mode-content {
-	flex: 1;
-}
-
-.mode-title {
-	color: white;
-	font-size: 32rpx;
 	font-weight: bold;
-	margin-bottom: 8rpx;
+	color: var(--text-primary, #303133);
 	display: block;
+	margin-bottom: 10rpx;
 }
 
-.mode-desc {
-	color: rgba(255, 255, 255, 0.9);
-	font-size: 24rpx;
-	line-height: 1.4;
-}
-
-.content-section {
-	margin-bottom: 20rpx;
-}
-
-.info-card {
-	background-color: #4A90E2;
-	padding: 30rpx;
-	border-radius: 16rpx;
-	margin-bottom: 20rpx;
-}
-
-.info-text {
-	color: #fff;
+.subtitle {
 	font-size: 28rpx;
-	line-height: 1.5;
+	color: var(--text-secondary, #909399);
 }
 
-.section {
-	background-color: var(--card-bg, #fff);
-	border-radius: 16rpx;
-	padding: 30rpx;
-	margin-bottom: 20rpx;
-	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+.settings-card {
+	background-color: var(--card-bg, #ffffff);
+	border-radius: 24rpx;
+	padding: 10rpx 30rpx;
+	box-shadow: var(--shadow, 0 8rpx 30rpx rgba(0, 0, 0, 0.05));
+	margin-bottom: 40rpx;
 }
 
-.section-title {
-	font-size: 30rpx;
-	font-weight: bold;
-	color: var(--text-primary, #333);
-	margin-bottom: 20rpx;
-}
-
-.category-list {
+.setting-item {
 	display: flex;
-	flex-wrap: wrap;
-	margin: 0 -10rpx;
+	justify-content: space-between;
+	align-items: center;
+	padding: 25rpx 0;
 }
 
-.category-item {
-	width: calc(33.33% - 20rpx);
-	margin: 10rpx;
-	padding: 20rpx 0;
-	background-color: var(--card-bg-2, #f9f9f9);
-	border-radius: 12rpx;
+.setting-item:first-child {
+	border-bottom: 1rpx solid var(--border-color, #f0f0f0);
+}
+
+.item-label {
+	display: flex;
+	align-items: center;
+	font-size: 28rpx;
+	color: var(--text-primary, #303133);
+}
+
+.item-label text {
+	margin-left: 16rpx;
+}
+
+.stepper {
+	display: flex;
+	align-items: center;
+}
+
+.stepper text {
+	font-size: 30rpx;
+	font-weight: 500;
+	color: var(--text-primary, #303133);
+	margin: 0 30rpx;
+	min-width: 50rpx;
 	text-align: center;
 }
 
-.category-item.active {
-	background-color: #4A90E2;
+.stepper button {
+	width: 50rpx;
+	height: 50rpx;
+	border-radius: 50%;
+	background-color: var(--bg-color-soft, #f4f4f5);
+	color: var(--text-primary, #303133);
+	font-size: 36rpx;
+	line-height: 50rpx;
+	padding: 0;
+	margin: 0;
+}
+
+.stepper button:disabled {
+	background-color: var(--bg-color, #f8f9fa);
+	color: var(--text-disabled, #c0c4cc);
+}
+
+.difficulty-selector {
+	display: flex;
+	background-color: var(--bg-color-soft, #f4f4f5);
+	border-radius: 16rpx;
+	padding: 6rpx;
+}
+
+.difficulty-option {
+	font-size: 24rpx;
+	padding: 10rpx 20rpx;
+	border-radius: 12rpx;
+	color: var(--text-secondary, #606266);
+	transition: all 0.3s ease;
+}
+
+.difficulty-option.active {
+	background-color: var(--card-bg, #ffffff);
+	color: var(--accent-active, #4A90E2);
+	font-weight: bold;
+	box-shadow: var(--shadow-soft, 0 2rpx 10rpx rgba(0,0,0,0.1));
+}
+
+.category-grid {
+	display: flex;
+	flex-direction: column;
+	gap: 24rpx;
+}
+
+.category-card {
+	display: flex;
+	align-items: center;
+	background-color: var(--card-bg, #ffffff);
+	border-radius: 24rpx;
+	padding: 30rpx;
+	box-shadow: var(--shadow, 0 8rpx 30rpx rgba(0, 0, 0, 0.05));
+	transition: all 0.3s ease;
+	opacity: 0;
+	animation: card-fade-in 0.5s ease forwards;
+}
+
+.category-card:active {
+	transform: scale(0.98);
+	box-shadow: var(--shadow-soft, 0 4rpx 20rpx rgba(0, 0, 0, 0.08));
+}
+
+.card-icon-wrapper {
+	width: 90rpx;
+	height: 90rpx;
+	border-radius: 18rpx;
+	margin-right: 24rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: var(--bg-color-soft, #f4f4f5);
+}
+
+.card-content {
+	flex: 1;
 }
 
 .category-name {
-	font-size: 28rpx;
-	color: var(--text-primary, #333);
-}
-
-.category-item.active .category-name {
-	color: #fff;
-}
-
-.difficulty-list {
-	display: flex;
-	flex-direction: column;
-}
-
-.difficulty-item {
-	padding: 20rpx;
-	background-color: var(--card-bg-2, #f9f9f9);
-	border-radius: 12rpx;
-	margin-bottom: 15rpx;
-}
-
-.difficulty-item.active {
-	background-color: #4A90E2;
-}
-
-.difficulty-name {
-	font-size: 28rpx;
-	font-weight: bold;
-	color: var(--text-primary, #333);
-	margin-bottom: 5rpx;
-	display: block;
-}
-
-.difficulty-desc {
-	font-size: 24rpx;
-	color: var(--text-secondary, #999);
-}
-
-.difficulty-item.active .difficulty-name,
-.difficulty-item.active .difficulty-desc {
-	color: #fff;
-}
-
-.button-section {
-	margin-top: 40rpx;
-}
-
-.start-button {
-	background-color: #4A90E2;
-	color: #fff;
 	font-size: 32rpx;
-	font-weight: bold;
-	border-radius: 45rpx;
-	padding: 25rpx 0;
+	font-weight: 500;
+	color: var(--text-primary, #303133);
+	display: block;
+	margin-bottom: 8rpx;
+}
+
+.category-desc {
+	font-size: 24rpx;
+	color: var(--text-secondary, #909399);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.card-arrow {
+	margin-left: 20rpx;
+}
+
+.card-arrow uni-icons {
+	color: var(--text-disabled, #C0C4CC) !important;
+}
+
+@keyframes card-fade-in {
+	from {
+		opacity: 0;
+		transform: translateY(20rpx);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 </style>

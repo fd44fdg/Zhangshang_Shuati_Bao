@@ -2,6 +2,7 @@
 import settings from './settings'
 
 const THEME_CLASS = 'dark-mode'
+
 function getCssVar(name, fallback) {
   try {
     if (typeof document !== 'undefined' && document.documentElement) {
@@ -15,6 +16,16 @@ function getCssVar(name, fallback) {
 function applyThemeFromSettings() {
   const s = settings.getSettings()
   applyTheme(s && s.darkMode)
+}
+
+// 获取当前主题状态
+function getCurrentTheme() {
+  try {
+    if (typeof document !== 'undefined' && document.body) {
+      return document.body.classList.contains(THEME_CLASS)
+    }
+  } catch (e) {}
+  return false
 }
 
 function setMetaThemeColor(color) {
@@ -34,16 +45,30 @@ function setMetaThemeColor(color) {
 }
 
 function applyTheme(isDark) {
-  // H5 上通过 body class 切换主题样式并设置 meta theme-color
+  // H5：同步在 html/body/#app 添加主题类，并设置 meta theme-color，确保无需刷新即可生效
   try {
     if (typeof window !== 'undefined' && document && document.body) {
+      const root = document.documentElement
+      const appRoot = document.getElementById('app') || document.getElementById('uni-app')
+
+      // 为过渡添加瞬时类，避免切换突兀
+      document.body.classList.add('theme-transition')
       if (isDark) {
         document.body.classList.add(THEME_CLASS)
-  setMetaThemeColor(getCssVar('--bg-color', '#0b1320'))
+        root && root.classList.add(THEME_CLASS)
+        appRoot && appRoot.classList.add(THEME_CLASS)
+        setMetaThemeColor(getCssVar('--bg-color', '#0b1320'))
       } else {
         document.body.classList.remove(THEME_CLASS)
-  setMetaThemeColor(getCssVar('--bg-color', '#ffffff'))
+        root && root.classList.remove(THEME_CLASS)
+        appRoot && appRoot.classList.remove(THEME_CLASS)
+        setMetaThemeColor(getCssVar('--bg-color', '#ffffff'))
       }
+
+      // 下一帧移除过渡辅助类
+      setTimeout(() => {
+        document.body.classList.remove('theme-transition')
+      }, 300)
     }
   } catch (e) {
     // ignore
@@ -110,5 +135,6 @@ function toggleTheme() {
 export default {
   applyThemeFromSettings,
   applyTheme,
-  toggleTheme
+  toggleTheme,
+  getCurrentTheme
 }

@@ -20,7 +20,7 @@
 					<text class="overview-label">总知识点</text>
 				</view>
 				<view class="overview-item">
-					<text class="overview-number">{{ Math.round(totalStudied / totalKnowledge * 100) }}%</text>
+					<text class="overview-number">{{ totalKnowledge > 0 ? Math.round(totalStudied / totalKnowledge * 100) : 0 }}%</text>
 					<text class="overview-label">完成度</text>
 				</view>
 			</view>
@@ -124,7 +124,9 @@
 </template>
 
 <script>
-import ModernIcon from '@/components/ModernIcon.vue'
+import ModernIcon from '@/components/ModernIcon.vue';
+import { getWrongQuestions, getPracticeQuestions } from '@/api/question.js';
+import { mockKnowledgeCategories, mockRecentStudy, mockProgress } from '@/mock/reviewData.js';
 
 export default {
 	name: "Review",
@@ -133,88 +135,19 @@ export default {
 	},
 	data() {
 		return {
-			totalStudied: 45,
-			totalKnowledge: 120,
-			knowledgeCategories: [
-				{
-					id: 1,
-					title: "JavaScript基础",
-					description: "变量、函数、作用域等基础概念",
-					progress: 85,
-					completed: 17,
-					total: 20,
-					icon: "practice"
-				},
-				{
-					id: 2,
-					title: "Vue.js框架",
-					description: "组件、响应式、生命周期等",
-					progress: 60,
-					completed: 12,
-					total: 20,
-					icon: "exam"
-				},
-				{
-					id: 3,
-					title: "CSS布局",
-					description: "Flexbox、Grid、定位等布局技术",
-					progress: 40,
-					completed: 8,
-					total: 20,
-					icon: "settings"
-				},
-				{
-					id: 4,
-					title: "HTTP协议",
-					description: "请求响应、状态码、缓存等",
-					progress: 75,
-					completed: 15,
-					total: 20,
-					icon: "search"
-				},
-				{
-					id: 5,
-					title: "Node.js后端",
-					description: "Express、中间件、数据库等",
-					progress: 30,
-					completed: 6,
-					total: 20,
-					icon: "favorite"
-				},
-				{
-					id: 6,
-					title: "数据结构算法",
-					description: "数组、链表、排序、查找等",
-					progress: 55,
-					completed: 11,
-					total: 20,
-					icon: "profile"
-				}
-			],
-			recentStudy: [
-				{
-					id: 1,
-					title: "JavaScript闭包",
-					lastStudy: "2小时前",
-					progress: 80,
-					icon: "practice"
-				},
-				{
-					id: 2,
-					title: "Vue组件通信",
-					lastStudy: "昨天",
-					progress: 65,
-					icon: "exam"
-				},
-				{
-					id: 3,
-					title: "CSS Grid布局",
-					lastStudy: "2天前",
-					progress: 45,
-					icon: "settings"
-				}
-			]
+			totalStudied: 0,
+			totalKnowledge: 0,
+			knowledgeCategories: [],
+			recentStudy: []
 		}
+	},
+	onLoad() {
+		// In a real app, you would fetch this data from an API.
+		// Here, we load it from a local mock file.
+		this.totalStudied = mockProgress.totalStudied;
+		this.totalKnowledge = mockProgress.totalKnowledge;
+		this.knowledgeCategories = mockKnowledgeCategories;
+		this.recentStudy = mockRecentStudy;
 	},
 	methods: {
 		goBack() {
@@ -232,7 +165,6 @@ export default {
 		
 		enterCategory(category) {
 			console.log('进入分类:', category.title)
-			// 跳转到具体的知识点学习页面
 			uni.navigateTo({
 				url: `/pages/knowledge/detail?categoryId=${category.id}&title=${encodeURIComponent(category.title)}`
 			})
@@ -240,25 +172,76 @@ export default {
 		
 		continueStudy(item) {
 			console.log('继续学习:', item.title)
-			// 跳转到具体的知识点学习页面
 			uni.navigateTo({
 				url: `/pages/knowledge/detail?itemId=${item.id}&title=${encodeURIComponent(item.title)}`
 			})
 		},
 		
-		startQuickReview(type) {
-			console.log('开始快速复习:', type)
-			// 根据类型开始对应的复习模式
-			let url = '/pages/practice/practice?mode=review'
-			if (type === 'weak') {
-				url += '&focus=weak'
-			} else if (type === 'random') {
-				url += '&focus=random'
+		async startQuickReview(type) {
+			uni.showLoading({ title: '正在获取题目...' });
+			let questions = [];
+			let pageTitle = '';
+
+			try {
+				let response;
+				if (type === 'weak') {
+					pageTitle = '薄弱点专练';
+					response = await getWrongQuestions({ limit: 20 });
+				} else if (type === 'random') {
+					pageTitle = '随机复习';
+					response = await getPracticeQuestions({ limit: 20, random: true });
+				}
+
+				if (response && response.success && response.data && response.data.length > 0) {
+					questions = response.data;
+				} else {
+					console.warn('API failed or returned no data, falling back to mock questions.');
+					questions = this.generateMockQuestions(type);
+					if (questions.length === 0) {
+						uni.showToast({ title: '暂无相关题目', icon: 'none' });
+						return;
+					}
+				}
+			} catch (error) {
+				console.error('API request failed, falling back to mock questions:', error);
+				questions = this.generateMockQuestions(type);
+				pageTitle = type === 'weak' ? '薄弱点专练 (模拟)' : '随机复习 (模拟)';
+			} finally {
+				uni.hideLoading();
 			}
-			
+
+			if (questions.length === 0) {
+                uni.showToast({ title: '未能获取到题目', icon: 'none' });
+                return;
+            }
+
+			uni.setStorageSync('examSessionConfig', {
+				pageTitle: pageTitle,
+				questions: questions,
+				mode: 'practice'
+			});
+
 			uni.navigateTo({
-				url: url
-			})
+				url: '/pages/exam/session'
+			});
+		},
+
+		generateMockQuestions(type) {
+			const count = 10;
+			const questions = [];
+			const subject = type === 'weak' ? '薄弱知识点' : '随机知识点';
+			for (let i = 0; i < count; i++) {
+				questions.push({
+					id: 9000 + i + 1,
+					type: 'single',
+					content: `${subject}模拟题：这是第${i + 1}道模拟题。`,
+					options: ['模拟选项A', '模拟选项B', '模拟选项C', '模拟选项D'],
+					answer: Math.floor(Math.random() * 4),
+					explanation: `这是模拟题的解析。`,
+					score: 2
+				});
+			}
+			return questions;
 		}
 	}
 }
