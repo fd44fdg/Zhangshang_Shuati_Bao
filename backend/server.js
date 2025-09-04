@@ -35,6 +35,7 @@ if (process.env.NODE_ENV !== 'test') {
 const statsRoutes = require('./routes/stats');
 const articleRoutes = require('./routes/article');
 const examRoutes = require('./routes/exam');
+const bannerRoutes = require('./routes/banner');
 
 const app = express();
 const PORT = config.ports.backend;
@@ -179,6 +180,7 @@ if (checkinRoutes) {
 }
 app.use(`${apiPrefix}/articles`, articleRoutes);
 app.use(`${apiPrefix}/exams`, examRoutes);
+app.use(`${apiPrefix}/banners`, bannerRoutes);
 
 // ========================================
 // Root Endpoint
