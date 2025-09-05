@@ -103,7 +103,8 @@
 </template>
 
 <script>
-import { getFavorites, removeFavorite } from '@/api/study';
+import { getFavorites, removeFavorite as apiRemoveFavorite } from '@/api/study';
+import config from '@/config';
 export default {
   data() {
     return {
@@ -119,15 +120,12 @@ export default {
       categoryIndex: 0,
       categories: [
         { name: '全部分类', value: '' },
-        { name: '数学', value: 'math' },
-        { name: '语文', value: 'chinese' },
-        { name: '英语', value: 'english' },
-        { name: '物理', value: 'physics' },
-        { name: '化学', value: 'chemistry' },
-        { name: '生物', value: 'biology' },
-        { name: '历史', value: 'history' },
-        { name: '地理', value: 'geography' },
-        { name: '政治', value: 'politics' }
+        { name: '计算机基础', value: 'computer-basics' },
+        { name: '数据结构', value: 'data-structures' },
+        { name: '计算机网络', value: 'computer-networks' },
+        { name: '操作系统', value: 'operating-system' },
+        { name: '数据库系统', value: 'database-systems' },
+        { name: '软件工程', value: 'software-engineering' }
       ],
       
       difficultyIndex: 0,
@@ -289,7 +287,14 @@ export default {
             if (res.confirm) {
               uni.showLoading({ title: '取消收藏中...' });
               
-              const result = await removeFavorite(questionId);
+              let result;
+try {
+  // 真实接口
+  result = await apiRemoveFavorite(questionId, { timeout: 4000, loading: false });
+} catch (e) {
+  // 网络失败：直接在前端移除，保持体验
+  result = { success: true };
+}
               
               if (result.success) {
                 // 从列表中移除
@@ -351,11 +356,22 @@ export default {
         return;
       }
       
-      // 跳转到练习页面，传递收藏题目ID列表
-      const questionIds = this.favoritesList.map(item => item.id).join(',');
-      uni.navigateTo({
-        url: `/pages/practice/exercise?mode=favorite&questions=${questionIds}`
-      });
+      // 使用收藏题作为题集，启动练习会话（无后端时本地占位题目）
+const questions = this.favoritesList.map((q, idx) => ({
+  id: q.id || idx + 1,
+  type: 'single',
+  content: q.content || `收藏题（第${idx + 1}题）：这是占位题干。接入后端后替换为真实内容。`,
+  options: ['选项A', '选项B', '选项C', '选项D'],
+  answer: 0,
+  explanation: '这是占位解析。接入后端后替换为真实解析。',
+  score: 2
+}))
+uni.setStorageSync('examSessionConfig', {
+  pageTitle: '收藏练习',
+  mode: 'practice',
+  questions
+})
+uni.navigateTo({ url: '/pages/exam/session' });
     },
     
     getDifficultyText(difficulty) {

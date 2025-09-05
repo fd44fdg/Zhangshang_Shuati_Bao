@@ -209,7 +209,9 @@ export default {
       startTime: 0,
       showReview: false,
       showResultModal: true,
-      optionLabels: ['A','B','C','D','E','F','G','H']
+      optionLabels: ['A','B','C','D','E','F','G','H'],
+      categoryId: null,
+      categoryName: ''
     }
   },
   computed: {
@@ -226,7 +228,7 @@ export default {
     currentQuestion() { return this.questions[this.currentIndex] || null },
     progressPercentage() {
       if (!this.questions.length) return 0
-      return (this.currentIndex / this.questions.length) * 100
+      return Math.min(100, ((this.currentIndex + 1) / this.questions.length) * 100)
     },
     totalTime() {
       const durations = [30,60,90,120]
@@ -261,6 +263,20 @@ export default {
 
     this.pageTitle = cfg.pageTitle || '模拟考试';
     this.mode = cfg.mode || 'exam';
+    // 读取分类（从 practice 或 favorites 注入）
+    this.categoryId = (cfg.config && cfg.config.category) || cfg.categoryId || null;
+    const categoryMap = {
+      'computer-basics': '计算机基础',
+      'data-structures': '数据结构',
+      'computer-networks': '计算机网络',
+      'operating-system': '操作系统',
+      'database-systems': '数据库系统',
+      'software-engineering': '软件工程'
+    };
+    this.categoryName = categoryMap[this.categoryId] || cfg.categoryName || '';
+    if (!this.categoryName && this.pageTitle && this.pageTitle.includes('收藏练习')) {
+      this.categoryName = '收藏集';
+    }
     uni.setNavigationBarTitle({ title: this.pageTitle });
 
     if (cfg.questions && cfg.questions.length > 0) {
@@ -449,9 +465,8 @@ export default {
     generateMockExamQuestions() {
       const questions = []
       const types = ['single', 'multiple', 'boolean']
-      const subjects = ['计算机基础', '数据结构', '操作系统', '计算机网络', '数据库']
       const difficulties = ['简单', '中等', '困难']
-      const subject = subjects[this.selectedSubjectIndex] || '综合'
+      const subject = this.categoryName || ['计算机基础','数据结构','操作系统','计算机网络','数据库'][this.selectedSubjectIndex] || '综合'
       const difficulty = difficulties[this.selectedDifficultyIndex] || '中等'
       const count = this.mode === 'practice' ? this.questionCount : ([50, 40, 45, 40, 35][this.selectedSubjectIndex] || 50)
 

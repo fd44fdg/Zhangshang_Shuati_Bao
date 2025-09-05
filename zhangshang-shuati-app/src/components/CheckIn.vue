@@ -3,7 +3,7 @@
     <view class="check-in-card" @click="handleCheckIn" :class="{ 'checked-in': isCheckedIn }">
       <view class="card-content">
         <view class="icon">
-          <text class="icon-calendar">📅</text>
+          <text class="iconfont icon-calendar" style="color:#fff;"></text>
         </view>
         <view class="text-content">
           <text class="title">{{ isCheckedIn ? '今日已签到' : '每日签到' }}</text>
@@ -146,6 +146,7 @@ export default {
 }
 
 .icon {
+  display:flex; align-items:center; justify-content:center; width: 56rpx; height:56rpx;
   font-size: 48rpx;
   margin-right: 20rpx;
 }

@@ -9,7 +9,7 @@
 		<view class="settings-card">
 			<view class="setting-item">
 				<view class="item-label">
-					<ModernIcon type="exam" :size="20" />
+					<text class="iconfont icon-counter" style="font-size: 20px; color: var(--text-primary);"></text>
 					<text>题目数量</text>
 				</view>
 				<view class="stepper">
@@ -20,7 +20,7 @@
 			</view>
 			<view class="setting-item">
 				<view class="item-label">
-					<ModernIcon type="settings" :size="20" />
+					<text class="iconfont icon-setting" style="font-size: 20px; color: var(--text-primary);"></text>
 					<text>练习难度</text>
 				</view>
 				<view class="difficulty-selector">
@@ -44,14 +44,14 @@
 				@click="startPractice(category)"
 			>
 				<view class="card-icon-wrapper">
-					<ModernIcon :type="category.icon" :size="32" />
+					<text :class="['iconfont', iconClassFor(category)]" style="font-size: 28px; color: var(--text-primary);"></text>
 				</view>
 				<view class="card-content">
 					<text class="category-name">{{ category.name }}</text>
 					<text class="category-desc">{{ category.description }}</text>
 				</view>
 				<view class="card-arrow">
-					<uni-icons type="right" size="16" color="#C0C4CC"></uni-icons>
+					<text class="iconfont icon-arrow-right" style="font-size: 16px; color: var(--text-secondary);"></text>
 				</view>
 			</view>
 		</view>
@@ -59,14 +59,13 @@
 </template>
 
 <script>
-import ModernIcon from '@/components/ModernIcon.vue';
+// import ModernIcon from '@/components/ModernIcon.vue';
 import uniIcons from '@dcloudio/uni-ui/lib/uni-icons/uni-icons.vue';
 import { subjects } from '@/mock/subjects.js';
 
 export default {
 	name: "Practice",
 	components: {
-		ModernIcon,
 		uniIcons
 	},
 	data() {
@@ -88,6 +87,17 @@ export default {
 		this.loadDefaultSettings();
 	},
 	methods: {
+		iconClassFor(category) {
+			const map = {
+				'computer-basics': 'icon-setting',
+				'data-structures': 'icon-book',
+				'computer-networks': 'icon-network',
+				'operating-system': 'icon-cpu',
+				'database-systems': 'icon-database',
+				'software-engineering': 'icon-edit'
+			};
+			return map[category.id] || 'icon-book';
+		},
 		loadDefaultSettings() {
 			const globalSettings = uni.getStorageSync('app_settings');
 			if (globalSettings) {
@@ -197,6 +207,7 @@ export default {
 }
 
 .stepper button {
+	border: 1rpx solid var(--muted-border, #e9ecef);
 	width: 50rpx;
 	height: 50rpx;
 	border-radius: 50%;
@@ -214,6 +225,7 @@ export default {
 }
 
 .difficulty-selector {
+	border: 1rpx solid var(--muted-border, #e9ecef);
 	display: flex;
 	background-color: var(--bg-color-soft, #f4f4f5);
 	border-radius: 16rpx;
@@ -229,6 +241,7 @@ export default {
 }
 
 .difficulty-option.active {
+	border: 1rpx solid var(--accent, #4A90E2);
 	background-color: var(--card-bg, #ffffff);
 	color: var(--accent-active, #4A90E2);
 	font-weight: bold;

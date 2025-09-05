@@ -2,10 +2,13 @@
   <view class="study-records-container">
 	<!-- 页面标题 -->
 	<view class="page-header">
-		<view class="back-button" @click="goBack">
-			<text class="back-icon">‹</text>
+		<view class="header-left">
+			<view class="back-button" @tap="goBack">
+				<text class="iconfont icon-arrow-left back-icon"></text>
+			</view>
 		</view>
-		<text class="page-title">学习记录</text>
+		<view class="header-title">学习记录</view>
+		<view class="header-right"></view>
 	</view>
 	
     <!-- 学习统计卡片 -->
@@ -416,7 +419,7 @@ export default {
 
 /* 页面头部样式 */
 .page-header {
-	display: flex;
+display: grid; grid-template-columns: 1fr auto 1fr;
 	align-items: center;
   padding: 20rpx 30rpx;
   background-color: var(--card-bg, #fff);
@@ -537,7 +540,7 @@ export default {
 }
 
 .date-filter {
-  background-color: #fff;
+  background-color: var(--card-bg, #fff);
   border-radius: 16rpx;
   padding: 30rpx;
   margin-bottom: 30rpx;
@@ -561,7 +564,7 @@ export default {
       justify-content: space-between;
       align-items: center;
       padding: 20rpx;
-      background-color: var(--border-color, #f8f9fa);
+      background-color: var(--card-bg-2, #f8f9fa); border: 1rpx solid var(--muted-border, #e1e8ed);
       border-radius: 8rpx;
       font-size: 28rpx;
       color: var(--text-primary, #333);

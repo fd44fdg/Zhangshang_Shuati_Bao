@@ -60,6 +60,8 @@
 	--warning-dark: #FFA500;
 	--card-bg-2: #f8fbff;
 	--card-bg-3: #e8f4ff;
+	--bg-color-soft: #f4f4f5;
+	--shadow-soft: 0 2rpx 10rpx rgba(0,0,0,0.1);
 	/* avatar defaults */
 	--avatar-bg: #4A90E2;
 	--avatar-fg: #FFFFFF;
@@ -87,6 +89,8 @@ body.dark-mode, .dark-mode {
 	--danger-bg: rgba(255, 107, 107, 0.10);
 	--card-bg-2: #334155; /* slate-700，比原来的#0f1e35更亮 */
 	--card-bg-3: #475569; /* slate-600，比原来的#12203c更亮 */
+	--bg-color-soft: #374151; /* slate-700 近似 */
+	--shadow-soft: 0 1rpx 6rpx rgba(0,0,0,0.2);
 	/* avatar overrides for dark mode */
 	--avatar-bg: #3b82f6; /* blue-500，比原来的#1f3b5a更亮 */
 	--avatar-fg: #ffffff; /* 纯白色，比原来的#e6eef8更亮 */

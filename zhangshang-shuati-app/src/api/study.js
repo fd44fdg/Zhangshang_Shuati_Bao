@@ -35,8 +35,8 @@ export function addFavorite(questionId) {
  * @param {Number} questionId - 题目ID
  * @returns {Promise}
  */
-export function removeFavorite(questionId) {
-  return request.delete(`/study/favorites/${questionId}`);
+export function removeFavorite(questionId, options = {}) {
+  return request.delete(`/study/favorites/${questionId}`, {}, options);
 }
 
 /**

@@ -53,8 +53,17 @@
 }
 
 /* ============ 通用图标 ============ */
+.icon-network:before { content: "🌐"; }
+.icon-cpu:before { content: "🖥"; }
+.icon-database:before { content: "🗄"; }
 .icon-arrow-left:before {
   content: "←";
+}
+.icon-arrow-left:before {
+  content: "←";
+}
+.icon-arrow-right:before {
+  content: "→";
 }
 .icon-arrow-down:before {
   content: "▼";
@@ -100,6 +109,7 @@
   content: "👤";
 }
 
+.icon-counter:before { content: "#"; font-weight: bold; }
 .icon-setting:before {
   content: "⚙";
 }
