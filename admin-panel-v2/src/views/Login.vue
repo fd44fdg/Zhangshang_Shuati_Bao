@@ -7,7 +7,7 @@
       <n-input v-model:value="username" placeholder="用户名" size="large" @keyup.enter="focusPwd" />
       <n-input ref="pwdRef" v-model:value="password" type="password" placeholder="密码" size="large" @keyup.enter="doLogin" />
       <n-button type="primary" size="large" :loading="userStore.loading" block @click="doLogin">登录</n-button>
-      <div class="tips">测试账号: <strong>admin / admin123</strong></div>
+      <div class="tips">管理员登录系统</div>
     </div>
   </div>
 </template>
@@ -16,9 +16,11 @@ import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useMessage } from 'naive-ui'
 import { useUserStore } from '../stores/user'
+// 显式导入需要的 Naive UI 组件，之前未导入导致 <n-input> / <n-button> 作为原生标签渲染，看起来“消失”
+import { NInput, NButton } from 'naive-ui'
 
-const username = ref('admin')
-const password = ref('admin123')
+const username = ref('')
+const password = ref('')
 const router = useRouter()
 const route = useRoute()
 const message = useMessage()
@@ -49,7 +51,7 @@ async function doLogin() {
   radial-gradient(800px 600px at 75% 25%, rgba(90,200,250,0.22), transparent 70%),
   radial-gradient(900px 700px at 15% 80%, rgba(15,94,199,0.25), transparent 70%); filter:blur(4px); }
 .login-panel { width:100%; max-width:440px; padding:40px 40px 48px; display:flex; flex-direction:column; gap:20px; position:relative; }
-.title { margin:0; font-size:32px; font-weight:600; letter-spacing:.5px; background:linear-gradient(90deg,#5AC8FA,#3A86FF,#0F5EC7); -webkit-background-clip:text; color:transparent; }
+.title { margin:0; font-size:32px; font-weight:600; letter-spacing:.5px; background:linear-gradient(90deg,#5AC8FA,#3A86FF,#0F5EC7); -webkit-background-clip:text; background-clip:text; color:transparent; }
 .subtitle { margin:-4px 0 8px; font-size:14px; color:#B7CCE2; }
 .tips { font-size:12px; color:#92A6BD; text-align:center; margin-top:4px; }
 @media (max-width:560px){

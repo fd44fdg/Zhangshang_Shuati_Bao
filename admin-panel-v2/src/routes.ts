@@ -39,7 +39,9 @@ const routes: RouteRecordRaw[] = [
   { path: 'profile', name: 'Profile', component: Profile, meta: { title: '个人信息', requiresAuth: true, roles: ['admin','editor'], hidden: true } }
     ]
   },
-  { path: '/:pathMatch(.*)*', redirect: '/' }
+  { path: '/403', name: 'Forbidden', component: () => import('./views/system/Forbidden.vue'), meta: { title: '无权限' } },
+  { path: '/404', name: 'NotFound', component: () => import('./views/system/NotFound.vue'), meta: { title: '未找到' } },
+  { path: '/:pathMatch(.*)*', redirect: '/404' }
 ]
 
 export default routes

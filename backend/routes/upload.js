@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { verifyToken, isAdmin } = require('../middleware/auth');
+// Switch to cookie-based auth (V2). For production we standardize on cookie session.
+const { verifyAccess, requireRoles } = require('../middleware/authV2');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { createUploader } = require('../middleware/upload');
 const { sendSuccess } = require('../utils/responseHandler');
@@ -9,7 +10,7 @@ const { sendSuccess } = require('../utils/responseHandler');
 // 表单字段名使用 file
 const bannerUploader = createUploader({ subdir: 'banners' });
 
-router.post('/banners', verifyToken, isAdmin, bannerUploader.single('file'), asyncHandler(async (req, res) => {
+router.post('/banners', verifyAccess, requireRoles('admin'), bannerUploader.single('file'), asyncHandler(async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: '未找到上传文件' });
   }

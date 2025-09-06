@@ -17,23 +17,22 @@ router.beforeEach(async (to, _from, next) => {
 	loadingBar.start()
 	const userStore = useUserStore()
 	if (to.meta?.requiresAuth) {
-		if (!userStore.token) {
-			return next({ path: '/login', query: { redirect: to.fullPath } })
-		}
 		try {
+			// 尝试获取用户信息，如果没有或失效会自动跳转登录
 			if (!userStore.profile) {
-				await userStore.fetchProfile().catch(() => {})
+				await userStore.fetchProfile()
 			}
+			// 检查角色权限
 			if (to.meta.roles && to.meta.roles.length > 0) {
 				const ok = to.meta.roles.some(r => userStore.roles.includes(r))
 				if (!ok) {
 					message.warning('无访问权限')
-					return next('/')
+					return next('/403')
 				}
 			}
 		} catch (e) {
-			message.error('会话失效，请重新登录')
-			return next('/login')
+			message.error('请先登录')
+			return next({ path: '/login', query: { redirect: to.fullPath } })
 		}
 	}
 	if (to.path === '/login' && useUserStore().isLogged) {

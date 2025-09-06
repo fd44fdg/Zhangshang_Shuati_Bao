@@ -7,9 +7,9 @@
       </div>
       <n-upload
         :action="endpoint"
-        :headers="headers"
         name="file"
         :max="1"
+        :with-credentials="true"
         :show-file-list="false"
         :on-before-upload="beforeUpload"
         :on-finish="onFinish"
@@ -31,9 +31,10 @@ const emit = defineEmits(['update:modelValue'])
 const message = useMessage()
 
 const endpoint = computed(() => props.endpoint || '/api/v1/upload/banners')
-const headers = computed(() => ({
-  Authorization: `Bearer ${localStorage.getItem('token') || ''}`
-}))
+// 生产统一用 Cookie 会话，移除 Bearer 头；如需 CSRF，请在后端配合 XSRF-TOKEN
+// const headers = computed(() => ({
+//   Authorization: `Bearer ${localStorage.getItem('token') || ''}`
+// }))
 
 function beforeUpload ({ file }: any) {
   const maxSize = 10 * 1024 * 1024 // 10MB dev

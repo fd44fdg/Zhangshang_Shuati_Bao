@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const path = require('path');
 require('dotenv').config();
 
@@ -40,6 +41,19 @@ const uploadRoutes = require('./routes/upload');
 
 const app = express();
 const PORT = config.ports.backend;
+// (Re-added) API prefix (was accidentally removed causing ReferenceError)
+const apiPrefix = `${config.api.prefix}/${config.api.version}`;
+
+// ============ 分层诊断配置 ============
+// 通过 DIAG_LAYER 控制初始化到哪个层级，便于二分定位同步阻塞
+// 未设置 => 全部执行
+const L = parseInt(process.env.DIAG_LAYER || '999', 10);
+function enable(layer, fn) { if (L >= layer) fn(); }
+if (process.env.DIAG_LAYER) {
+  console.log(`[DIAG] DIAG_LAYER=${L}`);
+  // 事件循环活性探针：若输出明显停顿则表示主线程被阻塞
+  setInterval(()=>process.stdout.write('•'),1000).unref();
+}
 
 // Instrument app.listen to help debug test server startup during e2e tests
 // This logs when supertest or other code calls app.listen()
@@ -53,141 +67,106 @@ app.listen = (...args) => {
 // Production Security Middleware
 // ========================================
 
-// Security headers
-app.use(securityHeaders);
+// Layer 0: 基础 + 快速健康 (无 DB)
+enable(0, () => {
+  app.use(cookieParser());
+  app.get(`${apiPrefix}/health`, (req,res)=>res.json({status:'ok',fast:true,ts:Date.now()}));
+  app.get(`${apiPrefix}/ping`, (req,res)=>res.json({pong:true,ts:Date.now()}));
+});
 
-// Trust proxy for production deployment
-if (process.env.NODE_ENV === 'production') {
-  app.set('trust proxy', 1);
-}
-
-// CORS configuration
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, etc.)
-    if (!origin) return callback(null, true);
-    
-    // Check if origin is allowed
-    if (config.cors.origins.includes(origin)) {
-      callback(null, true);
-    } else {
-      logger.security('CORS violation attempt', { origin, allowedOrigins: config.cors.origins });
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: config.cors.credentials,
-  methods: config.cors.methods,
-  allowedHeaders: config.cors.allowedHeaders,
-  maxAge: config.cors.maxAge
-}));
+// Layer 1: 安全 & CORS
+enable(1, () => {
+  app.use(securityHeaders);
+  if (process.env.NODE_ENV === 'production') app.set('trust proxy',1);
+  app.use(cors({
+    origin:(origin,cb)=>{ if(!origin) return cb(null,true); if(config.cors.origins.includes(origin)) return cb(null,true); logger.security('CORS violation attempt',{origin,allowed:config.cors.origins}); cb(new Error('Not allowed by CORS')); },
+    credentials:config.cors.credentials,
+    methods:config.cors.methods,
+    allowedHeaders:config.cors.allowedHeaders,
+    maxAge:config.cors.maxAge
+  }));
+});
 
 // ========================================
 // Monitoring and Logging
 // ========================================
 
-// Request tracking for monitoring
-app.use(requestTracker);
-
-// Lightweight health check that never touches DB (for debugging hanging health)
-app.get('/healthz', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+enable(2, () => {
+  app.use((req,res,next)=>{ const start=Date.now(); console.log('[REQ]',req.method,req.originalUrl); res.on('finish',()=>console.log('[RES]',req.method,req.originalUrl,res.statusCode,(Date.now()-start)+'ms')); next(); });
+  app.use(requestTracker);
+  // 旧综合健康 -> /health/full，避免覆盖快速健康
+  app.use((req,res,next)=>{ if(req.path==='/health/full') return healthCheckMiddleware(req,res,next); next(); });
+  app.get('/healthz',(req,res)=>res.json({status:'ok',z:true,ts:Date.now()}));
+  if (process.env.NODE_ENV !== 'production') app.use(metricsMiddleware);
 });
-
-// Health check endpoint (before rate limiting)
-app.use(healthCheckMiddleware);
-
-// Metrics endpoint (protected in production)
-if (process.env.NODE_ENV !== 'production') {
-  app.use(metricsMiddleware);
-}
 
 // ========================================
 // Rate Limiting
 // ========================================
 
-if (process.env.NODE_ENV !== 'test') {
-  // Global rate limiting
-  app.use(rateLimits.api);
-
-  // Specific rate limits for different endpoint types
-  app.use('/api/v1/login', rateLimits.auth);           // deprecated alias
-  app.use('/api/v1/register', rateLimits.auth);        // deprecated alias
-  app.use('/api/v1/auth/login', rateLimits.auth);
-  app.use('/api/v1/auth/register', rateLimits.auth);
-  app.use('/api/v1/search', rateLimits.search);
-}
+enable(3, () => {
+  if (process.env.NODE_ENV !== 'test') {
+    app.use(rateLimits.api);
+    app.use('/api/v1/auth/login', rateLimits.auth);
+    app.use('/api/v1/auth/register', rateLimits.auth);
+    app.use('/api/v1/search', rateLimits.search);
+  }
+});
 
 // ========================================
 // Request Parsing
 // ========================================
 
 // Body parsing with size limits
-app.use(bodyParser.json({ 
-  limit: config.upload.maxSize,
-  verify: (req, res, buf) => {
-    // Additional validation can be added here
-    if (buf.length === 0) {
-      logger.warn('Empty request body received', { path: req.path });
-    }
-  }
-}));
-
-app.use(bodyParser.urlencoded({ 
-  extended: true, 
-  limit: config.upload.maxSize,
-  parameterLimit: 100 // Prevent parameter pollution
-}));
+enable(4, () => {
+  app.use(bodyParser.json({ 
+    limit: config.upload.maxSize,
+    verify: (req, res, buf) => { if (buf.length === 0) logger.warn('Empty request body received', { path: req.path }); }
+  }));
+  app.use(bodyParser.urlencoded({ extended: true, limit: config.upload.maxSize, parameterLimit: 100 }));
+});
 
 // ========================================
 // Static File Serving
 // ========================================
 
 // Secure static file serving
-app.use('/static', express.static('public', {
-  maxAge: process.env.NODE_ENV === 'production' ? '1d' : '0',
-  etag: true,
-  lastModified: true,
-  setHeaders: (res, path) => {
-    // Security headers for static files
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
-  }
-}));
-
-app.use('/static/uploads', express.static(path.join(__dirname, 'public/uploads'), {
-  maxAge: process.env.NODE_ENV === 'production' ? '1h' : '0',
-  etag: true
-}));
+enable(5, () => {
+  app.use('/static', express.static('public', {
+    maxAge: process.env.NODE_ENV === 'production' ? '1d' : '0',
+    etag: true,
+    lastModified: true,
+    setHeaders: (res) => { res.setHeader('X-Content-Type-Options','nosniff'); res.setHeader('X-Frame-Options','DENY'); }
+  }));
+  app.use('/static/uploads', express.static(path.join(__dirname,'public/uploads'), { maxAge: process.env.NODE_ENV==='production' ? '1h':'0', etag:true }));
+});
 
 // ========================================
 // API Routes with Validation
 // ========================================
 
-const apiPrefix = `${config.api.prefix}/${config.api.version}`;
+// apiPrefix defined above
 
-// Authentication routes with validation
-// New canonical path
-app.use(`${apiPrefix}/auth`, authRoutes);
-// Deprecated aliases for backward compatibility (login/register at root)
-app.use(`${apiPrefix}`, authRoutes);
+enable(6, () => {
+  app.use(`${apiPrefix}/auth`, authRoutes);
+});
 
-// Protected routes
-app.use(`${apiPrefix}/users`, userRoutes);
-app.use(`${apiPrefix}/questions`, questionRoutes);
-app.use(`${apiPrefix}/study`, studyRoutes);
-app.use(`${apiPrefix}/admin`, adminRoutes);
-app.use(`${apiPrefix}/admin/content`, contentRoutes);
-app.use(`${apiPrefix}/knowledge`, knowledgeRoutes);
-app.use(`${apiPrefix}/system`, systemRoutes);
-app.use(`${apiPrefix}/search`, searchRoutes);
-app.use(`${apiPrefix}/stats`, statsRoutes);
-if (checkinRoutes) {
-  app.use(`${apiPrefix}`, checkinRoutes);
-}
-app.use(`${apiPrefix}/articles`, articleRoutes);
-app.use(`${apiPrefix}/exams`, examRoutes);
-app.use(`${apiPrefix}/banners`, bannerRoutes);
-app.use(`${apiPrefix}/upload`, uploadRoutes);
+enable(7, () => {
+  app.use(`${apiPrefix}/users`, userRoutes);
+  app.use(`${apiPrefix}/questions`, questionRoutes);
+  app.use(`${apiPrefix}/study`, studyRoutes);
+  app.use(`${apiPrefix}/admin`, adminRoutes);
+  app.use(`${apiPrefix}/admin/content`, contentRoutes);
+  app.use(`${apiPrefix}/knowledge`, knowledgeRoutes);
+  app.use(`${apiPrefix}/system`, systemRoutes);
+  app.use(`${apiPrefix}/search`, searchRoutes);
+  app.use(`${apiPrefix}/stats`, statsRoutes);
+  if (checkinRoutes) app.use(`${apiPrefix}`, checkinRoutes);
+  app.use(`${apiPrefix}/articles`, articleRoutes);
+  app.use(`${apiPrefix}/exams`, examRoutes);
+  app.use(`${apiPrefix}/banners`, bannerRoutes);
+  app.use(`${apiPrefix}/upload`, uploadRoutes);
+});
 
 // ========================================
 // Root Endpoint
@@ -216,19 +195,13 @@ app.get('/', (req, res) => {
 // Error Handling
 // ========================================
 
-// 404 Handler
-app.use('*', (req, res, next) => {
-  logger.warn('404 Not Found', { 
-    path: req.originalUrl, 
-    method: req.method,
-    ip: req.ip,
-    userAgent: req.get('User-Agent')
+enable(8, () => {
+  app.use('*', (req, res, next) => {
+    logger.warn('404 Not Found', { path: req.originalUrl, method: req.method, ip: req.ip, userAgent: req.get('User-Agent') });
+    next(new ApiError(404, '接口不存在'));
   });
-  next(new ApiError(404, '接口不存在'));
+  app.use(globalErrorHandler);
 });
-
-// Register centralized Global Error Handler
-app.use(globalErrorHandler);
 
 // ========================================
 // Server Startup and Shutdown

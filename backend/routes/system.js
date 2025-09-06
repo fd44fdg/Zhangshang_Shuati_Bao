@@ -34,4 +34,26 @@ router.get('/health-check', asyncHandler(async (req, res) => {
     sendSuccess(res, healthCheck);
 }));
 
+/**
+ * @route POST /system/client-error
+ * @description Receive client-side unhandled errors for debugging
+ * @access Internal / Dev
+ */
+router.post('/client-error', asyncHandler(async (req, res) => {
+    const payload = req.body || {};
+    // Use existent logger to capture client info
+    const logger = require('../utils/logger');
+    logger.error('Client-side error reported', {
+        url: payload.url,
+        message: payload.message,
+        stack: payload.stack,
+        userAgent: req.get('User-Agent'),
+        extra: payload.extra || null,
+        ts: Date.now()
+    });
+
+    // keep response minimal
+    sendSuccess(res, { received: true });
+}));
+
 module.exports = router; 
