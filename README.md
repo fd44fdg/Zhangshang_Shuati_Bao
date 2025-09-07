@@ -143,3 +143,9 @@ GitHub Actions 自动部署：.github/workflows/deploy-aliyun.yml（配置 Secre
 
 ## 8. 许可证
 MIT
+
+---
+
+## 附：已知未结案问题（微信小程序首页白屏）
+mp-weixin 端首页当前存在白屏但无错误日志的问题，H5 正常。已最小化业务并清理调试代码，仍可复现。详情与贡献方式见 `docs/MINIPROGRAM_KNOWN_ISSUE.md`。
+
