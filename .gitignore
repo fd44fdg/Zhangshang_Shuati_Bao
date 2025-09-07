@@ -83,6 +83,7 @@ cypress/videos/
 密钥.txt
 *.ppk
 *.pfx
+*.exe
 
 # Nginx logs
 nginx/logs/

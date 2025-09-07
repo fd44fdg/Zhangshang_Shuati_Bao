@@ -4,6 +4,8 @@
   "description": "掌上刷题系统 - 一个完整的在线刷题平台",
   "main": "index.js",
   "scripts": {
+  "preflight": "node scripts/preflight-check.js",
+  "prebuild": "npm run preflight",
     "test": "node run-all-tests.js",
     "test:unit": "node run-all-tests.js --unit",
     "test:integration": "node run-all-tests.js --integration",
