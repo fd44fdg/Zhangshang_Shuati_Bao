@@ -139,7 +139,12 @@ export default {
 		return {
 			searchKeyword: '',
 			loading: false,
+			loadingMore: false,
 			searchResults: [],
+			total: 0,
+			page: 1,
+			pageSize: 30,
+			hasMore: false,
 			selectedFilter: 'all',
 			searchFilters: [
 				{ key: 'all', label: '全部' },
@@ -179,7 +184,7 @@ export default {
 				this.performSearch()
 			}, 400)
 		},
-		async performSearch() {
+			async performSearch(reset = true) {
 			const kw = this.searchKeyword.trim()
 			if (!kw) {
 				uni.showToast({ title: '请输入关键词', icon: 'none' })
@@ -189,38 +194,55 @@ export default {
 				uni.showToast({ title: '当前仅支持知识点', icon: 'none' })
 				return
 			}
-			this.loading = true
-			try {
-				const resp = await searchKnowledgePoints({ keyword: kw, page: 1, limit: 30 })
+			  if (reset) {
+				this.page = 1
+				this.searchResults = []
+				this.hasMore = false
+				this.total = 0
+				this.loading = true
+			  } else {
+				this.loadingMore = true
+			  }
+			  try {
+				const resp = await searchKnowledgePoints({ keyword: kw, page: this.page, limit: this.pageSize })
 				let list = []
 				if (resp && resp.data) {
-					if (Array.isArray(resp.data)) list = resp.data
-					else if (Array.isArray(resp.data.items)) list = resp.data.items
-					else if (Array.isArray(resp.data.list)) list = resp.data.list
+				  if (Array.isArray(resp.data)) list = resp.data
+				  else if (Array.isArray(resp.data.items)) list = resp.data.items
+				  else if (Array.isArray(resp.data.list)) list = resp.data.list
+				  if (resp.data.total) this.total = resp.data.total
 				}
-				// 标准化为搜索结果结构
-				this.searchResults = list.map(item => ({
-					id: item.id,
-					title: item.title || item.name || '未命名',
-					description: item.description || '',
-					category: item.category || item.category_name || '未分类',
-					difficulty: item.difficulty || item.level || '',
-					questionCount: item.questionCount || item.questions_count || 0,
-					type: 'knowledge'
+				if (!this.total && resp && resp.data && typeof resp.data.total === 'number') this.total = resp.data.total
+				if (!this.total) this.total = this.page === 1 ? list.length : this.searchResults.length + list.length
+				this.hasMore = this.searchResults.length + list.length < this.total
+				// 标准化、去重
+				const mapped = list.map(item => ({
+				  id: item.id,
+				  title: item.title || item.name || '未命名',
+				  description: item.description || '',
+				  category: item.category || item.category_name || '未分类',
+				  difficulty: item.difficulty || item.level || '',
+				  questionCount: item.questionCount || item.questions_count || 0,
+				  type: 'knowledge'
 				}))
+				this.searchResults = (reset ? [] : this.searchResults).concat(mapped).reduce((acc, cur) => {
+				  if (!acc.find(x => x.id === cur.id)) acc.push(cur)
+				  return acc
+				}, [])
 				this.saveSearchHistory(kw)
 				if (!this.searchResults.length) {
-					uni.showToast({ title: '无结果', icon: 'none' })
-				} else {
-					uni.showToast({ title: `共${this.searchResults.length}条`, icon: 'success' })
+				  uni.showToast({ title: '无结果', icon: 'none' })
+				} else if (reset) {
+				  uni.showToast({ title: `共${this.total}条`, icon: 'success' })
 				}
-			} catch (e) {
+			  } catch (e) {
 				console.error('搜索失败', e)
 				this.searchResults = []
 				uni.showToast({ title: '搜索出错', icon: 'none' })
-			} finally {
+			  } finally {
 				this.loading = false
-			}
+				this.loadingMore = false
+			  }
 		},
 		clearSearch() {
 			this.searchKeyword = ''
@@ -229,7 +251,7 @@ export default {
 		},
 		selectFilter(key) {
 			this.selectedFilter = key
-			if (this.searchKeyword.trim()) this.performSearch()
+		if (this.searchKeyword.trim()) this.performSearch(true)
 		},
 		selectHistoryItem(kw) {
 			this.searchKeyword = kw
@@ -280,6 +302,11 @@ export default {
 				uni.showToast({ title: '暂未支持', icon: 'none' })
 			}
 		},
+			onReachBottom() {
+				if (!this.hasMore || this.loading || this.loadingMore) return
+				this.page += 1
+				this.performSearch(false)
+			},
 		getTypeColor(type) {
 			const map = { knowledge: 'var(--type-knowledge, #4A90E2)', question: 'var(--type-question, #52C41A)', article: 'var(--type-article, #FA8C16)' }
 			return map[type] || 'var(--muted, #999999)'
@@ -297,8 +324,9 @@ export default {
 			if (!text) return ''
 			const kw = this.searchKeyword.trim()
 			if (!kw) return text
-			// 简化：不做富文本，直接返回原文（若后续需要可用rich-text）
-			return text
+		// 简易高亮（前端展示仍是纯文本，微信小程序不支持直接 innerHTML）
+		// 这里可返回替换标记，后续可用富文本组件处理；暂时直接返回原文
+		return text
 		}
 	}
 }
