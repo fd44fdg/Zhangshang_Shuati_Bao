@@ -131,302 +131,177 @@
 
 <script>
 import BackToTop from '@/components/BackToTop/index.vue'
-	import { searchKnowledge } from '@/api/knowledge.js'
-	
-	export default {
-		components: {
-			BackToTop
-		},
-		data() {
-			return {
-				searchKeyword: '',
-				loading: false,
-				searchResults: [],
-				selectedFilter: 'all',
-				searchFilters: [
-					{ key: 'all', label: '全部' },
-					{ key: 'knowledge', label: '知识点' },
-					{ key: 'question', label: '题目' },
-					{ key: 'article', label: '文章' }
-				],
-				searchHistory: [],
-				hotSearches: [
-					'JavaScript闭包',
-					'CSS布局',
-					'React Hooks',
-					'Vue组件',
-					'Node.js',
-					'前端性能优化',
-					'响应式设计',
-					'Ajax请求'
-				],
-				// 搜索数据（从API获取）
-				mockSearchData: []
-			}
-		},
-		computed: {
-			filteredResults() {
-				if (this.selectedFilter === 'all') {
-					return this.searchResults
-				}
-				return this.searchResults.filter(item => item.type === this.selectedFilter)
-			}
-		},
-		onLoad() {
-			this.loadSearchHistory()
-		},
-		methods: {
-			// 处理搜索输入
-			onSearchInput() {
-				// 实时搜索（防抖处理）
-				clearTimeout(this.searchTimer)
-				this.searchTimer = setTimeout(() => {
-					if (this.searchKeyword.trim()) {
-						this.performSearch()
-					}
-				}, 500)
-			},
-			
-			// 执行搜索
-			async performSearch() {
-				if (!this.searchKeyword.trim()) {
-					uni.showToast({
-						title: '请输入搜索关键词',
-						icon: 'none'
-					})
-					return
-				}
-				
-				this.loading = true
+import { searchKnowledgePoints } from '@/api/knowledge.js'
+
+export default {
+	components: { BackToTop },
+	data() {
+		return {
+			searchKeyword: '',
+			loading: false,
+			searchResults: [],
+			selectedFilter: 'all',
+			searchFilters: [
+				{ key: 'all', label: '全部' },
+				{ key: 'knowledge', label: '知识点' },
+				{ key: 'question', label: '题目' },
+				{ key: 'article', label: '文章' }
+			],
+			searchHistory: [],
+			hotSearches: [
+				'JavaScript闭包',
+				'CSS布局',
+				'性能优化',
+				'Vue组件',
+				'Node.js'
+			],
+			searchTimer: null
+		}
+	},
+	computed: {
+		filteredResults() {
+			if (this.selectedFilter === 'all') return this.searchResults
+			return this.searchResults.filter(r => r.type === this.selectedFilter)
+		}
+	},
+	onLoad() {
+		this.loadSearchHistory()
+	},
+	methods: {
+		onSearchInput() {
+			clearTimeout(this.searchTimer)
+			const kw = this.searchKeyword.trim()
+			if (!kw) {
 				this.searchResults = []
-				
-				try {
-					// 调用搜索API
-					const searchParams = {
-						keyword: this.searchKeyword.trim(),
-						type: this.selectedFilter,
-						page: 1,
-						limit: 20
-					};
-					
-					// 调用搜索API
-					const result = await this.searchContent(searchParams);
-					if (result && result.data) {
-						this.searchResults = result.data.list || [];
-					} else {
-						// 使用模拟数据
-						await this.simulateSearch();
-					}
-					
-					// 保存搜索历史
-					this.saveSearchHistory(this.searchKeyword);
-					
-					if (this.searchResults.length === 0) {
-						uni.showToast({
-							title: '未找到相关内容',
-							icon: 'none'
-						});
-					} else {
-						uni.showToast({
-							title: `找到${this.searchResults.length}条结果`,
-							icon: 'success'
-						});
-					}
-				} catch (error) {
-					// 搜索过程中发生错误
-					this.searchResults = [];
-					uni.showToast({
-						title: '搜索失败',
-						icon: 'none'
-					})
-				} finally {
-					this.loading = false
-				}
-			},
-			
-			// 模拟搜索
-			async simulateSearch() {
-				return new Promise((resolve) => {
-					setTimeout(() => {
-						const keyword = this.searchKeyword.toLowerCase()
-						this.searchResults = this.mockSearchData.filter(item => 
-							item.title.toLowerCase().includes(keyword) ||
-							item.description.toLowerCase().includes(keyword) ||
-							item.category.toLowerCase().includes(keyword)
-						)
-						resolve()
-					}, 800)
-				})
-			},
-			
-			// 清空搜索
-			clearSearch() {
-				this.searchKeyword = ''
-				this.searchResults = []
-			},
-			
-			// 选择过滤器
-			selectFilter(filterKey) {
-				this.selectedFilter = filterKey
-			},
-			
-			// 选择历史搜索
-			selectHistoryItem(keyword) {
-				this.searchKeyword = keyword
-				this.performSearch()
-			},
-			
-			// 选择热门搜索
-			selectHotSearch(keyword) {
-				this.searchKeyword = keyword
-				this.performSearch()
-			},
-			
-			// 删除历史记录项
-			deleteHistoryItem(index) {
-				this.searchHistory.splice(index, 1)
-				this.saveSearchHistoryToStorage()
-			},
-			
-			// 清空历史记录
-			clearHistory() {
-				uni.showModal({
-					title: '确认清空',
-					content: '确定要清空所有搜索历史吗？',
-					success: (res) => {
-						if (res.confirm) {
-							this.searchHistory = []
-							this.saveSearchHistoryToStorage()
-						}
-					}
-				})
-			},
-			
-			// 保存搜索历史
-			saveSearchHistory(keyword) {
-				const index = this.searchHistory.indexOf(keyword)
-				if (index > -1) {
-					this.searchHistory.splice(index, 1)
-				}
-				this.searchHistory.unshift(keyword)
-				
-				// 限制历史记录数量
-				if (this.searchHistory.length > 10) {
-					this.searchHistory = this.searchHistory.slice(0, 10)
-				}
-				
-				this.saveSearchHistoryToStorage()
-			},
-			
-			// 加载搜索历史
-			loadSearchHistory() {
-				try {
-					const history = uni.getStorageSync('searchHistory')
-					if (history) {
-						this.searchHistory = JSON.parse(history)
-					}
-				} catch (error) {
-					console.error('加载搜索历史失败:', error)
-				}
-			},
-			
-			// 保存搜索历史到本地存储
-			saveSearchHistoryToStorage() {
-				try {
-					uni.setStorageSync('searchHistory', JSON.stringify(this.searchHistory))
-				} catch (error) {
-					console.error('保存搜索历史失败:', error)
-				}
-			},
-			
-			// 搜索内容API调用
-			async searchContent(params) {
-				try {
-					// 这里可以调用真实的搜索API
-					// const response = await request({
-					//   url: '/api/v1/search',
-					//   method: 'GET',
-					//   params: params
-					// });
-					// return response;
-					
-					// 暂时返回null，让调用方处理空结果
-					return null;
-				} catch (error) {
-					throw error;
-				}
-			},
-			
-			// 处理搜索结果点击
-			handleResultClick(item) {
-				// 点击搜索结果的处理逻辑
-				
-				switch (item.type) {
-					case 'knowledge':
-						// 跳转到知识点详情
-						uni.navigateTo({
-							url: `/pages/knowledge/detail?id=${item.id}`
-						})
-						break
-					case 'question':
-						// 跳转到题目详情
-						uni.navigateTo({
-							url: `/pages/question/detail?id=${item.id}`
-						})
-						break
-					case 'article':
-						// 跳转到文章详情
-						uni.navigateTo({
-							url: `/pages/article/detail?id=${item.id}`
-						})
-						break
-					default:
-						uni.showToast({
-							title: '功能开发中',
-							icon: 'none'
-						})
-				}
-			},
-			
-			// 获取类型颜色
-			getTypeColor(type) {
-				const colorMap = {
-					knowledge: 'var(--type-knowledge, #4A90E2)',
-					question: 'var(--type-question, #52C41A)',
-					article: 'var(--type-article, #FA8C16)'
-				}
-				return colorMap[type] || 'var(--muted, #999999)'
-			},
-			
-			// 获取类型标签
-			getTypeLabel(type) {
-				const labelMap = {
-					knowledge: '知识点',
-					question: '题目',
-					article: '文章'
-				}
-				return labelMap[type] || '未知'
-			},
-			
-			// 获取难度文本
-			getDifficultyText(difficulty) {
-				const difficultyMap = {
-					1: '入门',
-					2: '初级',
-					3: '中级',
-					4: '高级',
-					5: '专家'
-				}
-				return difficultyMap[difficulty] || '未知'
-			},
-			
-			// 高亮关键词
-			highlightKeyword(text) {
-				// 简单的高亮处理，实际项目中可以使用更复杂的高亮逻辑
-				return text
+				return
 			}
+			this.searchTimer = setTimeout(() => {
+				this.performSearch()
+			}, 400)
+		},
+		async performSearch() {
+			const kw = this.searchKeyword.trim()
+			if (!kw) {
+				uni.showToast({ title: '请输入关键词', icon: 'none' })
+				return
+			}
+			if (this.selectedFilter !== 'all' && this.selectedFilter !== 'knowledge') {
+				uni.showToast({ title: '当前仅支持知识点', icon: 'none' })
+				return
+			}
+			this.loading = true
+			try {
+				const resp = await searchKnowledgePoints({ keyword: kw, page: 1, limit: 30 })
+				let list = []
+				if (resp && resp.data) {
+					if (Array.isArray(resp.data)) list = resp.data
+					else if (Array.isArray(resp.data.items)) list = resp.data.items
+					else if (Array.isArray(resp.data.list)) list = resp.data.list
+				}
+				// 标准化为搜索结果结构
+				this.searchResults = list.map(item => ({
+					id: item.id,
+					title: item.title || item.name || '未命名',
+					description: item.description || '',
+					category: item.category || item.category_name || '未分类',
+					difficulty: item.difficulty || item.level || '',
+					questionCount: item.questionCount || item.questions_count || 0,
+					type: 'knowledge'
+				}))
+				this.saveSearchHistory(kw)
+				if (!this.searchResults.length) {
+					uni.showToast({ title: '无结果', icon: 'none' })
+				} else {
+					uni.showToast({ title: `共${this.searchResults.length}条`, icon: 'success' })
+				}
+			} catch (e) {
+				console.error('搜索失败', e)
+				this.searchResults = []
+				uni.showToast({ title: '搜索出错', icon: 'none' })
+			} finally {
+				this.loading = false
+			}
+		},
+		clearSearch() {
+			this.searchKeyword = ''
+			this.searchResults = []
+			clearTimeout(this.searchTimer)
+		},
+		selectFilter(key) {
+			this.selectedFilter = key
+			if (this.searchKeyword.trim()) this.performSearch()
+		},
+		selectHistoryItem(kw) {
+			this.searchKeyword = kw
+			this.performSearch()
+		},
+		selectHotSearch(kw) {
+			this.searchKeyword = kw
+			this.performSearch()
+		},
+		deleteHistoryItem(idx) {
+			this.searchHistory.splice(idx, 1)
+			this.saveSearchHistoryToStorage()
+		},
+		clearHistory() {
+			uni.showModal({
+				title: '确认清空',
+				content: '确定清空搜索历史？',
+				success: res => {
+					if (res.confirm) {
+						this.searchHistory = []
+						this.saveSearchHistoryToStorage()
+					}
+				}
+			})
+		},
+		saveSearchHistory(kw) {
+			const i = this.searchHistory.indexOf(kw)
+			if (i > -1) this.searchHistory.splice(i, 1)
+			this.searchHistory.unshift(kw)
+			if (this.searchHistory.length > 10) this.searchHistory = this.searchHistory.slice(0, 10)
+			this.saveSearchHistoryToStorage()
+		},
+		loadSearchHistory() {
+			try {
+				const raw = uni.getStorageSync('searchHistory')
+				if (raw) this.searchHistory = JSON.parse(raw)
+			} catch (e) {
+				console.warn('加载历史失败', e)
+			}
+		},
+		saveSearchHistoryToStorage() {
+			try { uni.setStorageSync('searchHistory', JSON.stringify(this.searchHistory)) } catch (e) {}
+		},
+		handleResultClick(item) {
+			if (item.type === 'knowledge') {
+				uni.navigateTo({ url: `/pages/knowledge/detail?id=${item.id}` })
+			} else {
+				uni.showToast({ title: '暂未支持', icon: 'none' })
+			}
+		},
+		getTypeColor(type) {
+			const map = { knowledge: 'var(--type-knowledge, #4A90E2)', question: 'var(--type-question, #52C41A)', article: 'var(--type-article, #FA8C16)' }
+			return map[type] || 'var(--muted, #999999)'
+		},
+			
+		getTypeLabel(type) {
+			const map = { knowledge: '知识点', question: '题目', article: '文章' }
+			return map[type] || '未知'
+		},
+		getDifficultyText(d) {
+			const dm = { 1: '入门', 2: '初级', 3: '中级', 4: '高级', 5: '专家' }
+			return dm[d] || ''
+		},
+		highlightKeyword(text) {
+			if (!text) return ''
+			const kw = this.searchKeyword.trim()
+			if (!kw) return text
+			// 简化：不做富文本，直接返回原文（若后续需要可用rich-text）
+			return text
 		}
 	}
+}
 </script>
 
 <style scoped>
