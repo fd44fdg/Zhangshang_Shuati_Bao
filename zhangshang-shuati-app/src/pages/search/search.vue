@@ -29,10 +29,10 @@
 						v-for="filter in searchFilters" 
 						:key="filter.key"
 						class="filter-item" 
-						:class="{active: selectedFilter === filter.key}"
-						@click="selectFilter(filter.key)"
+						:class="{active: selectedFilter === filter.key, disabled: !filter.supported}"
+						@click="onFilterClick(filter)"
 					>
-						<text class="filter-text">{{filter.label}}</text>
+						<text class="filter-text">{{filter.label}}{{ !filter.supported ? '（暂未支持）' : '' }}</text>
 					</view>
 				</view>
 			</scroll-view>
@@ -90,6 +90,10 @@
 				<text class="empty-icon">🔍</text>
 				<text class="empty-text">未找到相关内容</text>
 				<text class="empty-tip">试试其他关键词吧</text>
+				<view v-if="error" class="retry-box">
+					<text class="retry-msg">{{ error }}</text>
+					<button size="mini" type="primary" @click="performSearch(true)">重试</button>
+				</view>
 			</view>
 			
 			<view v-else class="results-list">
@@ -160,12 +164,13 @@ export default {
 			page: 1,
 			pageSize: 30,
 			hasMore: false,
+				error: '',
 			selectedFilter: 'all',
 			searchFilters: [
-				{ key: 'all', label: '全部' },
-				{ key: 'knowledge', label: '知识点' },
-				{ key: 'question', label: '题目' },
-				{ key: 'article', label: '文章' }
+					{ key: 'all', label: '全部', supported: true },
+					{ key: 'knowledge', label: '知识点', supported: true },
+					{ key: 'question', label: '题目', supported: false },
+					{ key: 'article', label: '文章', supported: false }
 			],
 			searchHistory: [],
 			hotSearches: [
@@ -186,6 +191,18 @@ export default {
 	},
 	onLoad() {
 		this.loadSearchHistory()
+		try {
+			const snap = uni.getStorageSync('searchSnapshot')
+			if (snap) {
+				const s = JSON.parse(snap)
+				this.searchKeyword = s.keyword || ''
+				this.searchResults = Array.isArray(s.results) ? s.results : []
+				this.page = s.page || 1
+				this.total = s.total || 0
+				this.hasMore = !!s.hasMore
+				if (s.selectedFilter) this.selectedFilter = s.selectedFilter
+			}
+		} catch(e) {}
 	},
 	methods: {
 		onSearchInput() {
@@ -218,6 +235,7 @@ export default {
 			  } else {
 				this.loadingMore = true
 			  }
+			  this.error = ''
 			  try {
 				const resp = await searchKnowledgePoints({ keyword: kw, page: this.page, limit: this.pageSize })
 				let list = []
@@ -245,6 +263,7 @@ export default {
 				  return acc
 				}, [])
 				this.saveSearchHistory(kw)
+							this.persistSnapshot()
 				if (!this.searchResults.length) {
 				  uni.showToast({ title: '无结果', icon: 'none' })
 				} else if (reset) {
@@ -253,6 +272,7 @@ export default {
 			  } catch (e) {
 				console.error('搜索失败', e)
 				this.searchResults = []
+				this.error = e && e.message ? e.message : '搜索失败'
 				uni.showToast({ title: '搜索出错', icon: 'none' })
 			  } finally {
 				this.loading = false
@@ -264,14 +284,31 @@ export default {
 			this.page += 1
 			this.performSearch(false)
 		},
+		persistSnapshot() {
+			try {
+				uni.setStorageSync('searchSnapshot', JSON.stringify({
+					keyword: this.searchKeyword,
+					results: this.searchResults,
+					page: this.page,
+					total: this.total,
+					hasMore: this.hasMore,
+					selectedFilter: this.selectedFilter
+				}))
+			} catch(e) {}
+		},
 		clearSearch() {
 			this.searchKeyword = ''
 			this.searchResults = []
 			clearTimeout(this.searchTimer)
 		},
-		selectFilter(key) {
-			this.selectedFilter = key
-		if (this.searchKeyword.trim()) this.performSearch(true)
+		onFilterClick(filter) {
+			if (!filter.supported) {
+				uni.showToast({ title: '该类型暂未开放', icon: 'none' })
+				return
+			}
+			if (this.selectedFilter === filter.key) return
+			this.selectedFilter = filter.key
+			if (this.searchKeyword.trim()) this.performSearch(true)
 		},
 		selectHistoryItem(kw) {
 			this.searchKeyword = kw
@@ -459,6 +496,8 @@ export default {
 		background-color: var(--accent, #4A90E2);
 		border-color: var(--accent, #4A90E2);
 	}
+	.filter-item.disabled { opacity: .45; }
+	.filter-item.disabled:active { transform: none; }
 	
 	.filter-text {
 		font-size: 24rpx;
@@ -699,6 +738,8 @@ export default {
 	.load-more-status { text-align:center; padding:30rpx 0 10rpx; color: var(--text-secondary,#999); font-size:24rpx; }
 	.status-action { color: var(--accent,#4A90E2); }
 	.status-done { color: var(--muted,#ccc); }
+	.retry-box { margin-top: 30rpx; display:flex; flex-direction:column; align-items:center; gap:16rpx; }
+	.retry-msg { font-size:24rpx; color:#d4380d; }
 	
 	.result-footer {
 		display: flex;
