@@ -18,6 +18,15 @@
 		</view>
 
 		<!-- 轮播图 -->
+		<!-- 知识点快速搜索 -->
+		<view class="quick-search">
+			<view class="search-bar" @click="goSearchPage">
+				<text class="search-icon">🔍</text>
+				<text class="search-placeholder">搜索知识点 / 题目 / 文章</text>
+			</view>
+		</view>
+
+		<!-- 轮播图 -->
 		<view class="swiper-section" v-if="banners.length > 0">
 			<swiper class="swiper" circular :indicator-dots="true" :autoplay="true" :interval="3000" :duration="500">
 				<swiper-item v-for="(item, index) in banners" :key="index" @click="handleBannerClick(item)">
@@ -245,7 +254,8 @@
 					url: url,
 					complete: () => { uni.hideLoading(); }
 				});
-			}
+			},
+			goSearchPage() { uni.navigateTo({ url: '/pages/search/search' }); }
 		}
 	}
 </script>
@@ -324,6 +334,10 @@
 
 	/* 推荐学习 */
 	.recommendations { background-color: var(--card-bg, white); border-radius: 16rpx; padding: 30rpx; box-shadow: var(--shadow, 0 2rpx 10rpx rgba(0, 0, 0, 0.05)); }
+	.quick-search { margin:0 20rpx 20rpx; }
+	.search-bar { display:flex; align-items:center; background:#ffffff; border-radius: 999rpx; padding: 18rpx 30rpx; box-shadow:0 2rpx 8rpx rgba(0,0,0,0.04); }
+	.search-icon { font-size:30rpx; margin-right:14rpx; }
+	.search-placeholder { font-size:26rpx; color:#999; }
 	.recommendation-list { display: flex; flex-direction: column; gap: 16rpx; }
 	.recommendation-item { display: flex; align-items: center; padding: 20rpx; background-color: var(--card-bg-2, #f8f9fa); border: 1rpx solid var(--muted-border, #e9ecef); border-radius: 12rpx; }
 	.recommendation-icon { font-size: 32rpx; margin-right: 16rpx; }

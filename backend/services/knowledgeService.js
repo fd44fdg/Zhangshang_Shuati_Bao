@@ -56,27 +56,38 @@ class KnowledgeService {
   // ===================================
 
   async getPoints(params) {
-    const { page = 1, limit = 10, category_id } = params;
-    
-    let query = 'SELECT p.*, c.name as category_name FROM knowledge_points p LEFT JOIN knowledge_categories c ON p.category_id = c.id';
-    let countQuery = 'SELECT COUNT(*) as total FROM knowledge_points';
-    const queryParams = [];
+    const { page = 1, limit = 10, category_id, keyword } = params;
+
+    let baseSelect = 'SELECT p.*, c.name as category_name FROM knowledge_points p LEFT JOIN knowledge_categories c ON p.category_id = c.id';
+    let baseWhere = [];
+    const whereParams = [];
 
     if (category_id) {
-      query += ' WHERE p.category_id = ?';
-      countQuery += ' WHERE category_id = ?';
-      queryParams.push(category_id);
+      baseWhere.push('p.category_id = ?');
+      whereParams.push(category_id);
     }
-    
+    if (keyword && keyword.trim()) {
+      baseWhere.push('p.name LIKE ?');
+      whereParams.push(`%${keyword.trim()}%`);
+    }
+
+    let query = baseSelect;
+    let countQuery = 'SELECT COUNT(*) as total FROM knowledge_points p';
+    if (baseWhere.length) {
+      const whereClause = ' WHERE ' + baseWhere.join(' AND ');
+      query += whereClause;
+      countQuery += ' ' + whereClause.replace(/p\.name/g, 'p.name');
+    }
+
     query += ' ORDER BY p.created_at DESC LIMIT ? OFFSET ?';
-    const finalParams = [...queryParams, parseInt(limit), (page - 1) * limit];
+    const finalParams = [...whereParams, parseInt(limit), (page - 1) * limit];
 
     const [points] = await db.query(query, finalParams);
-    const totalResult = await db.getOne(countQuery, queryParams);
+    const totalResult = await db.getOne(countQuery, whereParams);
 
-    return { 
-      items: points, 
-      total: totalResult ? totalResult.total : 0 
+    return {
+      items: points,
+      total: totalResult ? totalResult.total : 0
     };
   }
 

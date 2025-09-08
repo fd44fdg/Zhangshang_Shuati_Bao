@@ -66,6 +66,13 @@
 			}
 		},
 		{
+			"path": "pages/knowledge/detail",
+			"style": {
+				"navigationBarTitleText": "知识点详情",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
 			"path": "pages/article/list",
 			"style": {
 				"navigationBarTitleText": "技术文章"

@@ -44,10 +44,18 @@ export function getKnowledgePoints(params = {}) {
  * @returns {Promise}
  */
 export function getKnowledgePointDetail(id) {
-  return request.get(`/knowledge/${id}`).then(response => {
+  return request.get(`/knowledge/points/${id}`).then(response => {
     if (response.data) {
       response.data = adaptKnowledgeData(response.data);
     }
     return response;
   });
+}
+
+/**
+ * 按关键字搜索知识点（复用列表接口）
+ * @param {Object} params { keyword, page, limit, category_id }
+ */
+export function searchKnowledgePoints(params = {}) {
+  return getKnowledgePoints(params);
 }
