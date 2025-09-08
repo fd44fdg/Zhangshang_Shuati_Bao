@@ -77,8 +77,13 @@
 		
 		<!-- 搜索结果 -->
 		<view v-if="searchKeyword" class="search-results">
-			<view v-if="loading" class="loading-container">
-				<text class="loading-text">搜索中...</text>
+			<!-- 骨架屏 -->
+			<view v-if="loading" class="skeleton-wrapper">
+				<view v-for="n in 5" :key="n" class="skeleton-item">
+					<view class="skeleton-line w60"></view>
+					<view class="skeleton-line w90"></view>
+					<view class="skeleton-line w40"></view>
+				</view>
 			</view>
 			
 			<view v-else-if="searchResults.length === 0" class="empty-container">
@@ -89,7 +94,7 @@
 			
 			<view v-else class="results-list">
 				<view class="results-header">
-					<text class="results-count">找到 {{searchResults.length}} 个结果</text>
+					<text class="results-count">共 {{ total }} 条结果</text>
 				</view>
 				
 				<view 
@@ -108,8 +113,12 @@
 					</view>
 					
 					<view class="result-content">
-						<text class="result-title">{{highlightKeyword(item.title)}}</text>
-						<text class="result-description">{{highlightKeyword(item.description)}}</text>
+						<view class="result-title hl-line">
+							<text v-for="(seg,i) in highlightSegments(item.title)" :key="i" :class="['seg', seg.hl ? 'hl':'']">{{ seg.t }}</text>
+						</view>
+						<view class="result-description hl-line">
+							<text v-for="(seg,i) in highlightSegments(item.description)" :key="i" :class="['seg', seg.hl ? 'hl':'']">{{ seg.t }}</text>
+						</view>
 					</view>
 					
 					<view class="result-footer">
@@ -120,6 +129,12 @@
 						</view>
 						<text class="result-arrow">></text>
 					</view>
+				</view>
+				<!-- 底部加载状态 -->
+				<view class="load-more-status" v-if="!loading">
+					<text v-if="loadingMore" class="status-text">加载中...</text>
+					<text v-else-if="hasMore" class="status-action" @click="loadMore">点击加载更多</text>
+					<text v-else class="status-done">没有更多了</text>
 				</view>
 			</view>
 		</view>
@@ -244,6 +259,11 @@ export default {
 				this.loadingMore = false
 			  }
 		},
+		loadMore() {
+			if (!this.hasMore || this.loading || this.loadingMore) return
+			this.page += 1
+			this.performSearch(false)
+		},
 		clearSearch() {
 			this.searchKeyword = ''
 			this.searchResults = []
@@ -320,13 +340,22 @@ export default {
 			const dm = { 1: '入门', 2: '初级', 3: '中级', 4: '高级', 5: '专家' }
 			return dm[d] || ''
 		},
-		highlightKeyword(text) {
-			if (!text) return ''
+		highlightSegments(text) {
 			const kw = this.searchKeyword.trim()
-			if (!kw) return text
-		// 简易高亮（前端展示仍是纯文本，微信小程序不支持直接 innerHTML）
-		// 这里可返回替换标记，后续可用富文本组件处理；暂时直接返回原文
-		return text
+			if (!text) return []
+			if (!kw) return [{ t: text, hl: false }]
+			// 简单拆分（忽略大小写）
+			const parts = []
+			const regex = new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig')
+			let lastIndex = 0
+			let m
+			while ((m = regex.exec(text)) !== null) {
+				if (m.index > lastIndex) parts.push({ t: text.slice(lastIndex, m.index), hl: false })
+				parts.push({ t: m[0], hl: true })
+				lastIndex = m.index + m[0].length
+			}
+			if (lastIndex < text.length) parts.push({ t: text.slice(lastIndex), hl: false })
+			return parts
 		}
 	}
 }
@@ -651,6 +680,25 @@ export default {
 		line-height: 1.5;
 		display: block;
 	}
+
+	/* 骨架屏 */
+	.skeleton-wrapper { background: var(--card-bg,#fff); border-radius:16rpx; padding:30rpx; box-shadow:var(--shadow,0 4rpx 12rpx rgba(0,0,0,0.08)); }
+	.skeleton-item { margin-bottom:28rpx; }
+	.skeleton-line { height: 28rpx; background: linear-gradient(90deg,#eee 25%,#f5f5f5 37%,#eee 63%); background-size:400% 100%; border-radius: 8rpx; animation: skeleton-loading 1.4s ease infinite; margin-bottom:14rpx; }
+	.skeleton-line.w60 { width:60%; }
+	.skeleton-line.w90 { width:90%; }
+	.skeleton-line.w40 { width:40%; }
+	@keyframes skeleton-loading { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+	/* 高亮 */
+	.hl-line { display:flex; flex-wrap:wrap; }
+	.hl-line .seg { font-size: inherit; }
+	.hl-line .seg.hl { color: #d4380d; font-weight:600; }
+
+	/* 底部加载状态 */
+	.load-more-status { text-align:center; padding:30rpx 0 10rpx; color: var(--text-secondary,#999); font-size:24rpx; }
+	.status-action { color: var(--accent,#4A90E2); }
+	.status-done { color: var(--muted,#ccc); }
 	
 	.result-footer {
 		display: flex;
