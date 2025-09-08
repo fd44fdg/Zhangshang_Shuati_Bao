@@ -91,3 +91,7 @@ nginx/logs/
 # Problem files
 nul
 */nul
+
+# Prevent accidental debug artifacts
+zhangshang-shuati-app/src/pages/home/home-min.vue
+head_k.js
