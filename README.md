@@ -10,15 +10,15 @@
 - 反向代理：Nginx 同域反代（/api -> 后端，/admin -> 管理后台，/ -> H5）
 
 ---
-![微信图片_2025-09-11_192302_809](https://github.com/user-attachments/assets/ae82308f-79d0-4158-90cd-7f6301c7b210)
-![微信图片_2025-09-11_192259_833](https://github.com/user-attachments/assets/bc4af513-1d66-4ad3-8400-621af31716b3)
-![微信图片_2025-09-11_192256_993](https://github.com/user-attachments/assets/deb7f391-0d9f-4645-9eff-03a7f0983a73)
-![微信图片_2025-09-11_192253_113](https://github.com/user-attachments/assets/1926e53b-1210-4ff9-8127-83a3fa095169)
-![微信图片_2025-09-11_192248_792](https://github.com/user-attachments/assets/59f03e42-16f4-42ab-bee7-d62e1a11b54b)
-![微信图片_2025-09-11_192244_656](https://github.com/user-attachments/assets/329c458b-9ff2-44f1-918b-55129048464a)
-![微信图片_2025-09-11_192240_305](https://github.com/user-attachments/assets/940fd970-14be-49dd-9b76-d520a34e7df0)
-![微信图片_2025-09-11_192236_857](https://github.com/user-attachments/assets/bb5249d2-9405-4ebd-8041-ed54e2fdb8f0)
-![微信图片_2025-09-11_192228_043](https://github.com/user-attachments/assets/56aa8586-a87c-41cc-a80d-ed9a06af7853)
+<img src="https://github.com/user-attachments/assets/ae82308f-79d0-4158-90cd-7f6301c7b210" width="350" />
+<img src="https://github.com/user-attachments/assets/bc4af513-1d66-4ad3-8400-621af31716b3" width="350" />
+<img src="https://github.com/user-attachments/assets/deb7f391-0d9f-4645-9eff-03a7f0983a73" width="350" />
+<img src="https://github.com/user-attachments/assets/1926e53b-1210-4ff9-8127-83a3fa095169" width="350" />
+<img src="https://github.com/user-attachments/assets/59f03e42-16f4-42ab-bee7-d62e1a11b54b" width="350" />
+<img src="https://github.com/user-attachments/assets/329c458b-9ff2-44f1-918b-55129048464a" width="350" />
+<img src="https://github.com/user-attachments/assets/940fd970-14be-49dd-9b76-d520a34e7df0" width="350" />
+<img src="https://github.com/user-attachments/assets/bb5249d2-9405-4ebd-8041-ed54e2fdb8f0" width="450" />
+<img src="https://github.com/user-attachments/assets/56aa8586-a87c-41cc-a80d-ed9a06af7853" width="450" />
 
 
 
