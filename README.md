@@ -1,15 +1,25 @@
-# 前言
-本项目完全使用AI IDE编写，期间使用了包括但不限于cursor，trae,kiro,Gemini CLI。耗时约三个月，本人只会基础的代码，而完成本项目的所有代码，均由AI编写。如果觉得这个项目对你有帮助，请点个星。
-# 掌上刷题宝（生产就绪版）
+[README.md](https://github.com/user-attachments/files/23670130/README.md)
+# Preface
 
-一个可直接用于生产的在线刷题平台，包含后端 API、管理后台（V2）、H5/微信小程序前端；已经完成登录鉴权统一、上传鉴权统一、离线/Mock 分离、路由异常页与同域反代的生产加固。
+This project is entirely written using AI IDEs, including but not limited to Cursor, Trae, Kiro, and Gemini CLI. It took approximately three months to complete. I only have basic coding skills, and all the code for this project was written by AI. If you find this project helpful, please give it a star.
 
-- 后端：Node.js + Express + Knex（MySQL/SQLite）
-- 管理后台（V2）：Vue 3 + Vite + Pinia + Naive UI（端口 8090 开发，生产同域 /admin）
-- H5/小程序：uni-app（H5 走同域根路径 /，微信小程序独立构建）
-- 反向代理：Nginx 同域反代（/api -> 后端，/admin -> 管理后台，/ -> H5）
+# Zhangshang Shuati Bao (Production-Ready Version)
 
----
+An online question-practice platform ready for direct production use, including backend APIs, admin dashboard (V2), H5/WeChat Mini Program frontend; featuring unified login authentication, unified upload authentication, offline/mock separation, route error pages, and same-domain reverse proxy for production hardening.
+
+
+
+* Backend: Node.js + Express + Knex (MySQL/SQLite)
+
+* Admin Dashboard (V2): Vue 3 + Vite + Pinia + Naive UI (develops on port 8090, production uses same-domain /admin)
+
+* H5/Mini Program: uni-app (H5 uses same-domain root path /, WeChat Mini Program has independent build)
+
+* Reverse Proxy: Nginx same-domain reverse proxy (/api -> backend, /admin -> admin dashboard, / -> H5)
+
+
+
+***
 <img src="https://github.com/user-attachments/assets/ae82308f-79d0-4158-90cd-7f6301c7b210" width="350" />
 <img src="https://github.com/user-attachments/assets/bc4af513-1d66-4ad3-8400-621af31716b3" width="350" />
 <img src="https://github.com/user-attachments/assets/deb7f391-0d9f-4645-9eff-03a7f0983a73" width="350" />
@@ -19,146 +29,261 @@
 <img src="https://github.com/user-attachments/assets/940fd970-14be-49dd-9b76-d520a34e7df0" width="350" />
 <img src="https://github.com/user-attachments/assets/bb5249d2-9405-4ebd-8041-ed54e2fdb8f0" width="450" />
 <img src="https://github.com/user-attachments/assets/56aa8586-a87c-41cc-a80d-ed9a06af7853" width="450" />
+## 1. Directory Structure
 
 
 
-## 1. 目录结构
+* backend/                 Backend API service
 
-- backend/                 后端 API 服务
-- admin-panel-v2/          新版管理后台（推荐）
-- admin-panel/             旧版管理后台（保留）
-- zhangshang-shuati-app/   H5/小程序前端（uni-app）
-- nginx/                   Nginx 生产配置（同域反代）
-- docker-compose.production.yml  生产编排（后端、Admin、H5、MySQL、Nginx、phpMyAdmin）
+* admin-panel-v2/          New version of admin dashboard (recommended)
 
----
+* admin-panel/             Old version of admin dashboard (retained)
 
-## 2. 快速开始（本地开发）
+* zhangshang-shuati-app/   H5/mini program frontend (uni-app)
 
-前置：Node 18+、npm 9+；可选 Docker。
+* nginx/                   Nginx production configuration (same-domain reverse proxy)
 
-### 2.1 后端 API
+* docker-compose.production.yml  Production orchestration (backend, Admin, H5, MySQL, Nginx, phpMyAdmin)
+
+
+
+***
+
+## 2. Quick Start (Local Development)
+
+Prerequisites: Node 18+, npm 9+; Docker optional.
+
+### 2.1 Backend API
+
+
+
 ```
 cd backend
-cp .env.example .env   # 按需修改数据库、端口等
+
+cp .env.example .env   # Modify database, port, etc. as needed
+
 npm i
+
 npm run dev            # http://localhost:3000/api/v1/health
 ```
 
-### 2.2 管理后台（V2）
+### 2.2 Admin Dashboard (V2)
+
+
+
 ```
 cd admin-panel-v2
-cp .env.development .env.development  # 按需设置
-# 可选：直连你的后端（默认 3001 或你本机端口）
-# VITE_API_TARGET=http://localhost:3001
+
+cp .env.development .env.development  # Configure as needed
+
+\# Optional: Connect directly to your backend (default 3001 or your local port)
+
+\# VITE\_API\_TARGET=http://localhost:3001
+
 npm i
+
 npm run dev            # http://localhost:8090
 ```
-开发期无需后端想直接进界面，可启用登录 Mock：
+
+To access the interface directly without a backend during development, enable login mock:
+
+
+
 ```
-# admin-panel-v2/.env.development
-VITE_DEV_AUTO_MOCK=1
-```
-离线回退（本地存储种子数据）默认关闭，如需离线浏览：
-```
-VITE_OFFLINE_FALLBACK=true
+\# admin-panel-v2/.env.development
+
+VITE\_DEV\_AUTO\_MOCK=1
 ```
 
-### 2.3 H5（本地）
+Offline fallback (local storage seed data) is disabled by default; to enable offline browsing:
+
+
+
+```
+VITE\_OFFLINE\_FALLBACK=true
+```
+
+### 2.3 H5 (Local)
+
+
+
 ```
 cd zhangshang-shuati-app
+
 npm i
-npm run dev:h5         # 默认端口 8085/8083，依你的配置
+
+npm run dev:h5         # Default ports 8085/8083, depending on your configuration
 ```
 
-### 2.4 微信小程序（开发）
-- 构建：
+### 2.4 WeChat Mini Program (Development)
+
+
+
+* Build:
+
+
+
 ```
-# 直连你本机后端（如 3001）
-cross-env NODE_ENV=development UNI_PLATFORM=mp-weixin VUE_APP_API_BASE_URL=http://localhost:3001/api/v1 npm run dev:mp-weixin
+\# Connect directly to your local backend (e.g., 3001)
+
+cross-env NODE\_ENV=development UNI\_PLATFORM=mp-weixin VUE\_APP\_API\_BASE\_URL=http://localhost:3001/api/v1 npm run dev:mp-weixin
 ```
-- 用微信开发者工具导入 dist/build/mp-weixin 目录，勾选“不校验合法域名、TLS 版本以及 HTTPS 证书”（仅开发）。
 
----
 
-## 3. 认证与上传（生产统一）
-- 管理后台（V2）：统一采用 Cookie 会话（axios withCredentials=true，401 自动刷新与请求队列重放）。
-- 上传：前端 UploadImage 使用 Cookie；后端 /api/v1/upload/banners 使用 authV2.verifyAccess + requireRoles('admin') 校验。
-- 小程序/H5：uni-app 侧 request.js 使用 Bearer Token（不依赖 Cookie，会话互不影响）。
 
----
+* Import the dist/build/mp-weixin directory using WeChat Developer Tools, check "Do not verify legal domain names, TLS versions, and HTTPS certificates" (development only).
 
-## 4. 运行时配置（后台驱动 H5）
-- 后端新增接口：
-  - GET /api/v1/system/config    返回运行时配置（公共可读）
-  - POST /api/v1/system/config   保存运行时配置（仅管理员，Cookie 会话）
-- H5 在启动时通过 src/utils/runtime-config.js 拉取并缓存，可在页面逻辑中通过 getValue('path.to.key', def) 读取，实现“后台改、H5 即生效”。
 
----
 
-## 5. 生产部署（同域反代）
+***
 
-推荐使用 docker-compose.production.yml 一键起服务（后端、Admin、H5、MySQL、Nginx、phpMyAdmin）。
+## 3. Authentication and Upload (Production Unified)
 
-1) 准备 .env.production（根目录）
+
+
+* Admin Dashboard (V2): Uses unified Cookie sessions (axios withCredentials=true, 401 automatic refresh and request queue replay).
+
+* Upload: Frontend UploadImage uses Cookie; backend /api/v1/upload/banners uses authV2.verifyAccess + requireRoles('admin') for verification.
+
+* Mini Program/H5: uni-app side request.js uses Bearer Token (not dependent on Cookie, sessions are independent).
+
+
+
+***
+
+## 4. Runtime Configuration (Backend-Driven H5)
+
+
+
+* Backend new interfaces:
+
+
+  * GET /api/v1/system/config    Returns runtime configuration (publicly readable)
+
+  * POST /api/v1/system/config   Saves runtime configuration (admin only, Cookie session)
+
+* H5 fetches and caches via src/utils/runtime-config.js on startup, can be read in page logic via getValue('path.to.key', def), achieving "backend change, H5 takes effect immediately".
+
+
+
+***
+
+## 5. Production Deployment (Same-Domain Reverse Proxy)
+
+It is recommended to use docker-compose.production.yml to start services with one click (backend, Admin, H5, MySQL, Nginx, phpMyAdmin).
+
+
+
+1. Prepare .env.production (root directory)
+
+
+
 ```
 PORT=3000
-ADMIN_PORT=8080
-MOBILE_PORT=8081
-DB_HOST=db
-DB_PORT=3306
-DB_USER=app_user
-DB_PASSWORD=强密码
-DB_NAME=zhangshang_shuati
-JWT_SECRET=超长随机串
-CORS_ORIGINS=https://你的域名,https://www.你的域名
+
+ADMIN\_PORT=8080
+
+MOBILE\_PORT=8081
+
+DB\_HOST=db
+
+DB\_PORT=3306
+
+DB\_USER=app\_user
+
+DB\_PASSWORD=strong\_password
+
+DB\_NAME=zhangshang\_shuati
+
+JWT\_SECRET=long\_random\_string
+
+CORS\_ORIGINS=https://your\_domain,https://www.your\_domain
 ```
 
-2) Nginx（nginx/conf.d/default.conf）
-- /api/ -> backend:3000/api/
-- /admin/ -> admin-panel:80
-- / -> mobile-app:80
-- 启用 HTTPS：将证书放入 nginx/ssl/cert.pem、nginx/ssl/key.pem，取消 https server 段注释，并配置 80->443 跳转。
 
-3) 启动
+
+1. Nginx (nginx/conf.d/default.conf)
+
+* /api/ -> backend:3000/api/
+
+* /admin/ -> admin-panel:80
+
+* / -> mobile-app:80
+
+* Enable HTTPS: Place certificates in nginx/ssl/cert.pem, nginx/ssl/key.pem, uncomment the https server section, and configure 80->443 redirect.
+
+1. Start
+
+
+
 ```
 docker compose -f docker-compose.production.yml up -d --build
 ```
 
-4) 验收
-- https://你的域名/api/v1/health
-- https://你的域名/admin/
-- https://你的域名/
 
-阿里云 ECS 专项指南：见 deploy-aliyun.md。
 
-GitHub Actions 自动部署：.github/workflows/deploy-aliyun.yml（配置 Secrets：ALIYUN_HOST、ALIYUN_USER、ALIYUN_SSH_KEY 等）。
+1. Verification
 
----
+* https://your\_domain/api/v1/health
 
-## 6. 常见问题（排错）
-- 登录超时（开发）：确认 VITE_API_TARGET 指向你的后端端口；或开启 VITE_DEV_AUTO_MOCK=1。
-- 401（生产）：确保同域反代 + HTTPS（Cookie Secure 生效）；跨域会导致 Cookie 丢失。
-- 上传失败：已统一 Cookie 会话；确保管理后台已登录且 Nginx 反代到后端 /api/v1/upload。
-- 小程序网络被拦：生产需在“request 合法域名”添加你的 https 域名；开发可勾选“不校验”。
-- 刷新 404：Nginx 需配置 SPA fallback（本配置已按根/H5、/admin/ 前端路由做好）。
+* https://your\_domain/admin/
 
----
+* https://your\_domain/
 
-## 7. 脚本与命令
-- 本地后端：`cd backend && npm run dev`
-- 本地 Admin V2：`cd admin-panel-v2 && npm run dev`
-- 本地 H5：`cd zhangshang-shuati-app && npm run dev:h5`
-- 微信小程序（开发）：`cross-env NODE_ENV=development UNI_PLATFORM=mp-weixin VUE_APP_API_BASE_URL=http://localhost:3001/api/v1 npm run dev:mp-weixin`
-- 生产部署：`docker compose -f docker-compose.production.yml up -d --build`
+Alibaba Cloud ECS specific guide: See deploy-aliyun.md.
 
----
+GitHub Actions automatic deployment: .github/workflows/deploy-aliyun.yml (configure Secrets: ALIYUN\_HOST, ALIYUN\_USER, ALIYUN\_SSH\_KEY, etc.)
 
-## 8. 许可证
+
+
+***
+
+## 6. Common Issues (Troubleshooting)
+
+
+
+* Login timeout (development): Ensure VITE\_API\_TARGET points to your backend port; or enable VITE\_DEV\_AUTO\_MOCK=1.
+
+* 401 (production): Ensure same-domain reverse proxy + HTTPS (Cookie Secure takes effect); cross-domain will cause Cookie loss.
+
+* Upload failure: Cookie sessions are unified; ensure admin dashboard is logged in and Nginx reverse proxies to backend /api/v1/upload.
+
+* Mini program network blocked: Production requires adding your https domain to "request legal domain names"; development can check "do not verify".
+
+* Refresh 404: Nginx needs SPA fallback configuration (this configuration is already set up for root/H5 and /admin/ frontend routes).
+
+
+
+***
+
+## 7. Scripts and Commands
+
+
+
+* Local backend: `cd backend && npm run dev`
+
+* Local Admin V2: `cd admin-panel-v2 && npm run dev`
+
+* Local H5: `cd zhangshang-shuati-app && npm run dev:h5`
+
+* WeChat Mini Program (development): `cross-env NODE_ENV=development UNI_PLATFORM=mp-weixin VUE_APP_API_BASE_URL=``http://localhost:3001/api/v1`` npm run dev:mp-weixin`
+
+* Production deployment: `docker compose -f docker-compose.production.yml up -d --build`
+
+
+
+***
+
+## 8. License
+
 MIT
 
----
 
-## 附：已知未结案问题（微信小程序首页白屏）
-mp-weixin 端首页当前存在白屏但无错误日志的问题，H5 正常。已最小化业务并清理调试代码，仍可复现。详情与贡献方式见 `docs/MINIPROGRAM_KNOWN_ISSUE.md`。（问题已查明，系VUE与微信小程序不兼容问题。）
 
+***
+
+## Appendix: Known Unresolved Issue (WeChat Mini Program Homepage White Screen)
+
+The mp-weixin homepage currently has a white screen issue with no error logs, while H5 works normally. Business logic has been minimized and debugging code cleaned up, but the issue still recurs. Details and contribution methods can be found in `docs/``MINIPROGRAM_KNOWN_ISSUE.md`. (The issue has been identified as an incompatibility between VUE and WeChat Mini Programs.)
+
+> （注：文档部分内容可能由 AI 生成）
